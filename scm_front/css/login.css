@@ -1,0 +1,89 @@
+.btn-login {
+  background: linear-gradient(#1F317B, #0F1D6C);
+  width: 500px;
+  height: 60px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-family: "SCDream5";
+  color: white;
+  border: 0;
+}
+.btn-login:hover {
+  background: linear-gradient(#112DA1, #0F1D6C);
+}
+
+.login-wrap {
+  display: flex;
+  margin-left: 400px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.login-wrap .left-logo {
+  width: 250px;
+  height: 290px;
+  background-image: url(../img/left_logo.png);
+  background-repeat: no-repeat;
+}
+.login-wrap .login-con {
+  margin-left: 60px;
+  text-align: left;
+}
+.login-wrap .login-con .logo {
+  width: 200px;
+  height: 50px;
+  background-image: url(../img/logo.png);
+  background-repeat: no-repeat;
+  margin-bottom: 70px;
+}
+.login-wrap .login-con .input-row {
+  width: 500px;
+  border-bottom: 2px solid black;
+  text-align: left;
+}
+.login-wrap .login-con .input-row.id {
+  margin-bottom: 75px;
+}
+.login-wrap .login-con .input-row.pw {
+  margin-bottom: 62px;
+}
+.login-wrap .login-con .input-row input[type=text], .login-wrap .login-con .input-row input[type=password] {
+  border: 0;
+  width: 92%;
+  font-size: 20px;
+  padding-right: 10px;
+}
+.login-wrap .login-con .input-row input[type=text]::-moz-placeholder, .login-wrap .login-con .input-row input[type=password]::-moz-placeholder {
+  color: #CCCCCC;
+}
+.login-wrap .login-con .input-row input[type=text]:-ms-input-placeholder, .login-wrap .login-con .input-row input[type=password]:-ms-input-placeholder {
+  color: #CCCCCC;
+}
+.login-wrap .login-con .input-row input[type=text]::placeholder, .login-wrap .login-con .input-row input[type=password]::placeholder {
+  color: #CCCCCC;
+}
+.login-wrap .login-con .input-row .id-img {
+  width: 30px;
+  height: 30px;
+  background-image: url(../img/ic_id.png);
+}
+.login-wrap .login-con .input-row .id-pw {
+  width: 30px;
+  height: 30px;
+  background-image: url(../img/ic_pw.png);
+}
+.login-wrap .login-con .save-row {
+  text-align: left;
+  margin-bottom: 52px;
+}
+.login-wrap .login-con .save-row label {
+  font-size: 20px;
+  font-family: "SCDream5";
+  line-height: 1.2;
+  margin-left: 6px;
+}
+.login-wrap .login-con .save-row input[type=checkbox] {
+  width: 24px;
+  height: 24px;
+  border-radius: 100%;
+}

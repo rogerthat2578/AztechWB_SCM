@@ -1,0 +1,88 @@
+.btn-login{
+	background:linear-gradient(#1F317B, #0F1D6C);
+	width: 500px;
+	height: 60px;
+	border-radius: 12px;
+	font-size: 20px;
+	font-family: "SCDream5";
+	color: white;
+	border: 0;
+	&:hover{
+		background:linear-gradient(#112DA1, #0F1D6C);
+	}
+}
+.login-wrap{
+	display: flex;
+	margin-left: 400px;
+	position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+	.left-logo{
+		width: 250px;
+		height: 290px;
+		background-image: url(../img/left_logo.png);
+		background-repeat: no-repeat;
+	}
+	.login-con{
+		margin-left: 60px;
+		text-align: left;
+		.logo{
+			width: 200px;	
+			height: 50px;
+			background-image: url(../img/logo.png);
+			background-repeat: no-repeat;
+			margin-bottom: 70px;
+		}
+		.input-row{
+			width: 500px;
+			border-bottom: 2px solid black;
+			text-align: left;
+			
+			&.id{
+				margin-bottom: 75px;
+			}
+			&.pw{
+				margin-bottom: 62px;
+			}
+
+			input[type=text], input[type=password]{
+				border: 0;
+				width: 92%;
+				font-size: 20px;
+				padding-right: 10px;
+
+				&::placeholder{
+					color: #CCCCCC;
+				}
+			}
+
+			.id-img{
+				width: 30px;
+				height: 30px;
+				background-image: url(../img/ic_id.png);
+			}
+
+			.id-pw{
+				width: 30px;
+				height: 30px;
+				background-image: url(../img/ic_pw.png);
+			}
+		}
+		.save-row{
+			text-align: left;
+			margin-bottom: 52px;
+			label{
+				font-size: 20px;
+				font-family: "SCDream5";
+				line-height: 1.2;
+				margin-left: 6px;
+			}
+
+			input[type=checkbox]{
+				width: 24px;
+				height: 24px;
+				border-radius: 100%;
+			}
+		}
+	}
+}

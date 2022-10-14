@@ -1,0 +1,151 @@
+button{
+	background-color: transparent;
+	border: none;
+}
+.today{
+	background-color: #d9e0e8;
+	border-radius: 10px;
+}
+.date-select{
+	background-color: #97a3e1;
+	border-radius: 10px;
+	color: white !important;
+}
+
+.gx-datepicker{
+	position: absolute;
+    background: white;
+	z-index: 100;
+	text-align: center;
+	height: 400px;
+	border-radius: 0.6rem;
+	width: 340px;
+	box-shadow: 0px 0px 6px #00000040;
+}
+.calendar-top{
+	background-color: #535d93;
+    color: white;
+    text-align: right;
+    padding: 10px 10px 0;
+	border-radius: 0.6rem 0.6rem 0 0;
+
+	button{
+		color: white;
+	}
+}
+.calendar-header{
+	height: 50px;
+    background-color: #535d93;
+    display: flex;
+	justify-content: space-around;
+	align-items: center;
+	border-radius: 0.6rem 0.6rem 0 0;
+
+	.now{
+		font-size: 1.8rem;
+		color: white;
+		text-align: center;
+	}
+
+	button{
+		color: white;
+		img{
+			vertical-align: middle;
+		}
+	}
+}
+
+.gx-calendar-day-con{
+	text-align: center;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    height: 308px;
+    align-items: center;
+	span{
+		line-height: 45px;
+		width: 13.7%; 
+		color:#000000;
+	}
+	.sat{
+		color:#0000FF;
+	}
+	.sun{
+		color:#FF0000;
+	}
+}
+
+
+.gx-calendar-buttons{
+	display: flex;
+    justify-content: space-between;
+	padding: 10px 6% 10px;
+}
+
+.gx-calendar-years{
+	position: absolute;
+    width: 100%;
+	height: calc(100% - 50px);
+    background: white;
+    top: 40px;
+    z-index: 200;
+    overflow-y: scroll;
+    border: 1px solid #535d93;
+    border-radius: 0 0 10px 10px;
+	padding: 0px 10px;
+	display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    line-height: 70px;
+
+	span{
+		width: 25%;
+	}
+}
+
+.gx-calendar-month{
+	position: absolute;
+    width: 100%;
+    background: white;
+    top: 40px;
+    z-index: 200;
+	height: calc(100% - 50px);
+	padding: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	border-radius: 0 0 10px 10px;
+	display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+    line-height: 70px;
+
+	span{
+		width: 25%;
+		line-height: 90px;
+		font-size: 1.8rem;
+	}
+
+}
+
+@media only screen and (max-width:420px){
+    	
+	.gx-datepicker{
+		width: 90%;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%,-50%);
+		position: fixed;
+	}
+	
+
+	.gx-calendar-month{
+		span{
+			line-height: 70px;
+		}
+	}
+    
+}
