@@ -14,7 +14,7 @@
 
 .login-wrap {
   display: flex;
-  margin-left: 400px;
+  margin-left: 21%;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -49,7 +49,7 @@
 }
 .login-wrap .login-con .input-row input[type=text], .login-wrap .login-con .input-row input[type=password] {
   border: 0;
-  width: 92%;
+  width: calc(100% - 37px);
   font-size: 20px;
   padding-right: 10px;
 }
@@ -86,4 +86,33 @@
   width: 24px;
   height: 24px;
   border-radius: 100%;
+}
+
+@media (max-width: 912px) {
+  .login-wrap {
+    margin-left: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .login-wrap .left-logo {
+    display: none;
+  }
+  .login-wrap .left-logo {
+    display: none;
+  }
+  .login-wrap .login-con {
+    margin-left: 0;
+  }
+  .login-wrap .login-con .input-row {
+    width: 300px;
+  }
+  .login-wrap .login-con .input-row.pw {
+    margin-bottom: 52px;
+  }
+  .login-wrap .login-con .logo {
+    margin-bottom: 82px;
+  }
+  .btn-login {
+    width: 300px;
+  }
 }

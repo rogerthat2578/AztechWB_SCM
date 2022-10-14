@@ -13,7 +13,7 @@
 }
 .login-wrap{
 	display: flex;
-	margin-left: 400px;
+	margin-left: 21%;
 	position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -47,7 +47,7 @@
 
 			input[type=text], input[type=password]{
 				border: 0;
-				width: 92%;
+				width: calc(100% - 37px);
 				font-size: 20px;
 				padding-right: 10px;
 
@@ -85,4 +85,36 @@
 			}
 		}
 	}
+}
+
+
+@media (max-width: 912px) {
+	.login-wrap{
+		margin-left: 0;
+		left: 50%;
+		transform: translate(-50%,-50%);
+
+		.left-logo{
+			display: none;
+		}
+		.left-logo{
+			display: none;
+		}
+		.login-con{
+			margin-left: 0;
+			.input-row{
+				width: 300px;
+				&.pw{
+					margin-bottom: 52px;
+				}
+			}
+			.logo{
+				margin-bottom: 82px;
+			}
+		} 
+	}
+	.btn-login{
+		width: 300px;
+	}
+	
 }

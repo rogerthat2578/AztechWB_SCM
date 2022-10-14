@@ -21,19 +21,19 @@
 		<div class="login-con">
 			<span class="logo"></span>
 			<div class="input-row id">
-				<input type="text" placeholder="User ID" v-model.lazy="userId" @blur="chkCompany()">
+				<input type="text" placeholder="User ID" id="userId" v-model.lazy="userId" @blur="chkCompany()" gx-scanner="Y">
 				<span class="id-img"></span>
 			</div>
 			<div class="input-row pw">
-				<input type="password" placeholder="Password" v-model.lazy="userPwd">
+				<input type="password" placeholder="Password" id="userPwd" v-model.lazy="userPwd" gx-scanner="Y">
 				<span class="id-pw"></span>
 			</div>
 			<div class="save-row">
-				<input type="checkbox" id="IsSaveId" v-model="isSaveIds">
-				<label for="IsSaveId">Save ID</label>
+				<input type="checkbox" id="isSaveId" v-model="isSaveId" value="1" true-value="1" false-value="0" gx-default="0" @click="saveId()">
+				<label for="isSaveId">Save ID</label>
 			</div>
 
-			<button class="btn-login" @click="login()">LOGIN</button>
+			<button class="btn-login" @click="login(chkCompany())">LOGIN</button>
 		</div>		
 	</div>
 

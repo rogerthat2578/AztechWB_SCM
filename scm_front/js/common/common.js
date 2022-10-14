@@ -210,5 +210,50 @@ GX._METHODS_ = {
 		else alert('환경설정에서 네트워크 통신환경을 설정해주세요!');
 
 		return this;
-	}
+	},
+	/**파라메터(element id)에서 포커스 해제 이후 해당 파라메터에 다시 포커스
+	 * eleId typeof=string, element의 id
+	 * emptyVal typeof=boolean, element의 value 초기화
+	 * 인자 없이 넘어올 경우 gx-scanner="Y"인 element 중 값이 비어있는 곳으로 포커스
+	 * 값이 비어있는 곳이 없을 경우 마지막 index로 포커스
+	 */
+	focusAfterBlur: function(eleId, emptyVal = false) {
+		let vThis = this;
+		
+		if (typeof eleId === 'string' && document.getElementById(eleId) != null) {
+			let p = document.getElementById(eleId);
+			if (emptyVal) {
+				if (vThis.queryForm[eleId]) {
+					vThis.queryForm[eleId] = '';
+				}
+				p.value = '';
+			}
+			p.blur();
+			setTimeout(function() {
+				p.focus();
+			}, 20);
+		} else {
+			let focusObj = document.querySelectorAll('[gx-scanner="Y"]');
+			let focusObjId = '';
+			for (let i in focusObj) {
+				if (focusObj.hasOwnProperty(i)) {
+					focusObjId = focusObj[i].getAttribute('id');
+					if (document.getElementById(focusObjId).value.trim() === '')
+						break;
+				}
+			}
+			if (focusObjId === '') focusObjId = 'hiddenScanData'
+			let p = document.getElementById(focusObjId);
+			if (emptyVal) {
+				if (vThis.queryForm[focusObjId]) {
+					vThis.queryForm[focusObjId] = '';
+				}
+				p.value = '';
+			}
+			p.blur();
+			setTimeout(function() {
+				p.focus();
+			}, 20);
+		}
+	},
 };
