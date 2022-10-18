@@ -5,7 +5,6 @@ let app = new Vue({
 		userName: '',
 		params: GX.getParameters(),
 		rows: [],
-		pageUrls: GX._DATAS_.pageUrls,
 	},
     methods: {
         /**이벤트 처리 */
@@ -13,12 +12,11 @@ let app = new Vue({
             let vThis = this;
             let e = event;
             
+			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block') {
+				document.getElementsByClassName('left-menu')[0].style.display = 'none';
+				e.target.getAttribute('class') !== 'menu-title'
+			}
         },
-		/**메뉴 버튼 클릭 시 */
-		menu: function() {
-			if (document.getElementsByClassName('left-menu')[0].style.display === 'block') document.getElementsByClassName('left-menu')[0].style.display = 'none';
-			else document.getElementsByClassName('left-menu')[0].style.display = 'block';
-		},
 		/**우측상단 유저 정보 클릭 시 */
 		userInfoClick: function() {
 			if (confirm('로그아웃 하시겠습니까?')) {
@@ -44,6 +42,13 @@ let app = new Vue({
 			
 			vThis.deptName = GX.Cookie.get('DeptName');
 			vThis.userName = GX.Cookie.get('UserName');
+
+			// 메뉴 가져오기
+			GX._METHODS_.getLeftMenu();
+			// 메뉴 열고 닫기 이벤트 추가
+			document.getElementsByClassName('btn-menu')[0].setAttribute('onclick', 'GX._METHODS_.clickLeftMenu()');
+			
+			document.addEventListener('click', vThis.eventCheck, false);
         }
     },
 });

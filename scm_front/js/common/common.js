@@ -38,11 +38,11 @@ GX._DATAS_ = {
 		'2': { link: '', icon: '', pageName: '외주가공' },
 	},
 	pageUrls2:{
-		'1': { lvl: '1', link: 'poItemSearch.html', icon: 'img/ic_menu_01.png', pageName: '구매발주품목조회' },
-		'2': { lvl: '1', link: 'poStatus.html', icon: 'img/ic_menu_02.png', pageName: '납품현황' },
-		'3': { lvl: '2', link: 'outProdOrderSearch.html', icon: 'img/ic_menu_03.png', pageName: '외주생산지시조회' },
-		'4': { lvl: '2', link: 'outProdOrderStatus.html', icon: 'img/ic_menu_04.png', pageName: '외주납품현황' },
-		'5': { lvl: '2', link: 'procWorkSchedule.html', icon: 'img/ic_menu_05.png', pageName: '공정별 작업예정일' },
+		'1': { bindPageUrls1: '1', class: 'menu-01', link: 'orderInquiry', icon: 'img/ic_menu_01.png', pageName: '구매발주품목조회' },
+		'2': { bindPageUrls1: '1', class: 'menu-02', link: 'purchase_delivery_search', icon: 'img/ic_menu_02.png', pageName: '구매납품품목조회' },
+		'3': { bindPageUrls1: '2', class: 'menu-03', link: 'outsourcing_orderInquiry', icon: 'img/ic_menu_03.png', pageName: '외주발주품목조회' },
+		'4': { bindPageUrls1: '2', class: 'menu-04', link: 'outsourcing_purchase_delivery_search', icon: 'img/ic_menu_04.png', pageName: '외주납품품목조회' },
+		'5': { bindPageUrls1: '2', class: 'menu-05', link: 'production_progress_information', icon: 'img/ic_menu_05.png', pageName: '의류생산진행정보입력' },
 	},
 };
 
@@ -255,5 +255,47 @@ GX._METHODS_ = {
 				p.focus();
 			}, 20);
 		}
+	},
+	/**
+	 * pageUrls1, pageUrls2 객체를 가져와 메뉴 구성
+	 * paramater: left menu 최상위 Element class name (default: left-menu)
+	 */
+	getLeftMenu: function(leftMenuClassName = 'left-menu') {
+		let pageUrls1List = GX._DATAS_.pageUrls1;
+		let pageUrls2List = GX._DATAS_.pageUrls2;
+		let menu = [];
+		menu.push('<div class="list-bg"></div>');
+		for (let a in pageUrls1List) {
+			if (pageUrls1List.hasOwnProperty(a)) {
+				menu.push('<div class="list-container">');
+				menu.push('<div class="menu-title">' + pageUrls1List[a].pageName + '</div>');
+				menu.push('<ul class="list-wrap">');
+				
+				for (let b in pageUrls2List) {
+					if (pageUrls2List.hasOwnProperty(b)) {
+						if (a == pageUrls2List[b].bindPageUrls1) {
+							menu.push('<li>');
+							menu.push('<a href="' + pageUrls2List[b].link + '">');
+							menu.push('<span class="list-img ' + pageUrls2List[b].class + '"></span>');
+							menu.push('<span>' + pageUrls2List[b].pageName + '</span>');
+							menu.push('</a>');
+							menu.push('</li>');
+						}
+					}
+				}
+
+				menu.push('</ul>');
+				menu.push('</div>');
+			}
+		}
+		document.getElementsByClassName(leftMenuClassName)[0].innerHTML = menu.join('');
+	},
+	/**
+	 * left-menu 클릭 처리
+	 * paramater: left menu 최상위 Element class name (default: left-menu)
+	 */
+	clickLeftMenu: function(leftMenuClassName = 'left-menu') {
+		if (document.getElementsByClassName(leftMenuClassName)[0].style.display === 'block') document.getElementsByClassName(leftMenuClassName)[0].style.display = 'none';
+		else document.getElementsByClassName(leftMenuClassName)[0].style.display = 'block';
 	},
 };

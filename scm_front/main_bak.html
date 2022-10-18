@@ -20,7 +20,7 @@
 	<div v-cloak id="app">
 		<header>		
 			<div class="con">
-				<button class="btn-menu"></button>
+				<button class="btn-menu" @click="menu()"></button>
 				<a href="#" class="web">
 					<img src="img/logo.png" alt="로고이미지">
 				</a>
@@ -41,6 +41,41 @@
 		</header>
 		<main>
 			<div class="left-menu">
+				<div class="list-bg"></div>
+				<div class="list-container">
+					<div class="menu-title">구매</div>
+					<ul class="list-wrap">
+						<li>
+							<a href="row.link">
+								<span class="list-img menu-01"></span>
+								<span>구매발주품목조회</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="list-container">
+					<div class="menu-title">외주가공</div>
+					<ul class="list-wrap">
+						<li>
+							<a href="#">
+								<span class="list-img menu-03"></span>
+								<span>외주생산지시조회</span>
+							</a>
+						</li>
+						<li>
+							<a href="#">
+								<span class="list-img menu-04"></span>
+								<span>외주납품현황</span>
+							</a>
+						</li>
+						<li>
+							<a href="#">
+								<span class="list-img menu-05"></span>
+								<span>공정별 작업예정일</span>
+							</a>
+						</li>
+					</ul>
+				</div>
 			</div>
 			<div class="main-container">
 				대시보드자리
