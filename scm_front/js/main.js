@@ -12,9 +12,10 @@ let app = new Vue({
             let vThis = this;
             let e = event;
             
-			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block') {
+			// 메뉴 여닫는 버튼 클릭을 제외한 다른 영역 클릭 시 메뉴 닫기
+			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block'
+				&& e.target.getAttribute('class') !== 'btn-menu') {
 				document.getElementsByClassName('left-menu')[0].style.display = 'none';
-				e.target.getAttribute('class') !== 'menu-title'
 			}
         },
 		/**우측상단 유저 정보 클릭 시 */
