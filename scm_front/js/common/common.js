@@ -258,9 +258,9 @@ GX._METHODS_ = {
 	},
 	/**
 	 * pageUrls1, pageUrls2 객체를 가져와 메뉴 구성
-	 * paramater: left menu 최상위 Element class name (default: left-menu)
+	 * v-html로 연결
 	 */
-	getLeftMenu: function(leftMenuClassName = 'left-menu') {
+	createLeftMenu: function() {
 		let pageUrls1List = GX._DATAS_.pageUrls1;
 		let pageUrls2List = GX._DATAS_.pageUrls2;
 		let menu = [];
@@ -288,7 +288,7 @@ GX._METHODS_ = {
 				menu.push('</div>');
 			}
 		}
-		document.getElementsByClassName(leftMenuClassName)[0].innerHTML = menu.join('');
+		return menu.join('');
 	},
 	/**
 	 * left-menu 클릭 처리

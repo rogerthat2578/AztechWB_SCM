@@ -1,6 +1,7 @@
 let app = new Vue({
 	el: '#app',
 	data: {
+		leftMenu: GX._METHODS_.createLeftMenu(),
 		deptName: '',
 		userName: '',
 		params: GX.getParameters(),
@@ -43,11 +44,6 @@ let app = new Vue({
 			
 			vThis.deptName = GX.Cookie.get('DeptName');
 			vThis.userName = GX.Cookie.get('UserName');
-
-			// 메뉴 가져오기
-			GX._METHODS_.getLeftMenu();
-			// 메뉴 열고 닫기 이벤트 추가
-			document.getElementsByClassName('btn-menu')[0].setAttribute('onclick', 'GX._METHODS_.clickLeftMenu()');
 			
 			document.addEventListener('click', vThis.eventCheck, false);
         }

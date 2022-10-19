@@ -20,7 +20,7 @@
 	<div v-cloak id="app">
 		<header>		
 			<div class="con">
-				<button class="btn-menu"></button>
+				<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
 				<a href="javascript:void(0)" onclick="location.replace('main')" class="web">
 					<img src="img/logo.png" alt="로고이미지">
 				</a>
@@ -40,7 +40,7 @@
 			</div>
 		</header>
 		<main>
-			<div class="left-menu"></div>
+			<div class="left-menu" v-html="leftMenu"></div>
 			<div class="main-container">
 				대시보드자리
 			</div>
