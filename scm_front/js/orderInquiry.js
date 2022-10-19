@@ -30,12 +30,6 @@ let app = new Vue({
         }
 	},
     methods: {
-        /**날짜 담기 */
-        updateDate: function(d) {
-            console.log(d)
-            let vThis = this;
-            vThis.queryForm.InvoiceDate = d;
-        },
         /**이벤트 처리 */
         eventCheck: function() {
             let vThis = this;

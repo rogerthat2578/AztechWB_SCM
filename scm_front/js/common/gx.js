@@ -1420,7 +1420,7 @@ GX = {
 				this.calendarObj.style.top = String(y) + 'px';
 
 				let x = bodyWidth - calendarWidth;
-				console.log(x, ' = ', bodyWidth, ' - ', calendarWidth, ' > ', openerLeft)
+				// console.log(x, ' = ', bodyWidth, ' - ', calendarWidth, ' > ', openerLeft)
 				if (x > openerLeft) x = openerLeft;
 
 				this.calendarObj.style.left = String(x) + 'px';

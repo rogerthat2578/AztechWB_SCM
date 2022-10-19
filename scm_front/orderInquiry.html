@@ -49,9 +49,9 @@
 								<label>발주일</label>
 							</li>
 							<li class="date">
-								<input type="text" class="datepicker" name="OrderDateFrom" v-model.trim="queryForm.OrderDateFrom" gx-datepicker="queryForm.OrderDateFrom" @update-date="updateDate">
+								<input type="text" class="datepicker" name="OrderDateFrom" v-model.trim="queryForm.OrderDateFrom" gx-datepicker="queryForm.OrderDateFrom">
 								<span>-</span>
-								<input type="text" class="datepicker" name="OrderDateTo" v-model.trim="queryForm.OrderDateTo" gx-datepicker="queryForm.OrderDateTo" @update-date="updateDate">
+								<input type="text" class="datepicker" name="OrderDateTo" v-model.trim="queryForm.OrderDateTo" gx-datepicker="queryForm.OrderDateTo">
 							</li>
 						</ul>
 		
@@ -60,6 +60,7 @@
 								<label>납품예정일</label>
 							</li>
 							<li class="date">
+								<input type="text" class="datepicker" name="DeliveryDateFrom" v-model.trim="queryForm.DeliveryDateFrom" gx-datepicker="queryForm.DeliveryDateFrom">
 								<input type="text" class="datepicker">
 								<span>-</span>
 								<input type="text" class="datepicker">
