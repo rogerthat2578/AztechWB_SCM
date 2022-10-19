@@ -79,7 +79,11 @@ button {
 .gx-calendar-buttons {
   display: flex;
   justify-content: space-between;
-  padding: 10px 6% 10px;
+  padding: 1%;
+  /* padding: 10px 6% 10px; */
+}
+.gx-calendar-buttons button {
+  padding: 0 10px;
 }
 
 .gx-calendar-years {

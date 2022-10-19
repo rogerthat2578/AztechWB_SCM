@@ -49,9 +49,9 @@
 								<label>발주일</label>
 							</li>
 							<li class="date">
-								<input type="text" class="datepicker">
+								<input type="text" class="datepicker" name="OrderDateFrom" v-model.trim="queryForm.OrderDateFrom" gx-datepicker="queryForm.OrderDateFrom" @update-date="updateDate">
 								<span>-</span>
-								<input type="text" class="datepicker">
+								<input type="text" class="datepicker" name="OrderDateTo" v-model.trim="queryForm.OrderDateTo" gx-datepicker="queryForm.OrderDateTo" @update-date="updateDate">
 							</li>
 						</ul>
 		
@@ -116,8 +116,9 @@
 						</ul>				
 					</div>
 				</div>
-				<button class="btn-hide mo" @click="hide()"></button>
+				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>
 			</div>
+
 			<div class="main-data-wrap">
 				<div class="btn-row">
 					<div>

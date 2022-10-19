@@ -2,10 +2,15 @@ let app = new Vue({
 	el: '#app',
 	data: {
 		leftMenu: GX._METHODS_.createLeftMenu(),
-		deptName: '',
-		userName: '',
+		deptName: GX.Cookie.get('DeptName'),
+		userName: GX.Cookie.get('UserName'),
 		params: GX.getParameters(),
-		rows: [],
+		/**
+         * rows.Query 조회 결과
+         */
+		 rows: {
+            Query: [],
+        },
 	},
     methods: {
         /**이벤트 처리 */
@@ -41,9 +46,6 @@ let app = new Vue({
 		if (!GX._METHODS_.isLogin()) location.replace('login');
         else {
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_finger.gif" alt=""></div>', 'prepend');
-			
-			vThis.deptName = GX.Cookie.get('DeptName');
-			vThis.userName = GX.Cookie.get('UserName');
 			
 			document.addEventListener('click', vThis.eventCheck, false);
         }
