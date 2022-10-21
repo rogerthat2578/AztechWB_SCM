@@ -11,6 +11,13 @@ let app = new Vue({
 		 rows: {
             Query: [],
         },
+		/**
+         * 조회 조건
+         */
+		 queryForm: {
+            CompanySeq: GX.Cookie.get('CompanySeq'),
+            BizUnit: '',
+        }
 	},
     methods: {
         /**이벤트 처리 */
@@ -22,6 +29,16 @@ let app = new Vue({
 			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block'
 				&& e.target.getAttribute('class') !== 'btn-menu') {
 				document.getElementsByClassName('left-menu')[0].style.display = 'none';
+			} 
+			
+			if (e.type === 'click' && e.target.getAttribute('data-tab') != null && e.target.getAttribute('data-tab').indexOf('info-') > -1) {
+				let tabId = e.target.getAttribute('data-tab');
+				
+				document.getElementsByClassName('info-tab click')[0].classList.remove('click');
+				document.getElementsByClassName('toggle-content click')[0].classList.remove('click');
+
+				e.target.classList.add('click');
+				document.getElementById(tabId).classList.add('click');
 			}
         },
 		/**우측상단 유저 정보 클릭 시 */

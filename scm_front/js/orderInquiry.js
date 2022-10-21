@@ -13,7 +13,6 @@ let app = new Vue({
         },
         /**
          * 조회 조건
-         * 
          */
         queryForm: {
             CompanySeq: GX.Cookie.get('CompanySeq'),
