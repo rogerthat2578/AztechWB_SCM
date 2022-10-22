@@ -35,11 +35,23 @@ let app = new Vue({
             let e = event;
             
 			// 메뉴 여닫는 버튼 클릭을 제외한 다른 영역 클릭 시 메뉴 닫기
-			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block'
-				&& e.target.getAttribute('class') !== 'btn-menu') {
+			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu') {
 				document.getElementsByClassName('left-menu')[0].style.display = 'none';
 			}
+
+            // 진행상태 select box
+			if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') === 'drop-box') {
+                document.getElementsByClassName('drop-box')[0].style.display = 'none';
+            }
         },
+        /**조회 조건의 진행상태 열기 */
+        openDropBox: function() {
+            let e = event;
+            if (e.target.nextElementSibling.style.display == 'none')
+                e.target.nextElementSibling.style.display = 'block';
+            else
+                e.target.nextElementSibling.style.display = 'none';
+        }
     },
     created() {
         let vThis = this;
