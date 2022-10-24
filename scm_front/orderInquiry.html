@@ -30,7 +30,7 @@
 					<img src="img/ic_01.png" alt="알림이미지">
 					<span class="alarm">12</span>
 				</div>
-				<div class="user-info web">
+				<div class="user-info web" @click="userInfoClick()">
 					<div class="frame">
 						<img src="img/user.png" alt="유저이미지">
 					</div>
@@ -72,9 +72,9 @@
 							</li>
 							<li>
 								<div class="select">
-									<input type="text" v-model="queryForm.ProcStatus" readonly>
+									<input type="text" class="drop-box-input" v-model="queryForm.ProcStatus" @click="openCloseDropBox" readonly>
 									<ul class="drop-box">
-										<li v-for="item in procStatusList">{{item}}</li>
+										<li v-for="item in procStatusList" @click="openCloseDropBox">{{item}}</li>
 									</ul>
 								</div>
 							</li>

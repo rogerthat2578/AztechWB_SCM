@@ -118,7 +118,7 @@ let app = new Vue({
         // PDA 처럼 따로 환경 설정하는 것 없이 바로 할 수 있도록
         for (let i in vThis.settingItems) {
             if(vThis.settingItems.hasOwnProperty(i)) {
-                if (GX.Storage.get('gx_' + i)) {
+                if (!GX.Storage.get('gx_' + i)) {
                     GX.Storage.set('gx_' + i, vThis.settingItems[i]);
                 }
             }
