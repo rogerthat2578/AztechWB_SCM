@@ -121,8 +121,32 @@ let app = new Vue({
                 }
             }
         },
+        selectAll: function () {
+            let obj = document.querySelectorAll('[name="RowCheck"]');
+            let isCheckList = [];
+            for (let i in obj) {
+                if (obj.hasOwnProperty(i)) {
+                    obj[i].checked = event.target.checked;
+                    if (event.target.checked) isCheckList.push(Number(i));
+                }
+            }
+            this.isCheckList = isCheckList;
+        },
+        initSelected: function () {
+            this.isCheckList = [];
+            let selAllObj = document.querySelector('thead [type="checkbox"]');
+            if (selAllObj != null) {
+                selAllObj.checked = true;
+                selAllObj.click();
+            }
+        },
         isChecked: function (index) {
             return (this.isCheckList.indexOf(index) != -1);
+        },
+        selectedMark: function (index) {
+            let idx = this.isCheckList.indexOf(index);
+            if (event.target.checked) this.isCheckList.push(index);
+            else if (idx != -1) this.isCheckList.splice(idx, 1);
         },
         /**조회 */
         search: function() {
@@ -175,13 +199,14 @@ let app = new Vue({
             GX.VueGrid
             .bodyRow(':class="{\'check\':isChecked(index)}"')
             .item('ROWNUM').head('No.', '')
-            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="" /></div>', '')
-                .body('<div class="chkBox"></div>', '')
+            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
+                .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
             .item('SMCurrStatusName').head('진행상태', '')
             .item('PODate').head('발주일', '')
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
+                .body('<div class="grid-in-div"><input type="text" name="DelvPlanDate" :value="row.DelvPlanDate" /></div>')
             .item('ItemNo').head('품번', '')
             .item('ItemName').head('품명', '')
             .item('Spec').head('규격', '')
