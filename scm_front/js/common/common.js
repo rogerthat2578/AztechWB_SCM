@@ -38,11 +38,11 @@ GX._DATAS_ = {
 		'2': { link: '', icon: '', pageName: '외주가공' },
 	},
 	pageUrls2:{
-		'1': { bindPageUrls1: '1', class: 'menu-01', link: 'orderInquiry', icon: 'img/ic_menu_01.png', pageName: '구매발주품목조회' },
-		'2': { bindPageUrls1: '1', class: 'menu-02', link: 'purchase_delivery_search', icon: 'img/ic_menu_02.png', pageName: '구매납품품목조회' },
-		'3': { bindPageUrls1: '2', class: 'menu-03', link: 'outsourcing_orderInquiry', icon: 'img/ic_menu_03.png', pageName: '외주발주품목조회' },
-		'4': { bindPageUrls1: '2', class: 'menu-04', link: 'outsourcing_purchase_delivery_search', icon: 'img/ic_menu_04.png', pageName: '외주납품품목조회' },
-		'5': { bindPageUrls1: '2', class: 'menu-05', link: 'production_progress_information', icon: 'img/ic_menu_05.png', pageName: '의류생산진행정보입력' },
+		'1': { bindPageUrls1: '1', class: 'menu-01', link: 'orderInquiry.html', icon: 'img/ic_menu_01.png', pageName: '구매발주품목조회' },
+		'2': { bindPageUrls1: '1', class: 'menu-02', link: 'purchase_delivery_search.html', icon: 'img/ic_menu_02.png', pageName: '구매납품품목조회' },
+		'3': { bindPageUrls1: '2', class: 'menu-03', link: 'outsourcing_orderInquiry.html', icon: 'img/ic_menu_03.png', pageName: '외주발주품목조회' },
+		'4': { bindPageUrls1: '2', class: 'menu-04', link: 'outsourcing_purchase_delivery_search.html', icon: 'img/ic_menu_04.png', pageName: '외주납품품목조회' },
+		'5': { bindPageUrls1: '2', class: 'menu-05', link: 'production_progress_information.html', icon: 'img/ic_menu_05.png', pageName: '의류생산진행정보입력' },
 	},
 };
 

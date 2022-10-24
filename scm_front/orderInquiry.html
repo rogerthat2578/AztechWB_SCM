@@ -20,7 +20,7 @@
 		<header>		
 			<div class="con">
 				<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
-				<a href="javascript:void(0)" onclick="location.replace('main')" class="web">
+				<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
 					<img src="img/logo.png" alt="로고이미지">
 				</a>
 				<span class="page-name">구매발주품목조회</span>
@@ -72,12 +72,9 @@
 							</li>
 							<li>
 								<div class="select">
-									<input type="text" @click="openDropBox" readonly>
-									<ul class="drop-box" style="display: none;">
-										<li>전체</li>
-										<li>진행중</li>
-										<li>작성</li>
-										<li>확정</li>
+									<input type="text" v-model="queryForm.ProcStatus" readonly>
+									<ul class="drop-box">
+										<li v-for="item in procStatusList">{{item}}</li>
 									</ul>
 								</div>
 							</li>

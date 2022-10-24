@@ -21,12 +21,15 @@ let app = new Vue({
             OrderDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             DeliveryDateFrom: '',
             DeliveryDateTo: '',
-            ProcStatus: '',
+            ProcStatus: '전체',
             PoNo: '',
             ItemNm: '',
             ItemNo: '',
             Spec: '',
-        }
+        },
+        procStatusList: [
+            '전체', '진행중', '작성', '확정'
+        ],
 	},
     methods: {
         /**이벤트 처리 */
@@ -34,20 +37,31 @@ let app = new Vue({
             let vThis = this;
             let e = event;
             
-			// 메뉴 여닫는 버튼 클릭을 제외한 다른 영역 클릭 시 메뉴 닫기
+            console.log('11111', document.getElementsByClassName('drop-box')[0].nextElementSibling.style.display)
+            console.log('2222222', e.target.nextElementSibling.getAttribute('class'))
+
 			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu') {
 				document.getElementsByClassName('left-menu')[0].style.display = 'none';
-			}
+			} else if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') !== 'drop-box') {
+                // document.getElementsByClassName('drop-box')[0].style.display = 'none';
+            }
 
-            // 진행상태 select box
-			if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') === 'drop-box') {
+            if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].nextElementSibling.style.display === 'block' && e.target.nextElementSibling.getAttribute('class') === 'drop-box') {
                 document.getElementsByClassName('drop-box')[0].style.display = 'none';
+            } else if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].nextElementSibling.style.display !== 'block' && e.target.nextElementSibling.getAttribute('class') === 'drop-box') {
+                document.getElementsByClassName('drop-box')[0].style.display = 'block';
+                //@click="openDropBox" 
+            } else if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.nodeName.toUpperCase() == 'LI') {
+                if (e.target.innerText && e.target.innerText != '') {
+                    vThis.queryForm.ProcStatus = e.target.innerText;
+                    document.getElementsByClassName('drop-box')[0].style.display = 'none'
+                }
             }
         },
         /**조회 조건의 진행상태 열기 */
         openDropBox: function() {
             let e = event;
-            if (e.target.nextElementSibling.style.display == 'none')
+            if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
                 e.target.nextElementSibling.style.display = 'block';
             else
                 e.target.nextElementSibling.style.display = 'none';
