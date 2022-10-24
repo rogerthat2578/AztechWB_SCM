@@ -78,6 +78,8 @@ let app = new Vue({
                         GX.Cookie.set('DeptName', data[0].DeptName, 1);
                         GX.Cookie.set('DeptSeq', data[0].DeptSeq, 1);
                         GX.Cookie.set('CompanySeq', vThis.companySeq, 1); // 법인코드
+                        GX.Cookie.set('CustSeq', data[0].CustSeq, 1); // 거래처코드
+				        GX.Cookie.set('CustKind', data[0].CustKind, 1); // 거래처타입
 
                         /* 사업단위 객체로 담기
                         ** 하나의 법인코드에 n개 존재할 수 있음
@@ -124,7 +126,7 @@ let app = new Vue({
             }
         }
 
-		if (GX._METHODS_.isLogin()) location.replace('main');
+		if (GX._METHODS_.isLogin()) location.replace('main.html');
         else {
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_finger.gif" alt=""></div>', 'prepend');
  
