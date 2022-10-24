@@ -5,79 +5,43 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>외주발주품목조회</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha512-uto9mlQzrs59VwILcLiRYeLKPPbS/bT71da/OEBYEwcdNUk8jYIy+D176RYoop1Da+f9mvkYrmj5MCLZWEtQuA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha512-aOG0c6nPNzGk+5zjwyJaoRUgCdOrfSDhmMID2u4+OIslr0GjpLKo7Xm0Ao3xmpM4T8AmIouRkqwj1nrdVsLKEQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="stylesheet" href="css/setup.css">
 	<link rel="stylesheet" href="css/scm_style.css">
+	<link rel="stylesheet" href="css/date_picker.css">
+	<style>
+		[v-cloak] {
+			display: none;
+		}
+	</style>
 </head>
+
 <body>
-	<header>		
-		<div class="con">
-			<button class="btn-menu" onclick="menu();"></button>
-			<a href="#" class="web">
-				<img src="img/logo.png" alt="로고이미지">
-			</a>
-			<span class="page-name">외주발주품목조회</span>
-		</div>
-		<div class="con">
-			<div class="cart">
-				<img src="img/ic_01.png" alt="알림이미지">
-				<span class="alarm">12</span>
+	<div v-cloak id="app">
+		<header>
+			<div class="con">
+				<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
+				<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
+					<img src="img/logo.png" alt="로고이미지">
+				</a>
+				<span class="page-name">외주발주품목조회</span>
 			</div>
-			<div class="user-info web">
-				<div class="frame">
-					<img src="img/user.png" alt="유저이미지">
+			<div class="con">
+				<div class="cart">
+					<img src="img/ic_01.png" alt="알림이미지">
+					<span class="alarm">12</span>
 				</div>
-				<p class="user-name">A업체 김납품</p>
+				<div class="user-info web" @click="userInfoClick()">
+					<div class="frame">
+						<img src="img/user.png" alt="유저이미지">
+					</div>
+					<p class="user-name" v-if="deptName !== ''">{{userName}}</p>
+					<p class="user-name" v-else>{{deptName}} {{userName}}</p>
+				</div>
 			</div>
-		</div>
-	</header>
-	<main>
-		<div class="left-menu">
-			<div class="list-bg"></div>
-			<div class="list-container">
-				<div class="menu-title">구매</div>
-				<ul class="list-wrap">
-					<li>
-						<a href="#">
-							<span class="list-img menu-01"></span>
-							<span>구매발주품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-02"></span>
-							<span>구매납품품목조회</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-			<div class="list-container">
-				<div class="menu-title">외주가공</div>
-				<ul class="list-wrap">
-					<li>
-						<a href="#">
-							<span class="list-img menu-03"></span>
-							<span>외주발주품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-04"></span>
-							<span>외주납품품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-05"></span>
-							<span>생산진행정보입력</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
-		<div class="top-data-wrap outsourcing">
+		</header>
+		<main>
+			<div class="left-menu" v-html="leftMenu"></div>
+			<div class="top-data-wrap">
 			<div class="data-row-wrap">
 				<div class="data-row">
 					<ul class="input-wrap">
@@ -85,46 +49,43 @@
 							<label>작업예정일</label>
 						</li>
 						<li class="date">
-							<input type="text" class="datepicker">
+							<input type="text" name="WorkDateFr" class="datepicker" v-model.trim="queryForm.WorkDateFr" gx-datepicker="queryForm.WorkDateFr" @change="updateDate">
 							<span>-</span>
-							<input type="text" class="datepicker">
+							<input type="text" name="WorkDateTo" class="datepicker" v-model.trim="queryForm.WorkDateTo" gx-datepicker="queryForm.WorkDateTo" @change="updateDate">
 						</li>
 					</ul>
-	
+
 					<ul class="input-wrap">
 						<li class="name">
 							<label>작업지시일</label>
 						</li>
 						<li class="date">
-							<input type="text" class="datepicker">
+							<input type="text" name="WorkOrderDateFr" class="datepicker" v-model.trim="queryForm.WorkOrderDateFr" gx-datepicker="queryForm.WorkOrderDateFr" @change="updateDate">
 							<span>-</span>
-							<input type="text" class="datepicker">
+							<input type="text" name="WorkOrderDateTo" class="datepicker" v-model.trim="queryForm.WorkOrderDateTo" gx-datepicker="queryForm.WorkOrderDateTo" @change="updateDate">
 						</li>
 					</ul>
-	
+
 					<ul class="input-wrap">
 						<li class="name">
 							<label>진행상태</label>
 						</li>
 						<li>
 							<div class="select">
-								<input type="text" readonly>
+								<input type="text" class="drop-box-input" v-model="queryForm.ProcStatus" @click="openCloseDropBox" readonly>
 								<ul class="drop-box">
-									<li>전체</li>
-									<li>진행중</li>
-									<li>작성</li>
-									<li>확정</li>
+									<li v-for="item in procStatusList" @click="openCloseDropBox">{{item}}</li>
 								</ul>
 							</div>
 						</li>
 					</ul>
-	
+
 					<ul class="input-wrap wid-350">
 						<li class="name">
 							<label>작업지시번호</label>
 						</li>
 						<li class="txt">
-							<input type="text">
+							<input type="text" name="WorkOrderNo" v-model="queryForm.WorkOrderNo">
 						</li>
 					</ul>
 				</div>
@@ -134,7 +95,7 @@
 							<label>품번</label>
 						</li>
 						<li class="txt">
-							<input type="text">
+							<input type="text" name="GoodItemName" v-model="queryForm.GoodItemName">
 						</li>
 					</ul>
 					<ul class="input-wrap">
@@ -142,7 +103,7 @@
 							<label>품명</label>
 						</li>
 						<li class="txt">
-							<input type="text">
+							<input type="text" name="GoodItemNo" v-model="queryForm.GoodItemNo">
 						</li>
 					</ul>
 					<ul class="input-wrap">
@@ -150,146 +111,107 @@
 							<label>규격</label>
 						</li>
 						<li class="txt">
-							<input type="text">
+							<input type="text" name="GoodItemSpec" v-model="queryForm.GoodItemSpec">
 						</li>
-					</ul>				
+					</ul>
 				</div>
 			</div>
 			<button class="btn-hide mo" onclick="hide();"></button>
-		</div>
-		<div class="main-data-wrap">
-			<div class="btn-row">
-				<div>
-					<button class="btn-stlye-01">
-						<img src="img/ic_04.png" alt="조회버튼이미지">
-						<span class="web">조회</span>
-					</button>
-	
-					<button class="btn-stlye-02">
-						<img src="img/ic_05.png" alt="납품등록버튼이미지">
-						<span>납품등록</span>
+			<div class="main-data-wrap">
+				<div class="btn-row">
+					<div>
+						<button class="btn-stlye-01">
+							<img src="img/ic_04.png" alt="조회버튼이미지">
+							<span class="web" id="btn-query">조회</span>
+						</button>
+
+						<button class="btn-stlye-02">
+							<img src="img/ic_05.png" alt="납품등록버튼이미지">
+							<span id="btn-jump_out_po_delv">납품등록</span>
+						</button>
+					</div>
+
+					<button class="btn-stlye-03">
+						<img src="img/ic_06.png" alt="저장버튼이미지">
+						<span id="btn-save">저장</span>
 					</button>
 				</div>
 
-				<button class="btn-stlye-03">
-					<img src="img/ic_06.png" alt="저장버튼이미지">
-					<span>저장</span>
-				</button>	
+				<div class="data-table">
+					<table>
+						<thead>
+							<tr>
+								<td>No.</td>
+								<td><input type="checkbox"></td>
+								<td>작업지시일</td>
+								<td>작업예정일</td>
+								<td>납품예정일</td>
+								<td>작업지시번호</td>
+								<td>진행상태</td>
+								<td>공정</td>
+								<td>품번</td>
+								<td>품명</td>
+								<td>규격</td>
+								<td>사이즈</td>
+								<td>지시수량</td>
+								<td>실적진행수량</td>
+								<td>미진행수량</td>
+								<td>생산수량</td>
+								<td>양품수량</td>
+								<td>불량수량</td>
+								<td>특이사항</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>1</td>
+								<td><input type="checkbox"></td>
+								<td>2022-06-01</td>
+								<td>2022-06-01</td>
+								<td class="no-data"></td>
+								<td>0123456789</td>
+								<td>진행중</td>
+								<td class="text-l">공정01</td>
+								<td class="text-l">2260132</td>
+								<td class="text-l">W/100 1/6</td>
+								<td class="text-l">YB106W</td>
+								<td class="text-l">사이즈</td>
+								<td class="text-r">100</td>
+								<td class="text-r">100</td>
+								<td class="text-r">100</td>
+								<td class="text-r">50</td>
+								<td class="text-r">50</td>
+								<td class="text-r">50</td>
+								<td></td>
+							</tr>
+							<tr class="click">
+								<td>2</td>
+								<td><input type="checkbox"></td>
+								<td>2022-06-01</td>
+								<td>2022-06-01</td>
+								<td class="no-data"></td>
+								<td>0123456789</td>
+								<td>진행중</td>
+								<td class="text-l">공정01</td>
+								<td class="text-l">2260132</td>
+								<td class="text-l">W/100 1/6</td>
+								<td class="text-l">YB106W</td>
+								<td class="text-l">사이즈</td>
+								<td class="text-r">100</td>
+								<td class="text-r">100</td>
+								<td class="text-r">100</td>
+								<td class="text-r">50</td>
+								<td class="text-r">50</td>
+								<td class="text-r">50</td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-
-			<div class="data-table">
-				<table>
-					<thead>
-						<tr>
-							<td>No.</td>
-							<td><input type="checkbox"></td>
-							<td>작업지시일</td>
-							<td>작업예정일</td>
-							<td>납품예정일</td>
-							<td>작업지시번호</td>
-							<td>진행상태</td>
-							<td>공정</td>
-							<td>품번</td>
-							<td>품명</td>
-							<td>규격</td>
-							<td>사이즈</td>
-							<td>지시수량</td>
-							<td>실적진행수량</td>
-							<td>미진행수량</td>
-							<td>생산수량</td>
-							<td>양품수량</td>
-							<td>불량수량</td>
-							<td>특이사항</td>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>1</td>
-							<td><input type="checkbox"></td>
-							<td>2022-06-01</td>
-							<td>2022-06-01</td>
-							<td class="no-data"></td>
-							<td>0123456789</td>
-							<td>진행중</td>
-							<td class="text-l">공정01</td>
-							<td class="text-l">2260132</td>
-							<td class="text-l">W/100 1/6</td>
-							<td class="text-l">YB106W</td>
-							<td class="text-l">사이즈</td>
-							<td class="text-r">100</td>
-							<td class="text-r">100</td>
-							<td class="text-r">100</td>
-							<td class="text-r">50</td>
-							<td class="text-r">50</td>
-							<td class="text-r">50</td>
-							<td></td>
-						</tr>
-						<tr class="click">
-							<td>2</td>
-							<td><input type="checkbox"></td>
-							<td>2022-06-01</td>
-							<td>2022-06-01</td>
-							<td class="no-data"></td>
-							<td>0123456789</td>
-							<td>진행중</td>
-							<td class="text-l">공정01</td>
-							<td class="text-l">2260132</td>
-							<td class="text-l">W/100 1/6</td>
-							<td class="text-l">YB106W</td>
-							<td class="text-l">사이즈</td>
-							<td class="text-r">100</td>
-							<td class="text-r">100</td>
-							<td class="text-r">100</td>
-							<td class="text-r">50</td>
-							<td class="text-r">50</td>
-							<td class="text-r">50</td>
-							<td></td>
-						</tr>
-					</tbody>
-				</table>
 			</div>
-		</div>
-		
-	</main>
+		</main>
+	</div>
+	<script src="js/common/app.js?v=1665537373142"></script>
 </body>
-<script>
-	$.datepicker.setDefaults({
-  dateFormat: 'yy-mm-dd',
-  prevText: '이전 달',
-  nextText: '다음 달',
-  monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-  monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-  dayNames: ['일', '월', '화', '수', '목', '금', '토'],
-  dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
-  dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
-  showMonthAfterYear: true,
-  yearSuffix: '년'
-});
-
-$(function () {
-  $('.datepicker').datepicker();
-});
-
-//메뉴
-function menu() {
-	if(document.getElementsByClassName('left-menu')[0].style.display === 'block') {
-		document.getElementsByClassName('left-menu')[0].style.display = 'none';
-	} else {
-		document.getElementsByClassName('left-menu')[0].style.display = 'block';
-	}
-}
-
-//hide 버튼(모바일에서만 사용)
-function hide() {
-	if(document.getElementsByClassName('data-row-wrap')[0].style.display === 'block') {
-		document.getElementsByClassName('data-row-wrap')[0].style.display = 'none';
-		document.getElementsByClassName('top-data-wrap')[0].style.paddingBottom = '5px';
-		document.getElementsByClassName('data-table')[0].style.height = '720px';
-	} else {
-		document.getElementsByClassName('data-row-wrap')[0].style.display = 'block';
-		document.getElementsByClassName('top-data-wrap')[0].style.paddingBottom = '20px';
-		document.getElementsByClassName('data-table')[0].style.height = '508px';
-	}
-}
-</script>
 </html>
