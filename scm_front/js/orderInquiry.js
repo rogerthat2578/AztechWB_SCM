@@ -16,7 +16,7 @@ let app = new Vue({
          * 조회 조건
          */
         queryForm: {
-            CompanySeq: '1',
+            CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
             PODateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             PODateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
@@ -38,6 +38,7 @@ let app = new Vue({
             Control: false,
             Q: false,
         },
+        isCheckList: [],
 	},
     methods: {
         /**이벤트 처리 */
@@ -120,18 +121,35 @@ let app = new Vue({
                 }
             }
         },
+        isChecked: function (index) {
+            return (this.isCheckList.indexOf(index) != -1);
+        },
         /**조회 */
         search: function() {
             let vThis = this; 
 
             let params = GX.deepCopy(vThis.queryForm);
 
-            console.log(params)
+            Object.keys(params).map((k) => {
+                if (k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1) {
+                    if (params[k].length > 0 && params[k].indexOf('-') > -1)
+                        params[k] = params[k].replace(/\-/g, '');
+                }
+            });
 
             GX._METHODS_
-            .setMethodId('')
+            .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
-                console.log(data)
+                if (data.length > 0) {
+                    for (let i in data) {
+                        if (data.hasOwnProperty(i))
+                            data[i].ROWNUM = parseInt(i) + 1;
+                    }
+                    console.log(data)
+                    vThis.rows.Query = data;
+                } else {
+                    alert('조회 결과가 없습니다.');
+                }
             }])
         },
     },
@@ -156,10 +174,9 @@ let app = new Vue({
 
             GX.VueGrid
             .bodyRow(':class="{\'check\':isChecked(index)}"')
-            .item('ROWNUM').head('번호', 'num')
-            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="" /></div>', '')
-            .body('<div class="chkBox"></div>', '')
             .item('ROWNUM').head('No.', '')
+            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="" /></div>', '')
+                .body('<div class="chkBox"></div>', '')
             .item('SMCurrStatusName').head('진행상태', '')
             .item('PODate').head('발주일', '')
             .item('PONo').head('발주번호', '')

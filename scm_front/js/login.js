@@ -45,28 +45,30 @@ let app = new Vue({
         chkCompany: function() {
             let vThis = this;
  
-            if (vThis.userId && vThis.userId != GX.Storage.get('gx_saveId')) {
-                GX._METHODS_
-                .setMethodId('LoginTest')
-                .ajax([{ QryType: 'IDCheck', UserId: vThis.userId }], [function (data) {
-                    vThis.rows.IDCheck = (data[0] != null && data[0].Result != null) ? [] : data;
-                    if (vThis.rows.IDCheck.length > 0) {
-                        vThis.companySeq = data[0].CompanySeq;
-                        GX.Storage.set('gx_anotherDsn', data[0].Dsn);
-                        if (vThis.isSaveId[0] === '1')
-                            GX.Storage.set('gx_saveId', vThis.userId);
-                    } else {
-                        vThis.companySeq = "";
-                        GX.Storage.set('gx_anotherDsn', '');
-                    }
-                }], true);
-            }
+            // if (vThis.userId && vThis.userId != GX.Storage.get('gx_saveId')) {
+            GX._METHODS_
+            .setMethodId('LoginTest')
+            .ajax([{ QryType: 'IDCheck', UserId: vThis.userId }], [function (data) {
+                vThis.rows.IDCheck = (data[0] != null && data[0].Result != null) ? [] : data;
+                if (vThis.rows.IDCheck.length > 0) {
+                    vThis.companySeq = data[0].CompanySeq;
+                    GX.Storage.set('gx_anotherDsn', data[0].Dsn);
+                    if (vThis.isSaveId[0] === '1')
+                        GX.Storage.set('gx_saveId', vThis.userId);
+                } else {
+                    vThis.companySeq = "";
+                    GX.Storage.set('gx_anotherDsn', '');
+                }
+            }], true);
+            // }
         },
         /**로그인 */
         login: function() {
             let vThis = this;
 
             if (vThis.userId && vThis.userPwd) {
+                vThis.chkCompany();
+
                 GX._METHODS_
                 .setMethodId('LoginTest')
                 .ajax([{ QryType: 'LoginCheck', CompansySeq: vThis.companySeq, UserId: vThis.userId, UserPwd: vThis.userPwd }], [function (data) {
