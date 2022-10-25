@@ -13,20 +13,13 @@ let app = new Vue({
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '',
-            WorkDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            WorkDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            WorkOrderDateFr: '',
-            WorkOrderDateTo: '',
-            ProcStatus: '전체',
+            DelvDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            DelvDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
             GoodItemSpec: ''
         },
-
-        procStatusList:[
-            '전체', '진행중', '작성', '확정'
-        ],
 
         keyCombi: {
             isKeyHold: false,
@@ -46,21 +39,6 @@ let app = new Vue({
                 if(document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
-
-                if(document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') !== 'drop-box-input'){
-                    document.getElementsByClassName('drop-box')[0].style.display = 'none';
-                }
-                /*
-                if(e.target.getAttribute('id') == 'btn-query'){
-                    vThis.search();
-                }
-                if(e.target.getAttribute('id') == 'btn-save'){
-                    vThis.save();
-                }
-                if(e.target.getAttribute('id') == 'btn-jump_out_po_delv'){
-                    vThis.jumpOutPoDelv();
-                }
-                */
             }
 
             // Key Event
@@ -101,21 +79,6 @@ let app = new Vue({
             }
         },
 
-        // 콤보박스
-        openCloseDropBox: function(){
-            let e = event;
-
-            if(e.target.nodeName.toUpperCase() === 'LI'){
-                this.queryForm.ProcStatus = e.target.innerText;
-                e.target.parentNode.style.display = 'none';
-            } else{
-                if(e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
-                    e.target.nextElementSibling.style.display = 'block';
-                else
-                    e.target.nextElementSibling.style.display = 'none';
-            }
-        },
-
         // DateBox 업데이트
         updateDate: function(v = '', o = null) {
             if (v && o) {
@@ -140,20 +103,6 @@ let app = new Vue({
             }
         },
 
-        // 전체 선택
-        selectAll: function(){
-            let obj = document.querySelectorAll('[name="RowCheck"]');
-            let isCheckList = [];
-            for (let i in obj) {
-                if (obj.hasOwnProperty(i)) {
-                    obj[i].checked = event.target.checked;
-                    if (event.target.checked) isCheckList.push(Number(i));
-                }
-            }
-            this.isCheckList = isCheckList;
-        },
-
-        // 조회
         search: function(){
             let vThis = this;
 
@@ -180,16 +129,6 @@ let app = new Vue({
                         alert('조회 결과가 없습니다.');
                     }
                 }])
-        },
-
-        // 저장
-        save: function(){
-            console.log("저장 실행");
-        },
-
-        // 납품등록 점프
-        jumpOutPoDelv: function(){
-            console.log("납품등록 점프 실행");
         }
     },
 
@@ -204,32 +143,49 @@ let app = new Vue({
             document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
-
             GX.VueGrid
                 .bodyRow(':class="{\'check\':isChecked(index)}"')
                 .item('ROWNUM').head('No.', '')
-                .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMart(index);"/></div>', '')
-                .item('WorkOrderDate').head('작업지시일', '')
-                .item('WorkDate').head('작업예정일', '')
-                .item('DelvPlanDate').head('납품예정일', '')
+                .item('WorkDate').head('작업일', '')
                 .item('WorkOrderNo').head('작업지시번호', '')
-                .item('ProgStatusName').head('진행상태', '')
-                .item('ProcName').head('공정', '')
                 .item('GoodItemName').head('제품명', '')
                 .item('GoodItemNo').head('제품번호', '')
                 .item('GoodItemSpec').head('제품규격', '')
-                .item('SizeName').head('사이즈', '')
-                .item('OrderQty').head('지시수량', '')
-                .item('ProgressQty').head('실적진행수량', '')
-                .item('NonProgressQty').head('미진행수량', '')
+                .item('ProcName').head('공정', '')
+                .item('ProdUnitName').head('단위', '')
                 .item('ProdQty').head('생산수량', '')
                 .item('OKQty').head('양품수량', '')
                 .item('BadQty').head('불량수량', '')
-                .item('Remark').head('특이사항', '')
-                //.item('WorkOrderSeq').head('', '')
-                //.item('WorkOrderSerl').head('', '')
+                .item('IsVAT').head('부가세포함', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" @click="selectedMart(index);"/></div>')
+                .item('OSPCurAmt').head('금액', '')
+                .item('OSPCurVAT').head('부가세', '')
+                .item('OSPTotCurAmt').head('금액계', '')
+                .item('CurrName').head('통화', '')
+                .item('ExRate').head('환율', '')
+                .item('OSPDomPrice').head('원화단가', '')
+                .item('OSPDomAmt').head('원화금액', '')
+                .item('OSPDomVAT').head('원화부가세', '')
+                .item('OSPTotDomAmt').head('원화금액계', '')
+                .item('SizeText').head('필번', '')
+                .item('AssyItemName').head('공정품명', '')
+                .item('AssyItemNo').head('공정품번', '')
+                .item('AssyItemSpec').head('공정품규격', '')
+                .item('IsLastProc').head('최종공정여부', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" @click="selectedMart(index);"/></div>')
+                .item('IsMatInput').head('자재투입여부', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" @click="selectedMart(index);"/></div>')
+                .item('IsGoodIn').head('입고여부', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" @click="selectedMart(index);"/></div>')
+                .item('Weight').head('중량', '')
+                .item('RealLotNo').head('LotNo', '')
+                .item('Width').head('폭', '')
+                .item('Density').head('밀도', '')
+                .item('IsAccident').head('사고지유무', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" @click="selectedMart(index);"/></div>')
                 .loadTemplate('#grid', 'rows.Query');
+
+            // 참고화면 : FrmWPDSFCWorkReport_03_KNIC
         }
     },
 
@@ -237,16 +193,16 @@ let app = new Vue({
         let vThis = this;
 
         GX.Calendar.datePicker('gx-datepicker', {
-           height: '400px',
-           monthSelectWidth: '25%',
-           callback: function(result, attribute){
-               const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
-               const info = GX.Calendar.dateFormatInfo(openerObj);
-               let keys = attribute.split('.');
-               if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-               else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-               else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-           }
+            height: '400px',
+            monthSelectWidth: '25%',
+            callback: function(result, attribute){
+                const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
+                const info = GX.Calendar.dateFormatInfo(openerObj);
+                let keys = attribute.split('.');
+                if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
+                else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
+                else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
+            }
         });
     }
 });
