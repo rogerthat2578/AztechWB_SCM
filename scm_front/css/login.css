@@ -105,7 +105,7 @@
     font-size: 24px;
 }
 .loading-wrap img {
-    width: 40%;
+    width: 10vh;
 }
 
 @media (max-width: 912px) {

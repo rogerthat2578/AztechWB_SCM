@@ -771,166 +771,170 @@ GX = {
 		//console.log(event.target.value.test(/^\d{1,4}[^\d]*\d{1,2}[^\d]*\d{1,2}[^\d]*/))
 		let result = true;
 		let word = '';
-
+  
 		let eventKey = (event.key == null || event.key == 'Unidentified') ? '' : event.key;
-
-		if (['F1', 'F4', 'F5', 'Shift', 'Control', 'Enter', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(eventKey) != -1) result = false;
-		else if (['Backspace'].indexOf(eventKey) != -1) result = false;
+  
+		if (['F1', 'F4', 'F5', 'Shift', 'Control', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(eventKey) != -1) result = false;
+		else if (['Backspace', 'Home', 'End'].indexOf(eventKey) != -1) result = false;
 		else if (eventKey == 'Process') event.target.setAttribute('readonly', 'readonly');
-		else {
-			const info = GX.Calendar.dateFormatInfo(event.target);
-			const delimiterPattern = (info.delimiter.length > 0) ? '\\' + info.delimiter : '';
-			let patterns = {};
-			patterns.char_0 = new RegExp('[\\d' + delimiterPattern + ']');//0
-			patterns.char_1 = new RegExp('^[01]$');//8
-			patterns.char_2 = new RegExp('^[0123]$');//8
-
-			patterns.text_0 = new RegExp('^[1-9]\\d{0,3}$');
-			patterns.text_1 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '$');
-			patterns.text_2 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '[01]$');
-			patterns.text_3 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])$');
-			patterns.text_4 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '$');
-			patterns.text_5 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '[0123]$');
-			patterns.text_6 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '(0[1-9]|[12][0-9]|3[01])$');
-
-			word = eventKey;
-
-			if (word.length > 0 && patterns.char_0.test(word)) {
-				if (word.length == 0) result = false;
-				else {
-					word = event.target.value + word;
-					//console.log(info);
-					if (info.delimiter.length == 0) {
-						if (word.length <= 4) {
-							if (patterns.text_0.test(word)) result = false;
-						}
-						else if (word.length == 5) {
-							if (patterns.text_2.test(word)) result = false;
-						}
-						else if (word.length == 6) {
-							if (patterns.text_3.test(word)) result = false;
-						}
-						else if (word.length == 7) {
-							if (patterns.text_5.test(word)) result = false;
-						}
-						else if (word.length == 8) {
-							if (patterns.text_6.test(word)) {
-								let matches = word.match(/^(\d{4})(\d{2})(\d{2})$/);
-								let part = [];
-								part[0] = matches[1];
-								part[1] = GX.zeroFill(Number(matches[2]), 1);
-								part[2] = GX.zeroFill(Number(matches[3]), 1);
-								let checkDateStr = part.join('-');
-								if (GX.formatDate(checkDateStr, 'Y-M-D') == checkDateStr) result = false;
-							}
-						}
-
-					}
-					else if (info.delimiter.length == 1) {
-						if (word.length <= 4) {
-							if (patterns.text_0.test(word)) result = false;
-						}
-						else if (word.length == 5) {
-							if (patterns.text_1.test(word)) result = false;
-							else if (patterns.char_1.test(eventKey)) {
-								result = false;
-								event.target.value = event.target.value + info.delimiter;
-							}
-						}
-						else if (word.length == 6) {
-							if (patterns.text_2.test(word)) result = false;
-						}
-						else if (word.length == 7) {
-							if (patterns.text_3.test(word)) result = false;
-						}
-						else if (word.length == 8) {
-							if (patterns.text_4.test(word)) result = false;
-							else if (patterns.char_2.test(eventKey)) {
-								result = false;
-								event.target.value = event.target.value + info.delimiter;
-							}
-						}
-						else if (word.length == 9) {
-							if (patterns.text_5.test(word)) result = false;
-						}
-						else if (word.length == 10) {
-							if (patterns.text_6.test(word)) {
-								let part = word.split(info.delimiter);
-								//part[0] = String(Number(part[0]));
-								//if(part[0].length <= 2) part[0] = '19' + part[0];
-								part[1] = GX.zeroFill(Number(part[1]), 1);
-								part[2] = GX.zeroFill(Number(part[2]), 1);
-								console.log(GX.formatDate(word, info.format))
-								if (GX.formatDate(word, info.format) == part.join(info.delimiter)) result = false;
-							}
-						}
-
-
-					}
-
-				}
-
-			}
-
-			/*
-			if(word.length > 0 && /[\d\-]/.test(word)){
-				
-				if(word.length == 0) result = false;
-				else {
-					word = event.target.value + word;
-					if(word.length <= 4){
-						if(/^[1-9]\d{0,3}$/.test(word)) result = false;
-					}
-					else if(word.length == 5){
-						if(/^[1-9]\d{0,3}\-$/.test(word)) result = false;
-						else if(/[\d\-]/.test(event.key)){
-							result = false;
-							event.target.value = event.target.value + '-';
-						}
-					}
-					else if(word.length == 6){
-						if(/^[1-9]\d{0,3}\-[01]$/.test(word)) result = false;
-					}
-					else if(word.length == 7){
-						if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])$/.test(word)) result = false;
-					}
-					else if(word.length == 8){
-						if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-$/.test(word)) result = false;
-						else if(/[\d\-]/.test(event.key)){
-							result = false;
-							event.target.value = event.target.value + '-';
-						}
-					}
-					else if(word.length == 9){
-						if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-[0123]$/.test(word)) result = false;
-					}
-					else if(word.length == 10){
-						if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(word)){
-							let part = word.split('-');
-							//part[0] = String(Number(part[0]));
-							//if(part[0].length <= 2) part[0] = '19' + part[0];
-							part[1] = GX.zeroFill(Number(part[1]), 1);
-							part[2] = GX.zeroFill(Number(part[2]), 1);
-							console.log(GX.formatDate(word, 'Y-M-D'))
-							if(GX.formatDate(word, 'Y-M-D') == part.join('-')) result = false;
-						}
-					}
-				}
-			}*/
+		else if (['Enter'].indexOf(eventKey) != -1){
+		   let tmpInputDate = event.target.value.replace(/\-/g, '');
+		   result = false;
 		}
-
+		else {
+		   const info = GX.Calendar.dateFormatInfo(event.target);
+		   const delimiterPattern = (info.delimiter.length > 0) ? '\\' + info.delimiter : '';
+		   let patterns = {};
+		   patterns.char_0 = new RegExp('[\\d' + delimiterPattern + ']');//0
+		   patterns.char_1 = new RegExp('^[01]$');//8
+		   patterns.char_2 = new RegExp('^[0123]$');//8
+  
+		   patterns.text_0 = new RegExp('^[1-9]\\d{0,3}$');
+		   patterns.text_1 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '$');
+		   patterns.text_2 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '[01]$');
+		   patterns.text_3 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])$');
+		   patterns.text_4 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '$');
+		   patterns.text_5 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '[0123]$');
+		   patterns.text_6 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '(0[1-9]|[12][0-9]|3[01])$');
+  
+		   word = eventKey;
+  
+		   if (word.length > 0 && patterns.char_0.test(word)) {
+			  if (word.length == 0) result = false;
+			  else {
+				 word = event.target.value + word;
+				 //console.log(info);
+				 if (info.delimiter.length == 0) {
+					if (word.length <= 4) {
+					   if (patterns.text_0.test(word)) result = false;
+					}
+					else if (word.length == 5) {
+					   if (patterns.text_2.test(word)) result = false;
+					}
+					else if (word.length == 6) {
+					   if (patterns.text_3.test(word)) result = false;
+					}
+					else if (word.length == 7) {
+					   if (patterns.text_5.test(word)) result = false;
+					}
+					else if (word.length == 8) {
+					   if (patterns.text_6.test(word)) {
+						  let matches = word.match(/^(\d{4})(\d{2})(\d{2})$/);
+						  let part = [];
+						  part[0] = matches[1];
+						  part[1] = GX.zeroFill(Number(matches[2]), 1);
+						  part[2] = GX.zeroFill(Number(matches[3]), 1);
+						  let checkDateStr = part.join('-');
+						  if (GX.formatDate(checkDateStr, 'Y-M-D') == checkDateStr) result = false;
+					   }
+					}
+  
+				 }
+				 else if (info.delimiter.length == 1) {
+					if (word.length <= 4) {
+					   if (patterns.text_0.test(word)) result = false;
+					}
+					else if (word.length == 5) {
+					   if (patterns.text_1.test(word)) result = false;
+					   else if (patterns.char_1.test(eventKey)) {
+						  result = false;
+						  event.target.value = event.target.value + info.delimiter;
+					   }
+					}
+					else if (word.length == 6) {
+					   if (patterns.text_2.test(word)) result = false;
+					}
+					else if (word.length == 7) {
+					   if (patterns.text_3.test(word)) result = false;
+					}
+					else if (word.length == 8) {
+					   if (patterns.text_4.test(word)) result = false;
+					   else if (patterns.char_2.test(eventKey)) {
+						  result = false;
+						  event.target.value = event.target.value + info.delimiter;
+					   }
+					}
+					else if (word.length == 9) {
+					   if (patterns.text_5.test(word)) result = false;
+					}
+					else if (word.length == 10) {
+					   if (patterns.text_6.test(word)) {
+						  let part = word.split(info.delimiter);
+						  //part[0] = String(Number(part[0]));
+						  //if(part[0].length <= 2) part[0] = '19' + part[0];
+						  part[1] = GX.zeroFill(Number(part[1]), 1);
+						  part[2] = GX.zeroFill(Number(part[2]), 1);
+						  console.log(GX.formatDate(word, info.format))
+						  if (GX.formatDate(word, info.format) == part.join(info.delimiter)) result = false;
+					   }
+					}
+  
+  
+				 }
+  
+			  }
+  
+		   }
+  
+		   /*
+		   if(word.length > 0 && /[\d\-]/.test(word)){
+			  
+			  if(word.length == 0) result = false;
+			  else {
+				 word = event.target.value + word;
+				 if(word.length <= 4){
+					if(/^[1-9]\d{0,3}$/.test(word)) result = false;
+				 }
+				 else if(word.length == 5){
+					if(/^[1-9]\d{0,3}\-$/.test(word)) result = false;
+					else if(/[\d\-]/.test(event.key)){
+					   result = false;
+					   event.target.value = event.target.value + '-';
+					}
+				 }
+				 else if(word.length == 6){
+					if(/^[1-9]\d{0,3}\-[01]$/.test(word)) result = false;
+				 }
+				 else if(word.length == 7){
+					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])$/.test(word)) result = false;
+				 }
+				 else if(word.length == 8){
+					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-$/.test(word)) result = false;
+					else if(/[\d\-]/.test(event.key)){
+					   result = false;
+					   event.target.value = event.target.value + '-';
+					}
+				 }
+				 else if(word.length == 9){
+					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-[0123]$/.test(word)) result = false;
+				 }
+				 else if(word.length == 10){
+					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(word)){
+					   let part = word.split('-');
+					   //part[0] = String(Number(part[0]));
+					   //if(part[0].length <= 2) part[0] = '19' + part[0];
+					   part[1] = GX.zeroFill(Number(part[1]), 1);
+					   part[2] = GX.zeroFill(Number(part[2]), 1);
+					   console.log(GX.formatDate(word, 'Y-M-D'))
+					   if(GX.formatDate(word, 'Y-M-D') == part.join('-')) result = false;
+					}
+				 }
+			  }
+		   }*/
+		}
+  
 		if (result) {
-			// if(isPass){
-			// 	event.target.value = event.target.value + eventKey;
-			// 	event.target.setAttribute('readonly', 'readonly');
-			// }
-			// else event.preventDefault();
-
-			event.preventDefault();
+		   // if(isPass){
+		   //    event.target.value = event.target.value + eventKey;
+		   //    event.target.setAttribute('readonly', 'readonly');
+		   // }
+		   // else event.preventDefault();
+  
+		   event.preventDefault();
 		}
 		//alert(event.target.temp +'='+ event.target.value);
-
-	},
+  
+	 },
 	inputTypeDateEventAfterHandler: function () {
 		//alert(event.type)
 		//if(event.target.hasAttribute('readonly')) event.target.removeAttribute('readonly');
