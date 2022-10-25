@@ -39,10 +39,6 @@ let app = new Vue({
                 if(document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
-
-                if(document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') !== 'drop-box-input'){
-                    document.getElementsByClassName('drop-box')[0].style.display = 'none';
-                }
             }
 
             // Key Event
