@@ -8,11 +8,11 @@ let app = new Vue({
         BizUnitList: [], // 사업 단위 리스트
         /**
          * rows.Query 조회 결과
-         * rows.QuerySummary 조회 결과 합계
+         * rows.QuerySummary 조회 결과 합계 Object
          */
 		rows: {
             Query: [],
-            QuerySummary: [],
+            QuerySummary: {},
         },
         /**
          * 조회 조건
@@ -173,7 +173,7 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if (data.length > 0) {
                     // data for loop
-                    let sumQty, sumCurAmt, sumCurVAT, sumTotCurAmt, sumRemainQty, sumDelvQty, sumDelvCurAmt = 0;
+                    let sumQty = 0, sumCurAmt = 0, sumCurVAT = 0, sumTotCurAmt = 0, sumRemainQty = 0, sumDelvQty = 0, sumDelvCurAmt = 0;
                     let noDataIndex = [];
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
@@ -186,35 +186,45 @@ let app = new Vue({
                                 data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
                                 noDataIndex.push(i);
                             }
-                            sumQty += parseFloat(data[i].Qty)
-                            sumCurAmt += parseFloat(data[i].CurAmt)
-                            sumCurVAT += parseFloat(data[i].CurVAT)
-                            sumTotCurAmt += parseFloat(data[i].TotCurAmt)
-                            sumRemainQty += parseFloat(data[i].RemainQty)
-                            sumDelvQty += parseFloat(data[i].DelvQty)
-                            sumDelvCurAmt += parseFloat(data[i].DelvCurAmt)
+                            sumQty += !isNaN(data[i].Qty) ? parseFloat(data[i].Qty) : 0;
+                            sumCurAmt += !isNaN(data[i].CurAmt) ? parseFloat(data[i].CurAmt) : 0;
+                            sumCurVAT += !isNaN(data[i].CurVAT) ? parseFloat(data[i].CurVAT) : 0;
+                            sumTotCurAmt += !isNaN(data[i].TotCurAmt) ? parseFloat(data[i].TotCurAmt) : 0;
+                            sumRemainQty += !isNaN(data[i].RemainQty) ? parseFloat(data[i].RemainQty) : 0;
+                            sumDelvQty += !isNaN(data[i].DelvQty) ? parseFloat(data[i].DelvQty) : 0;
+                            sumDelvCurAmt += !isNaN(data[i].DelvCurAmt) ? parseFloat(data[i].DelvCurAmt) : 0;
                         }
                     }
                     // bind data
                     vThis.rows.Query = data;
+                    // summary data
+                    vThis.rows.QuerySummary.Qty = sumQty;
+                    vThis.rows.QuerySummary.CurAmt = sumCurAmt;
+                    vThis.rows.QuerySummary.CurVAT = sumCurVAT;
+                    vThis.rows.QuerySummary.TotCurAmt = sumTotCurAmt;
+                    vThis.rows.QuerySummary.RemainQty = sumRemainQty;
+                    vThis.rows.QuerySummary.DelvQty = sumDelvQty;
+                    vThis.rows.QuerySummary.DelvCurAmt = sumDelvCurAmt;
 
                     /**DOM에 아직 그리드가 다 그려지지 않음... setTimeOut 그냥 쓸까..? */
                     // element for loop
-                    // if (noDataIndex.length > 0) {
-                    //     for (let i in noDataIndex) {
-                    //         if (noDataIndex.hasOwnProperty(i)) {
-                    //             setTimeout(() => {
-                    //                 console.log('DDDDDDDDDDDD ',document.getElementsByName('DelvPlanDate')[i])
-                    //             },10)
-                    //             console.log('TTTTTTTTTTT ',document.getElementsByName('DelvPlanDate')[i])
-                    //             // document.getElementsByName('DelvPlanDate')[i].parentNode.parentNode.classList.add('no-data')
-                    //         }
-                    //     }
-                    // }
+                    if (noDataIndex.length > 0) {
+                        setTimeout(() => {
+                            for (let i in noDataIndex) {
+                                if (noDataIndex.hasOwnProperty(i)) {
+                                    document.getElementsByName('DelvPlanDate')[i].parentNode.parentNode.classList.add('no-data');
+                                }
+                            }
+                            
+                        }, 20);
+                    }
                 } else {
                     alert('조회 결과가 없습니다.');
                 }
             }])
+        },
+        save: function() {
+            
         },
     },
     created() {
@@ -246,7 +256,7 @@ let app = new Vue({
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; background: transparent;" /></div>')
+                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
             .item('ItemName').head('품명', '').body(null, 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
