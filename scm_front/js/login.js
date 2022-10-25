@@ -130,7 +130,7 @@ let app = new Vue({
 
 		if (GX._METHODS_.isLogin()) location.replace('main.html');
         else {
-            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_finger.gif" alt=""></div>', 'prepend');
+            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
  
             if (GX.Storage.get('gx_saveId') != null && GX.Storage.get('gx_saveId').length > 0) {
 				vThis.isSaveId = [1];

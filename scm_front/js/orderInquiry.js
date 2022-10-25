@@ -151,7 +151,7 @@ let app = new Vue({
         },
         applyAll: function (name, idx) {
             event.target.setAttribute('gx-datepicker', idx);
-            GX.Calendar.open(name);
+            GX.Calendar.openInRow(name, { useYN: true, idx: idx });
         },
         /**조회 */
         search: function() {
@@ -190,7 +190,7 @@ let app = new Vue({
 
 		if (!GX._METHODS_.isLogin()) location.replace('login');
         else {
-            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_finger.gif" alt=""></div>', 'prepend');
+            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
 			document.addEventListener('click', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
@@ -243,7 +243,6 @@ let app = new Vue({
             height: '400px',
             monthSelectWidth: '25%',
             callback: function (result, attribute) {
-                console.log(attribute, result)
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                 } else {
