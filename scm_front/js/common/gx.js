@@ -941,6 +941,7 @@ GX = {
 		yearRange: { begin: 0, end: 0 },
 		calendarObj: null,
 		openerName: '',
+		objOpenInRow: { useYN: false, idx: 0 },
 		config: {
 			width: '340px',
 			height: '390px',
@@ -1138,7 +1139,12 @@ GX = {
 				metrics.push(this.cell('', this.weekendNames[i].name, this.weekendNames[i].color, ''));
 			}
 
-			const openerObj = document.querySelector('[name="' + this.openerName + '"]');
+			let temp;
+			if (this.objOpenInRow && this.objOpenInRow.useYN)
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			else
+				temp = document.querySelector('[name="' + this.openerName + '"]');
+			const openerObj = temp;
 			let inputDate = (openerObj != null) ? openerObj.value : '';
 
 			const parseDate = this.parseNowDate(inputDate);
@@ -1217,7 +1223,12 @@ GX = {
 			this.offset();
 		},
 		selectDay: function (date) {
-			const openerObj = document.querySelector('[name="' + this.openerName + '"]');
+			let temp;
+			if (this.objOpenInRow && this.objOpenInRow.useYN)
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			else
+				temp = document.querySelector('[name="' + this.openerName + '"]');
+			const openerObj = temp;
 			const info = GX.Calendar.dateFormatInfo(openerObj);
 			openerObj.value = (date.length == 0) ? date : GX.formatDate(date, info.format);//date;
 
@@ -1322,7 +1333,13 @@ GX = {
 			let vThis = this;
 			window.onclick = function () {
 				//console.log('this.isInClick', vThis.isInClick, event.target.hasAttribute(calendarId))
-				if (!event.target.hasAttribute(calendarId) && !vThis.isInClick && event.target != document.querySelector('[name="' + vThis.openerName + '"]') && event.target.closest('#' + calendarName) == null) {
+				let temp;
+				if (this.objOpenInRow && this.objOpenInRow.useYN)
+					temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+				else
+					temp = document.querySelector('[name="' + this.openerName + '"]');
+				const openerObj = temp;
+				if (!event.target.hasAttribute(calendarId) && !vThis.isInClick && event.target != temp && event.target.closest('#' + calendarName) == null) {
 					vThis.hide();
 				}
 				vThis.isInClick = false;
@@ -1331,7 +1348,12 @@ GX = {
 			return this;
 		},
 		getLoadYearMonth: function () {
-			const openerObj = document.querySelector('[name="' + this.openerName + '"]');
+			let temp;
+			if (this.objOpenInRow && this.objOpenInRow.useYN)
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			else
+				temp = document.querySelector('[name="' + this.openerName + '"]');
+			const openerObj = temp;
 			const inputDate = (openerObj != null) ? openerObj.value : '';
 			const matches = inputDate.match(/^(\d{4,})[^\d]*(\d{2,2})[^\d]*(\d{2,2})[^\d]*$/);
 			let result = {};
@@ -1388,8 +1410,12 @@ GX = {
 		},
 		offset: function () {
 			if (parseFloat(document.body.offsetWidth) > 420) {
-				const openerObj = document.querySelector('[name="' + this.openerName + '"]');
-
+				let temp;
+				if (this.objOpenInRow && this.objOpenInRow.useYN)
+					temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+				else
+					temp = document.querySelector('[name="' + this.openerName + '"]');
+				const openerObj = temp;
 
 				let openerTop = parseFloat(openerObj.offsetTop);
 				let openerLeft = parseFloat(openerObj.offsetLeft);
@@ -1428,7 +1454,13 @@ GX = {
 		},
 
 		setMode: function (mode) {
-			if (this.openerName != null && this.openerName.length > 0) document.querySelector('[name="' + this.openerName + '"]').setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
+			if (this.objOpenInRow && this.objOpenInRow.useYN) {
+				if (this.openerName != null && this.openerName.length > 0)
+					document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx].setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
+			} else {
+				if (this.openerName != null && this.openerName.length > 0)
+					document.querySelector('[name="' + this.openerName + '"]').setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
+			}
 		},
 		selectMode: function () {
 			this.setMode('none'); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
@@ -1436,7 +1468,13 @@ GX = {
 		directMode: function () {
 			this.setMode(''); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
 			this.close();
-			document.querySelector('[name="' + this.openerName + '"]').focus();
+			let temp;
+			if (this.objOpenInRow && this.objOpenInRow.useYN)
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			else
+				temp = document.querySelector('[name="' + this.openerName + '"]');
+			const openerObj = temp;
+			openerObj.focus();
 		},
 		open: function (name) {
 			if (this.openerName != name || !this.isVisible()) {
@@ -1453,10 +1491,27 @@ GX = {
 			}
 			else if (this.openerName == name) this.close();
 		},
+		openInRow: function (name, attrOpenInRow) {
+			if (this.openerName != name || !this.isVisible()) {
+				this.viewType = 'd';
+
+				this.openerName = name;
+				this.objOpenInRow = attrOpenInRow;
+				this.selectMode();
+
+				let loadYearMonth = this.getLoadYearMonth();
+				this.set(loadYearMonth.y, loadYearMonth.m);
+				this.offset();
+				this.show();
+				document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx].blur();// 모바일 문제로 커서가 달력을 가리는 문제로 추가
+			}
+			else if (this.openerName == name) this.close();
+		},
 		close: function () {
 			this.hide();
 			this.viewType = 'd';
 			this.changeViewType(true);
+			console.log('231312')
 		},
 		isVisible: function () {
 			return GX.isShowElement(this.calendarObj);
