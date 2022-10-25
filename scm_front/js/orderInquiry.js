@@ -29,7 +29,6 @@ let app = new Vue({
             ItemNm: '',
             ItemNo: '',
             Spec: '',
-            test: '',
         },
         procStatusList: [
             '전체', '진행중', '작성', '확정'
@@ -60,13 +59,18 @@ let app = new Vue({
             if (e.type === 'keyup') {
                 if (e.key.toLowerCase() === 'control') {
                     vThis.keyCombi.Control = true;
+                    setTimeout(() => {
+                        if (vThis.keyCombi.Control) vThis.keyCombi.Control = false;
+                    }, 1000)
                 } else if (e.key.toLowerCase() === 'q') {
                     vThis.keyCombi.Q = true;
+                    setTimeout(() => {
+                        if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
+                    }, 1000)
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
-                    console.log('조회 실행')
-                }
+                if (vThis.keyCombi.Control && vThis.keyCombi.Q)
+                    vThis.search(vThis.initKeyCombi);
             }
         },
         /**우측상단 유저 정보 클릭 시 */
@@ -100,7 +104,7 @@ let app = new Vue({
         },
         /**날짜 번경 후처리
          * v: 날짜
-         * o: 날짜 input 엘러먼트
+         * o: 날짜 input 엘리먼트
          */
         updateDate: function(v = '', o = null) {
             if (v && o) {
@@ -124,18 +128,40 @@ let app = new Vue({
                 }
             }
         },
-        /**날짜 번경 후처리
-         * v: 날짜
-         * i: 행 index
+        /**
+         * 
          */
-        updateDateRows: function(v = '', i = null) {
+        updateRowDelvPlanDate: function (idx = null) {
+            let evtTarget = event.target;
+            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
+                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
+                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
+                this.rows.Query[idx].RowEdit = true;
+                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+            }
+        },
+        init: function () {
             let vThis = this;
-            let e = event;
-console.log('v', v)
-            // console.log(vThis.rows.Query[i].DelvPlanDate)
-            // if (i != null && i >= 0) {
-                // vThis.rows.Query[i].DelvPlanDate = 
-            // }
+            vThis.initKeyCombi();
+            vThis.initSelected();
+            vThis.rows.Query = [];
+            vThis.rows.QuerySummary = {};
+            vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
+            vThis.queryForm.BizUnit = '1';
+            vThis.queryForm.PODateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.PODateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.DelvPlanDateFr = '';
+            vThis.queryForm.DelvPlanDateTo = '';
+            vThis.queryForm.ProcStatus = '전체';
+            vThis.queryForm.PoNo = '';
+            vThis.queryForm.ItemNm = '';
+            vThis.queryForm.ItemNo = '';
+            vThis.queryForm.Spec = '';
+        },
+        initKeyCombi: function () {
+            Object.keys(this.keyCombi).map(k => {
+                this.keyCombi[k] = false;
+            });
         },
         selectAll: function () {
             let obj = document.querySelectorAll('[name="RowCheck"]');
@@ -169,7 +195,7 @@ console.log('v', v)
             GX.Calendar.openInRow(name, { useYN: true, idx: idx });
         },
         /**조회 */
-        search: function() {
+        search: function(callback) {
             let vThis = this; 
 
             let params = GX.deepCopy(vThis.queryForm);
@@ -186,84 +212,77 @@ console.log('v', v)
             .ajax([params], [function (data) {
                 if (data.length > 0) {
                     // data for loop
-                    let sumQty = 0, sumCurAmt = 0, sumCurVAT = 0, sumTotCurAmt = 0, sumRemainQty = 0, sumDelvQty = 0, sumDelvCurAmt = 0;
                     let noDataIndex = [];
+                    let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0};
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
                             data[i].RowEdit = false;
                             data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
                             data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
+                            
                             if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
                                 data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
                             } else {
                                 data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
                                 noDataIndex.push(i);
                             }
-                            sumQty += !isNaN(data[i].Qty) ? parseFloat(data[i].Qty) : 0;
-                            sumCurAmt += !isNaN(data[i].CurAmt) ? parseFloat(data[i].CurAmt) : 0;
-                            sumCurVAT += !isNaN(data[i].CurVAT) ? parseFloat(data[i].CurVAT) : 0;
-                            sumTotCurAmt += !isNaN(data[i].TotCurAmt) ? parseFloat(data[i].TotCurAmt) : 0;
-                            sumRemainQty += !isNaN(data[i].RemainQty) ? parseFloat(data[i].RemainQty) : 0;
-                            sumDelvQty += !isNaN(data[i].DelvQty) ? parseFloat(data[i].DelvQty) : 0;
-                            sumDelvCurAmt += !isNaN(data[i].DelvCurAmt) ? parseFloat(data[i].DelvCurAmt) : 0;
+
+                            Object.keys(summaryList).map((k) => {
+                                if (!isNaN(data[i][k.replace('sum', '')]))
+                                    summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
+                            });
                         }
                     }
-                    // bind data
-                    vThis.rows.Query = data;
-                    // summary data
-                    vThis.rows.QuerySummary.Qty = sumQty;
-                    vThis.rows.QuerySummary.CurAmt = sumCurAmt;
-                    vThis.rows.QuerySummary.CurVAT = sumCurVAT;
-                    vThis.rows.QuerySummary.TotCurAmt = sumTotCurAmt;
-                    vThis.rows.QuerySummary.RemainQty = sumRemainQty;
-                    vThis.rows.QuerySummary.DelvQty = sumDelvQty;
-                    vThis.rows.QuerySummary.DelvCurAmt = sumDelvCurAmt;
 
-                    /**DOM에 아직 그리드가 다 그려지지 않음... setTimeOut 그냥 쓸까..? */
+                    // bind data, bind summary data
+                    vThis.rows.Query = data;
+                    vThis.rows.QuerySummary = summaryList;
+
+                    /**DOM에 아직 그리드(table tags)가 다 그려지지 않아서 바로 DOM에 접근하면 Element를 못찾음... setTimeout 그냥 쓸까..? */
                     // element for loop
                     if (noDataIndex.length > 0) {
                         setTimeout(() => {
                             for (let i in noDataIndex) {
                                 if (noDataIndex.hasOwnProperty(i)) {
-                                    document.getElementsByName('DelvPlanDate')[i].parentNode.parentNode.classList.add('no-data');
-                                    vThis.rows.Query[i].RowEdit = true;
+                                    document.getElementsByName('DelvPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
+                                    vThis.rows.Query[noDataIndex[i]].RowEdit = true;
                                 }
                             }
-                            
                         }, 20);
                     }
                 } else {
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
                     alert('조회 결과가 없습니다.');
                 }
+                if (typeof callback === 'function') callback();
             }])
         },
         save: function() {
             let vThis = this;
 
-            let params1 = [];
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
-            // detail table setting
-            params1 = GX.deepCopy(saveArrData);
-
-            for (let i in saveArrData) {
-                console.log(saveArrData[i].RowEdit)
-                if (!saveArrData[i].RowEdit) {
-                    saveArrData.splice(i, 1);
+            // DataBlock1에 공통으로 들어가야하는 파라메터 세팅
+            for (let i = saveArrData.length - 1; i >= 0; i--) {
+                if (saveArrData[i].RowEdit) {
+                    saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
+                    saveArrData[i].WorkingTag = 'U';
+                    saveArrData[i].DelvPlanDate = saveArrData[i].DelvPlanDate.indexOf('-') > -1 ? saveArrData[i].DelvPlanDate.replace(/\-/g, "") : saveArrData[i].DelvPlanDate;
                 } else {
-                    // detail table에 공통으로 들어가야하는 파라메터 세팅
-                    params1[i].IDX_NO = saveArrData[i].ROWNUM;
-                    params1[i].WorkingTag = 'U';
-                    params1[i].DelvPlanDate = params1[i].DelvPlanDate.replace(/\-/g, "");
+                    saveArrData.splice(i, 1);
                 }
             }
 
-            if (params1.length > 0) {
+            if (saveArrData.length > 0) {
                 GX._METHODS_
                 .setMethodId('PUORDPOSave')
-                .ajax(params1, [], [function (data) {
+                .ajax(saveArrData, [], [function (data) {
                     vThis.initSelected();
+                    vThis.initKeyCombi();
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
                     alert('저장 성공');
                     vThis.search();
                 }, function (data) {
@@ -302,7 +321,7 @@ console.log('v', v)
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" @blur="updateDateRows(row.DelvPlanDate,index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
             .item('ItemName').head('품명', '').body(null, 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
@@ -332,7 +351,8 @@ console.log('v', v)
             callback: function (result, attribute) {
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
-                    vThis.updateDateRows(attribute);
+                    vThis.rows.Query[attribute].RowEdit = true;
+                    document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
                 } else {
                     const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
                     const info = GX.Calendar.dateFormatInfo(openerObj);
