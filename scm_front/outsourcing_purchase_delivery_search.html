@@ -5,331 +5,259 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>외주납품품목조회</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha512-uto9mlQzrs59VwILcLiRYeLKPPbS/bT71da/OEBYEwcdNUk8jYIy+D176RYoop1Da+f9mvkYrmj5MCLZWEtQuA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha512-aOG0c6nPNzGk+5zjwyJaoRUgCdOrfSDhmMID2u4+OIslr0GjpLKo7Xm0Ao3xmpM4T8AmIouRkqwj1nrdVsLKEQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="stylesheet" href="css/setup.css">
 	<link rel="stylesheet" href="css/scm_style.css">
+	<link rel="stylesheet" href="css/date_picker.css">
+	<style>
+		[v-cloak] {
+			display: none;
+		}
+	</style>
 </head>
+
 <body>
-	<header>		
-		<div class="con">
-			<button class="btn-menu" onclick="menu();"></button>
-			<a href="#" class="web">
-				<img src="img/logo.png" alt="로고이미지">
-			</a>
-			<span class="page-name">외주납품품목조회</span>
-		</div>
-		<div class="con">
-			<div class="cart">
-				<img src="img/ic_01.png" alt="알림이미지">
-				<span class="alarm">12</span>
+	<div v-cloak id="app">
+		<header>
+			<div class="con">
+				<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
+				<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
+					<img src="img/logo.png" alt="로고이미지">
+				</a>
+				<span class="page-name">외주납품품목조회</span>
 			</div>
-			<div class="user-info web">
-				<div class="frame">
-					<img src="img/user.png" alt="유저이미지">
+			<div class="con">
+				<div class="cart">
+					<img src="img/ic_01.png" alt="알림이미지">
+					<span class="alarm">12</span>
 				</div>
-				<p class="user-name">A업체 김납품</p>
+				<div class="user-info web" @click="userInfoClick()">
+					<div class="frame">
+						<img src="img/user.png" alt="유저이미지">
+					</div>
+					<p class="user-name" v-if="deptName !== ''">{{userName}}</p>
+					<p class="user-name" v-else>{{deptName}} {{userName}}</p>
+				</div>
 			</div>
-		</div>
-	</header>
-	<main>
-		<div class="left-menu">
-			<div class="list-bg"></div>
-			<div class="list-container">
-				<div class="menu-title">구매</div>
-				<ul class="list-wrap">
-					<li>
-						<a href="#">
-							<span class="list-img menu-01"></span>
-							<span>구매발주품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-02"></span>
-							<span>구매납품품목조회</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-			<div class="list-container">
-				<div class="menu-title">외주가공</div>
-				<ul class="list-wrap">
-					<li>
-						<a href="#">
-							<span class="list-img menu-03"></span>
-							<span>외주발주품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-04"></span>
-							<span>외주납품품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-05"></span>
-							<span>생산진행정보입력</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
-		<div class="top-data-wrap outsourcing">
-			<div class="data-row-wrap">
-				<div class="data-row">
-					<ul class="input-wrap">
-						<li class="name essential">
-							<label>납품일</label>
-						</li>
-						<li class="date">
-							<input type="text" class="datepicker">
-							<span>-</span>
-							<input type="text" class="datepicker">
-						</li>
-					</ul>
+		</header>
+		<main>
+			<div class="left-menu" v-html="leftMenu"></div>
+			<div class="top-data-wrap">
+				<div class="data-row-wrap">
+					<div class="data-row">
+						<ul class="input-wrap">
+							<li class="name essential">
+								<label>납품일</label>
+							</li>
+							<li class="date">
+								<input type="text" name="DelvDateFr" class="datepicker" v-model.trim="queryForm.DelvDateFr" gx-datepicker="queryForm.DelvDateFr" @change="updateDate">
+								<span>-</span>
+								<input type="text" name="DelvDateTo" class="datepicker" v-model.trim="queryForm.DelvDateTo" gx-datepicker="queryForm.DelvDateTo" @change="updateDate">
+							</li>
+						</ul>
 
-					<ul class="input-wrap wid-360">
-						<li class="name">
-							<label>작업지시번호</label>
-						</li>
-						<li class="txt">
-							<input type="text">
-						</li>
-					</ul>
+						<ul class="input-wrap wid-360">
+							<li class="name">
+								<label>작업지시번호</label>
+							</li>
+							<li class="txt">
+								<input type="text" name="WorkOrderNo" v-model="queryForm.WorkOrderNo">
+							</li>
+						</ul>
+					</div>
+					<div class="data-row">
+						<ul class="input-wrap">
+							<li class="name">
+								<label>품명</label>
+							</li>
+							<li class="txt">
+								<input type="text" name="GoodItemName" v-model="queryForm.GoodItemName">
+							</li>
+						</ul>
+						<ul class="input-wrap wid-360">
+							<li class="name">
+								<label>품번</label>
+							</li>
+							<li class="txt">
+								<input type="text" name="GoodItemNo" v-model="queryForm.GoodItemNo">
+							</li>
+						</ul>
+						<ul class="input-wrap">
+							<li class="name">
+								<label>규격</label>
+							</li>
+							<li class="txt">
+								<input type="text" name="GoodItemSpec" v-model="queryForm.GoodItemSpec">
+							</li>
+						</ul>
+					</div>
 				</div>
-				<div class="data-row">
-					<ul class="input-wrap">
-						<li class="name">
-							<label>품명</label>
-						</li>
-						<li class="txt">
-							<input type="text">
-						</li>
-					</ul>
-					<ul class="input-wrap wid-360">
-						<li class="name">
-							<label>품번</label>
-						</li>
-						<li class="txt">
-							<input type="text">
-						</li>
-					</ul>
-					<ul class="input-wrap">
-						<li class="name">
-							<label>규격</label>
-						</li>
-						<li class="txt">
-							<input type="text">
-						</li>
-					</ul>				
+				<button class="btn-hide mo" onclick="hide();"></button>
+			</div>
+			<div class="main-data-wrap">
+				<div class="btn-row">
+					<button class="btn-stlye-01" @Click="search">
+						<img src="img/ic_04.png" alt="조회버튼이미지">
+						<span class="web">조회</span>
+					</button>
 				</div>
-			</div>
-			<button class="btn-hide mo" onclick="hide();"></button>
-		</div>
-		<div class="main-data-wrap">
-			<div class="btn-row">
-				<button class="btn-stlye-01">
-					<img src="img/ic_04.png" alt="조회버튼이미지">
-					<span class="web">조회</span>
-				</button>	
-			</div>
-
-			<div class="data-table">
-				<table>
-					<thead>
-						<tr>
-							<td>No.</td>
-							<td>작업일</td>
-							<td>작업지시번호</td>
-							<td>품번</td>
-							<td>품명</td>
-							<td>규격</td>
-							<td>공정</td>
-							<td>단위</td>
-							<td>생산수량</td>
-							<td>불량수량</td>
-							<td>양품수량</td>
-							<td>단가</td>
-							<td>부가세포함</td>
-							<td>금액</td>
-							<td>부가세</td>
-							<td>금액계</td>
-							<td>통화</td>
-							<td>환율</td>
-							<td>원화단가</td>
-							<td>원화금액</td>
-							<td>원화부가세</td>
-							<td>원화금액계</td>
-							<td>필번</td>
-							<td>공정품번호</td>
-							<td>공정품명</td>
-							<td>공정품규격</td>
-							<td>최종공정</td>
-							<td>자재투입</td>
-							<td>입고</td>
-							<td>중량</td>
-							<td>Lot No.</td>
-							<td>폭</td>
-							<td>밀도</td>
-							<td>사고지</td>
-						</tr>
-						<tr class="sum">
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td class="text-r">100,000</td>
-							<td class="text-r">100,000</td>
-							<td class="text-r">100,000</td>
-							<td class="text-r">100,000.00</td>
-							<td></td>
-							<td class="text-r">1,000,000,000</td>
-							<td class="text-r">1,000,000,000</td>
-							<td class="text-r">1,000,000,000</td>
-							<td></td>
-							<td></td>
-							<td class="text-r">1,000,000,000</td>
-							<td class="text-r">1,000,000,000</td>
-							<td class="text-r">1,000,000,000</td>
-							<td class="text-r">1,000,000,000 </td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-					</thead>
-					<tbody>	
-						<tr>
-							<td>1</td>
-							<td>2022-06-01</td>
-							<td class="text-l">0123456789</td>
-							<td class="text-l">2260132</td>
-							<td class="text-l">W/100 1/6</td>
-							<td class="text-l">YB106W</td>
-							<td class="text-l">공정01</td>
-							<td>KG</td>
-							<td class="text-r">50</td>
-							<td class="text-r">0</td>
-							<td class="text-r">50</td>
-							<td class="text-r">10,000.00</td>
-							<td><input type="checkbox" disabled></td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td>KRW</td>
-							<td class="text-r">1.00</td>
-							<td class="text-r">10,000.00</td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td>L</td>
-							<td>P22WURCP002</td>
-							<td>바지</td>
-							<td>ROHMCP52A</td>
-							<td><input type="checkbox" disabled></td>
-							<td><input type="checkbox" disabled></td>
-							<td><input type="checkbox" disabled></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td><input type="checkbox" disabled checked></td>
-						</tr>				
-						<tr>
-							<td>2</td>
-							<td>2022-06-01</td>
-							<td class="text-l">0123456789</td>
-							<td class="text-l">2260132</td>
-							<td class="text-l">W/100 1/6</td>
-							<td class="text-l">YB106W</td>
-							<td class="text-l">공정01</td>
-							<td>KG</td>
-							<td class="text-r">50</td>
-							<td class="text-r">0</td>
-							<td class="text-r">50</td>
-							<td class="text-r">10,000.00</td>
-							<td><input type="checkbox" disabled></td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td>KRW</td>
-							<td class="text-r">1.00</td>
-							<td class="text-r">10,000.00</td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td class="text-r">100,000,000</td>
-							<td>L</td>
-							<td>P22WURCP002</td>
-							<td>바지</td>
-							<td>ROHMCP52A</td>
-							<td><input type="checkbox" disabled></td>
-							<td><input type="checkbox" disabled></td>
-							<td><input type="checkbox" disabled></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td><input type="checkbox" disabled checked></td>
-						</tr>				
-					</tbody>
-				</table>
-			</div>
-		</div>
-		
-	</main>
+				<div class="data-table" id="grid"></div>
+				<!--
+				<div class="data-table">
+					<table>
+						<thead>
+							<tr>
+								<td>No.</td>
+								<td>작업일</td>
+								<td>작업지시번호</td>
+								<td>품번</td>
+								<td>품명</td>
+								<td>규격</td>
+								<td>공정</td>
+								<td>단위</td>
+								<td>생산수량</td>
+								<td>불량수량</td>
+								<td>양품수량</td>
+								<td>단가</td>
+								<td>부가세포함</td>
+								<td>금액</td>
+								<td>부가세</td>
+								<td>금액계</td>
+								<td>통화</td>
+								<td>환율</td>
+								<td>원화단가</td>
+								<td>원화금액</td>
+								<td>원화부가세</td>
+								<td>원화금액계</td>
+								<td>필번</td>
+								<td>공정품번호</td>
+								<td>공정품명</td>
+								<td>공정품규격</td>
+								<td>최종공정</td>
+								<td>자재투입</td>
+								<td>입고</td>
+								<td>중량</td>
+								<td>Lot No.</td>
+								<td>폭</td>
+								<td>밀도</td>
+								<td>사고지</td>
+							</tr>
+							<tr class="sum">
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td class="text-r">100,000</td>
+								<td class="text-r">100,000</td>
+								<td class="text-r">100,000</td>
+								<td class="text-r">100,000.00</td>
+								<td></td>
+								<td class="text-r">1,000,000,000</td>
+								<td class="text-r">1,000,000,000</td>
+								<td class="text-r">1,000,000,000</td>
+								<td></td>
+								<td></td>
+								<td class="text-r">1,000,000,000</td>
+								<td class="text-r">1,000,000,000</td>
+								<td class="text-r">1,000,000,000</td>
+								<td class="text-r">1,000,000,000 </td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>1</td>
+								<td>2022-06-01</td>
+								<td class="text-l">0123456789</td>
+								<td class="text-l">2260132</td>
+								<td class="text-l">W/100 1/6</td>
+								<td class="text-l">YB106W</td>
+								<td class="text-l">공정01</td>
+								<td>KG</td>
+								<td class="text-r">50</td>
+								<td class="text-r">0</td>
+								<td class="text-r">50</td>
+								<td class="text-r">10,000.00</td>
+								<td><input type="checkbox" disabled></td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td>KRW</td>
+								<td class="text-r">1.00</td>
+								<td class="text-r">10,000.00</td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td>L</td>
+								<td>P22WURCP002</td>
+								<td>바지</td>
+								<td>ROHMCP52A</td>
+								<td><input type="checkbox" disabled></td>
+								<td><input type="checkbox" disabled></td>
+								<td><input type="checkbox" disabled></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td><input type="checkbox" disabled checked></td>
+							</tr>
+							<tr>
+								<td>2</td>
+								<td>2022-06-01</td>
+								<td class="text-l">0123456789</td>
+								<td class="text-l">2260132</td>
+								<td class="text-l">W/100 1/6</td>
+								<td class="text-l">YB106W</td>
+								<td class="text-l">공정01</td>
+								<td>KG</td>
+								<td class="text-r">50</td>
+								<td class="text-r">0</td>
+								<td class="text-r">50</td>
+								<td class="text-r">10,000.00</td>
+								<td><input type="checkbox" disabled></td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td>KRW</td>
+								<td class="text-r">1.00</td>
+								<td class="text-r">10,000.00</td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td class="text-r">100,000,000</td>
+								<td>L</td>
+								<td>P22WURCP002</td>
+								<td>바지</td>
+								<td>ROHMCP52A</td>
+								<td><input type="checkbox" disabled></td>
+								<td><input type="checkbox" disabled></td>
+								<td><input type="checkbox" disabled></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td><input type="checkbox" disabled checked></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				-->
+				</div>
+			<script src="js/common/app.js?v=1665537373142"></script>
+		</main>
+	</div>
 </body>
-<script>
-	$.datepicker.setDefaults({
-  dateFormat: 'yy-mm-dd',
-  prevText: '이전 달',
-  nextText: '다음 달',
-  monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-  monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-  dayNames: ['일', '월', '화', '수', '목', '금', '토'],
-  dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
-  dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
-  showMonthAfterYear: true,
-  yearSuffix: '년'
-});
-
-$(function () {
-  $('.datepicker').datepicker();
-});
-
-//메뉴
-function menu() {
-	if(document.getElementsByClassName('left-menu')[0].style.display === 'block') {
-		document.getElementsByClassName('left-menu')[0].style.display = 'none';
-	} else {
-		document.getElementsByClassName('left-menu')[0].style.display = 'block';
-	}
-}
-////hide 버튼(모바일에서만 사용)
-function hide() {
-	if(document.getElementsByClassName('data-row-wrap')[0].style.display === 'block') {
-		document.getElementsByClassName('data-row-wrap')[0].style.display = 'none';
-		document.getElementsByClassName('top-data-wrap')[0].style.paddingBottom = '5px';
-		document.getElementsByClassName('data-table')[0].style.height = '720px';
-	} else {
-		document.getElementsByClassName('data-row-wrap')[0].style.display = 'block';
-		document.getElementsByClassName('top-data-wrap')[0].style.paddingBottom = '20px';
-		document.getElementsByClassName('data-table')[0].style.height = '508px';
-	}
-}
-</script>
 </html>
