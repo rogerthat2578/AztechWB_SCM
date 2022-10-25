@@ -12,7 +12,7 @@ let app = new Vue({
 
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
-            BizUnit: '',
+            BizUnit: '1',
             WorkDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             WorkDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             WorkOrderDateFr: '',
@@ -21,7 +21,8 @@ let app = new Vue({
             WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
-            GoodItemSpec: ''
+            GoodItemSpec: '',
+            CustSeq: ''
         },
 
         procStatusList:[
@@ -33,6 +34,8 @@ let app = new Vue({
             Control: false,
             Q: false,
         },
+
+        isCheckList: []
     },
 
     methods:{
@@ -152,6 +155,22 @@ let app = new Vue({
             }
             this.isCheckList = isCheckList;
         },
+        initSelected: function () {
+            this.isCheckList = [];
+            let selAllObj = document.querySelector('thead [type="checkbox"]');
+            if (selAllObj != null) {
+                selAllObj.checked = true;
+                selAllObj.click();
+            }
+        },
+        isChecked: function (index) {
+            return (this.isCheckList.indexOf(index) != -1);
+        },
+        selectedMark: function (index) {
+            let idx = this.isCheckList.indexOf(index);
+            if (event.target.checked) this.isCheckList.push(index);
+            else if (idx != -1) this.isCheckList.splice(idx, 1);
+        },
 
         // 조회
         search: function(){
@@ -166,7 +185,7 @@ let app = new Vue({
             });
 
             GX._METHODS_
-                .setMethodId('')    // 여기에 호출ID를 입력해주세요.
+                .setMethodId('OSPWorkOrderQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
                     if(data.length > 0){
                         for(let i in data){
@@ -209,10 +228,10 @@ let app = new Vue({
                 .bodyRow(':class="{\'check\':isChecked(index)}"')
                 .item('ROWNUM').head('No.', '')
                 .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMart(index);"/></div>', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);"/></div>', '')
                 .item('WorkOrderDate').head('작업지시일', '')
                 .item('WorkDate').head('작업예정일', '')
-                .item('DelvPlanDate').head('납품예정일', '')
+                .item('WorkPlanDate').head('납품예정일', '')
                 .item('WorkOrderNo').head('작업지시번호', '')
                 .item('ProgStatusName').head('진행상태', '')
                 .item('ProcName').head('공정', '')
