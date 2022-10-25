@@ -124,6 +124,19 @@ let app = new Vue({
                 }
             }
         },
+        /**날짜 번경 후처리
+         * v: 날짜
+         * i: 행 index
+         */
+        updateDateRows: function(v = '', i = null) {
+            let vThis = this;
+            let e = event;
+console.log('v', v)
+            // console.log(vThis.rows.Query[i].DelvPlanDate)
+            // if (i != null && i >= 0) {
+                // vThis.rows.Query[i].DelvPlanDate = 
+            // }
+        },
         selectAll: function () {
             let obj = document.querySelectorAll('[name="RowCheck"]');
             let isCheckList = [];
@@ -178,6 +191,7 @@ let app = new Vue({
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
+                            data[i].RowEdit = false;
                             data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
                             data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
                             if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
@@ -213,6 +227,7 @@ let app = new Vue({
                             for (let i in noDataIndex) {
                                 if (noDataIndex.hasOwnProperty(i)) {
                                     document.getElementsByName('DelvPlanDate')[i].parentNode.parentNode.classList.add('no-data');
+                                    vThis.rows.Query[i].RowEdit = true;
                                 }
                             }
                             
@@ -224,7 +239,38 @@ let app = new Vue({
             }])
         },
         save: function() {
-            
+            let vThis = this;
+
+            let params1 = [];
+            let saveArrData = GX.deepCopy(vThis.rows.Query);
+
+            // detail table setting
+            params1 = GX.deepCopy(saveArrData);
+
+            for (let i in saveArrData) {
+                console.log(saveArrData[i].RowEdit)
+                if (!saveArrData[i].RowEdit) {
+                    saveArrData.splice(i, 1);
+                } else {
+                    // detail table에 공통으로 들어가야하는 파라메터 세팅
+                    params1[i].IDX_NO = saveArrData[i].ROWNUM;
+                    params1[i].WorkingTag = 'U';
+                    params1[i].DelvPlanDate = params1[i].DelvPlanDate.replace(/\-/g, "");
+                }
+            }
+
+            if (params1.length > 0) {
+                GX._METHODS_
+                .setMethodId('PUORDPOSave')
+                .ajax(params1, [], [function (data) {
+                    vThis.initSelected();
+                    alert('저장 성공');
+                    vThis.search();
+                }, function (data) {
+                }]);
+            } else {
+                alert('파라메터 세팅 중<br>예외사항 발생.');
+            }
         },
     },
     created() {
@@ -256,7 +302,7 @@ let app = new Vue({
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" @blur="updateDateRows(row.DelvPlanDate,index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
             .item('ItemName').head('품명', '').body(null, 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
@@ -286,6 +332,7 @@ let app = new Vue({
             callback: function (result, attribute) {
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
+                    vThis.updateDateRows(attribute);
                 } else {
                     const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
                     const info = GX.Calendar.dateFormatInfo(openerObj);
