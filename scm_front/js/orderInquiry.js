@@ -27,6 +27,7 @@ let app = new Vue({
             ItemNm: '',
             ItemNo: '',
             Spec: '',
+            test: '',
         },
         procStatusList: [
             '전체', '진행중', '작성', '확정'
@@ -148,6 +149,14 @@ let app = new Vue({
             if (event.target.checked) this.isCheckList.push(index);
             else if (idx != -1) this.isCheckList.splice(idx, 1);
         },
+        applyAll: function (name) {
+            console.log('11')
+            GX.Calendar.open(name);
+            console.log('22')
+        },
+        test: function (tt) {
+            console.log('ewqeqweqwewq',tt)
+        },
         /**조회 */
         search: function() {
             let vThis = this; 
@@ -166,8 +175,11 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if (data.length > 0) {
                     for (let i in data) {
-                        if (data.hasOwnProperty(i))
+                        if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
+                            data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
+                            data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
+                        }
                     }
                     console.log(data)
                     vThis.rows.Query = data;
@@ -199,14 +211,15 @@ let app = new Vue({
             GX.VueGrid
             .bodyRow(':class="{\'check\':isChecked(index)}"')
             .item('ROWNUM').head('No.', '')
-            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
+            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
                 .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
             .item('SMCurrStatusName').head('진행상태', '')
             .item('PODate').head('발주일', '')
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div class="grid-in-div"><input type="text" name="DelvPlanDate" :value="row.DelvPlanDate" /></div>')
+            .body('<div><input type="text" class="datepicker" name="DelvPlanDate" @click="applyAll(\'DelvPlanDate\')" gx-datepicker="test"></div>')
+            // .body('<div class="grid-in-div"><input type="text" name="DelvPlanDate" :value="row.DelvPlanDate"></div>')
             .item('ItemNo').head('품번', '')
             .item('ItemName').head('품명', '')
             .item('Spec').head('규격', '')
@@ -236,11 +249,18 @@ let app = new Vue({
             callback: function (result, attribute) {
                 const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
                 const info = GX.Calendar.dateFormatInfo(openerObj);
-                let keys = attribute.split('.');
-                if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                vThis.updateDate(GX.formatDate(result, info.format), openerObj);
+                console.log(attribute)
+                console.log(typeof attribute)
+                if (attribute.indexOf('test') > -1) {
+                    console.log('3333')
+                    vThis[attribute];
+                } else {
+                    let keys = attribute.split('.');
+                    if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
+                    else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
+                    else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
+                    vThis.updateDate(GX.formatDate(result, info.format), openerObj);
+                }
             }
         });
     }
