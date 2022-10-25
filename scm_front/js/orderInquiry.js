@@ -149,13 +149,9 @@ let app = new Vue({
             if (event.target.checked) this.isCheckList.push(index);
             else if (idx != -1) this.isCheckList.splice(idx, 1);
         },
-        applyAll: function (name) {
-            console.log('11')
+        applyAll: function (name, idx) {
+            event.target.setAttribute('gx-datepicker', idx);
             GX.Calendar.open(name);
-            console.log('22')
-        },
-        test: function (tt) {
-            console.log('ewqeqweqwewq',tt)
         },
         /**조회 */
         search: function() {
@@ -218,7 +214,7 @@ let app = new Vue({
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
-            .body('<div><input type="text" class="datepicker" name="DelvPlanDate" @click="applyAll(\'DelvPlanDate\')" gx-datepicker="test"></div>')
+                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" gx-datepicker="" /></div>')
             // .body('<div class="grid-in-div"><input type="text" name="DelvPlanDate" :value="row.DelvPlanDate"></div>')
             .item('ItemNo').head('품번', '')
             .item('ItemName').head('품명', '')
@@ -247,14 +243,12 @@ let app = new Vue({
             height: '400px',
             monthSelectWidth: '25%',
             callback: function (result, attribute) {
-                const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
-                const info = GX.Calendar.dateFormatInfo(openerObj);
-                console.log(attribute)
-                console.log(typeof attribute)
-                if (attribute.indexOf('test') > -1) {
-                    console.log('3333')
-                    vThis[attribute];
+                console.log(attribute, result)
+                if (!isNaN(attribute)) {
+                    vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                 } else {
+                    const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
+                    const info = GX.Calendar.dateFormatInfo(openerObj);
                     let keys = attribute.split('.');
                     if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
                     else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
