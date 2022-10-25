@@ -8,9 +8,11 @@ let app = new Vue({
         BizUnitList: [], // 사업 단위 리스트
         /**
          * rows.Query 조회 결과
+         * rows.QuerySummary 조회 결과 합계
          */
 		rows: {
             Query: [],
+            QuerySummary: [],
         },
         /**
          * 조회 조건
@@ -170,15 +172,45 @@ let app = new Vue({
             .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
+                    // data for loop
+                    let sumQty, sumCurAmt, sumCurVAT, sumTotCurAmt, sumRemainQty, sumDelvQty, sumDelvCurAmt = 0;
+                    let noDataIndex = [];
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
                             data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
                             data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
+                            if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
+                                data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
+                            } else {
+                                data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
+                                noDataIndex.push(i);
+                            }
+                            sumQty += parseFloat(data[i].Qty)
+                            sumCurAmt += parseFloat(data[i].CurAmt)
+                            sumCurVAT += parseFloat(data[i].CurVAT)
+                            sumTotCurAmt += parseFloat(data[i].TotCurAmt)
+                            sumRemainQty += parseFloat(data[i].RemainQty)
+                            sumDelvQty += parseFloat(data[i].DelvQty)
+                            sumDelvCurAmt += parseFloat(data[i].DelvCurAmt)
                         }
                     }
-                    console.log(data)
+                    // bind data
                     vThis.rows.Query = data;
+
+                    /**DOM에 아직 그리드가 다 그려지지 않음... setTimeOut 그냥 쓸까..? */
+                    // element for loop
+                    // if (noDataIndex.length > 0) {
+                    //     for (let i in noDataIndex) {
+                    //         if (noDataIndex.hasOwnProperty(i)) {
+                    //             setTimeout(() => {
+                    //                 console.log('DDDDDDDDDDDD ',document.getElementsByName('DelvPlanDate')[i])
+                    //             },10)
+                    //             console.log('TTTTTTTTTTT ',document.getElementsByName('DelvPlanDate')[i])
+                    //             // document.getElementsByName('DelvPlanDate')[i].parentNode.parentNode.classList.add('no-data')
+                    //         }
+                    //     }
+                    // }
                 } else {
                     alert('조회 결과가 없습니다.');
                 }
@@ -214,20 +246,19 @@ let app = new Vue({
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" gx-datepicker="" /></div>')
-            // .body('<div class="grid-in-div"><input type="text" name="DelvPlanDate" :value="row.DelvPlanDate"></div>')
-            .item('ItemNo').head('품번', '')
-            .item('ItemName').head('품명', '')
-            .item('Spec').head('규격', '')
+                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; background: transparent;" /></div>')
+            .item('ItemNo').head('품번', '').body(null, 'text-l')
+            .item('ItemName').head('품명', '').body(null, 'text-l')
+            .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
-            .item('Qty').head('발주수량', '')
-            .item('Price').head('발주단가', '')
-            .item('CurAmt').head('발주금액', '')
-            .item('CurVAT').head('부가세', '')
-            .item('TotCurAmt').head('금액계', '')
-            .item('RemainQty').head('미납수량', '')
-            .item('DelvQty').head('납품수량', '')
-            .item('DelvCurAmt').head('납품금액', '')
+            .item('Qty').head('발주수량', '').body(null, 'text-r')
+            .item('Price').head('발주단가', '').body(null, 'text-r')
+            .item('CurAmt').head('발주금액', '').body(null, 'text-r')
+            .item('CurVAT').head('부가세', '').body(null, 'text-r')
+            .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
+            .item('RemainQty').head('미납수량', '').body(null, 'text-r')
+            .item('DelvQty').head('납품수량', '').body(null, 'text-r')
+            .item('DelvCurAmt').head('납품금액', '').body(null, 'text-r')
             .item('WHName').head('입고창고', '')
             .item('Remark1').head('비고', '')
             .item('SizeName').head('사이즈', '')

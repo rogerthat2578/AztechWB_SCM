@@ -1410,46 +1410,40 @@ GX = {
 		},
 		offset: function () {
 			if (parseFloat(document.body.offsetWidth) > 420) {
-				let temp;
-				if (this.objOpenInRow && this.objOpenInRow.useYN)
-					temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
-				else
-					temp = document.querySelector('[name="' + this.openerName + '"]');
-				const openerObj = temp;
+				if (this.objOpenInRow && this.objOpenInRow.useYN) {
+					const openerObj = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+					let temp = openerObj.getBoundingClientRect()
+					this.calendarObj.style.top = String(temp.top + temp.height) + 'px';
+					this.calendarObj.style.left = String(temp.left) + 'px';
+				}
+				else {
+					const openerObj = document.querySelector('[name="' + this.openerName + '"]');
+					let openerTop = parseFloat(openerObj.offsetTop);
+					let openerLeft = parseFloat(openerObj.offsetLeft);
+					let openerHeight = parseFloat(openerObj.offsetHeight);
+					let calendarShadowWidth = 6.0;
+					let calendarHeight = parseFloat((this.calendarObj.offsetHeight == 0) ? this.config.height : this.calendarObj.offsetHeight);
+					let calendarWidth = parseFloat((this.calendarObj.offsetWidth == 0) ? this.config.width : this.calendarObj.offsetWidth) + calendarShadowWidth;
+					let bodyHeight = parseFloat(document.body.offsetHeight);
+					let bodyWidth = parseFloat(document.body.offsetWidth);
 
-				let openerTop = parseFloat(openerObj.offsetTop);
-				let openerLeft = parseFloat(openerObj.offsetLeft);
-				let openerHeight = parseFloat(openerObj.offsetHeight);
-				let calendarShadowWidth = 6.0;
-				let calendarHeight = parseFloat((this.calendarObj.offsetHeight == 0) ? this.config.height : this.calendarObj.offsetHeight);
-				let calendarWidth = parseFloat((this.calendarObj.offsetWidth == 0) ? this.config.width : this.calendarObj.offsetWidth) + calendarShadowWidth;
-				let bodyHeight = parseFloat(document.body.offsetHeight);
-				let bodyWidth = parseFloat(document.body.offsetWidth);
+					let top = 0;
 
-				let top = 0;
+					if (openerTop - calendarHeight >= 0) top = openerTop - calendarHeight;
+					else if ((openerTop + openerHeight) + calendarHeight >= bodyHeight) top = (openerTop + openerHeight);
+					
+					if (calendarHeight == 0) calendarHeight = parseFloat(this.config.height);
 
-				if (openerTop - calendarHeight >= 0) top = openerTop - calendarHeight;
-				else if ((openerTop + openerHeight) + calendarHeight >= bodyHeight) top = (openerTop + openerHeight);
-				//else top = 0;
+					let y = bodyHeight - calendarHeight;
+					if (y > (openerTop + openerHeight)) y = (openerTop + openerHeight);
+					else if ((openerTop - calendarHeight) >= 0) y = (openerTop - calendarHeight);
+					this.calendarObj.style.top = String(y) + 'px';
 
-				//this.calendarObj.style.backgroundColor = '#ffffff';
-				//this.calendarObj.style.position = 'absolute';
-				//this.calendarObj.style.zIndex = 9999999;
-				//document.querySelector('#gx-datepicker').style.height
-				//this.calendarObj.style.height = calendarHeight + 'px';
+					let x = bodyWidth - calendarWidth;
+					if (x > openerLeft) x = openerLeft;
 
-				//this.calendarObj.style.top = String(top) + 'px';
-				if (calendarHeight == 0) calendarHeight = parseFloat(this.config.height);
-				let y = bodyHeight - calendarHeight;
-				if (y > (openerTop + openerHeight)) y = (openerTop + openerHeight);
-				else if ((openerTop - calendarHeight) >= 0) y = (openerTop - calendarHeight);
-				this.calendarObj.style.top = String(y) + 'px';
-
-				let x = bodyWidth - calendarWidth;
-				// console.log(x, ' = ', bodyWidth, ' - ', calendarWidth, ' > ', openerLeft)
-				if (x > openerLeft) x = openerLeft;
-
-				this.calendarObj.style.left = String(x) + 'px';
+					this.calendarObj.style.left = String(x) + 'px';
+				}
 			}
 		},
 
@@ -1511,7 +1505,6 @@ GX = {
 			this.hide();
 			this.viewType = 'd';
 			this.changeViewType(true);
-			console.log('231312')
 		},
 		isVisible: function () {
 			return GX.isShowElement(this.calendarObj);
