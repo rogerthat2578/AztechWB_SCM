@@ -5,20 +5,23 @@ let app = new Vue({
         deptName: GX.Cookie.get('DeptName'),
         userName: GX.Cookie.get('UserName'),
         params: GX.getParameters(),
+        BizUnitList: [], // 사업 단위 리스트
 
         rows: {
             Query: [],
+            QuerySummary: {}
         },
 
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
-            BizUnit: '',
+            BizUnit: '1',
             DelvDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             DelvDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
-            GoodItemSpec: ''
+            GoodItemSpec: '',
+            CustSeq: ''
         },
 
         keyCombi: {
@@ -42,7 +45,7 @@ let app = new Vue({
             }
 
             // Key Event
-            if(e.type === 'keyup'){
+            else if(e.type === 'keyup'){
                 switch(e.key.toLowerCase()){
                     case 'control': vThis.keyCombi.Control = false; break;
                     case 'q': vThis.keyCombi.Q = false; break;
@@ -103,6 +106,30 @@ let app = new Vue({
             }
         },
 
+        // 초기화
+        init: function(){
+            let vThis = this;
+            vThis.initKeyCombi();
+            vThis.rows.Query = [];
+            vThis.rows.QuerySummary = {};
+            vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
+            vThis.queryForm.BizUnit = '1';
+            vThis.queryForm.DelvDateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.DelvDateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.WorkOrderNo = '';
+            vThis.queryForm.GoodItemName = '';
+            vThis.queryForm.GoodItemNo = '';
+            vThis.queryForm.GoodItemSpec = '';
+            vThis.queryForm.CustSeq = '';
+        },
+
+        initKeyCombi: function(){
+            Object.keys(this.keyCombi).map(k => {
+                this.keyCombi[k] = false;
+            });
+        },
+
+        /** 조회 **/
         search: function(){
             let vThis = this;
 
@@ -118,17 +145,32 @@ let app = new Vue({
                 .setMethodId('')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
                     if(data.length > 0){
-                        for(let i in data){
-                            if(data.hasOwnProperty(i))
-                                data[i].ROWNUM = parseInt(i) + 1;
+                        let summaryList = {
+                            sumProdQty: 0, sumBadQty: 0, sumOkQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
+                            sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, OSPTotDomAmt: 0
                         }
-                        console.log(data);
+
+                        for(let i in data){
+                            if(data.hasOwnProperty(i)){
+                                data[i].ROWNUM = parseInt(i) + 1;
+                                data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+
+                                Object.keys(summaryList).map((k) => {
+                                    if(!isNaN(data[i][k.replace('sum', '')]))
+                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
+                                });
+                            }
+                        }
+
                         vThis.rows.Query = data;
+                        vThis.rows.QuerySummary = summaryList;
 
                     } else{
+                        vThis.rows.Query = [];
+                        vThis.rows.QuerySummary = {};
                         alert('조회 결과가 없습니다.');
                     }
-                }])
+                }]);
         }
     },
 
@@ -143,45 +185,55 @@ let app = new Vue({
             document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
+            // 사업단위가 여러개일 수 있기에 아래와 같이 set/get함
+            let objBizUnitList = JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType'));
+            Object.keys(objBizUnitList).map((k) => {
+                vThis.BizUnitList.push(objBizUnitList[k]);
+            });
+            vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
+            vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
+            vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+
             GX.VueGrid
                 .bodyRow(':class="{\'check\':isChecked(index)}"')
                 .item('ROWNUM').head('No.', '')
                 .item('WorkDate').head('작업일', '')
-                .item('WorkOrderNo').head('작업지시번호', '')
-                .item('GoodItemName').head('제품명', '')
-                .item('GoodItemNo').head('제품번호', '')
-                .item('GoodItemSpec').head('제품규격', '')
-                .item('ProcName').head('공정', '')
+                .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
+                .item('GoodItemNo').head('품번', '').body(null, 'text-l')
+                .item('GoodItemName').head('품명', '').body(null, 'text-l')
+                .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
+                .item('ProcName').head('공정', '').body(null, 'text-l')
                 .item('ProdUnitName').head('단위', '')
-                .item('ProdQty').head('생산수량', '')
-                .item('OKQty').head('양품수량', '')
-                .item('BadQty').head('불량수량', '')
+                .item('ProdQty').head('생산수량', '').body(null, 'text-r')
+                .item('BadQty').head('불량수량', '').body(null, 'text-r')
+                .item('OKQty').head('양품수량', '').body(null, 'text-r')
+                .item('Price').head('단가', '').body(null, 'text-r')
                 .item('IsVAT').head('부가세포함', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" @click="selectedMart(index);"/></div>')
-                .item('OSPCurAmt').head('금액', '')
-                .item('OSPCurVAT').head('부가세', '')
-                .item('OSPTotCurAmt').head('금액계', '')
+                .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
+                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
+                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
                 .item('CurrName').head('통화', '')
                 .item('ExRate').head('환율', '')
-                .item('OSPDomPrice').head('원화단가', '')
-                .item('OSPDomAmt').head('원화금액', '')
-                .item('OSPDomVAT').head('원화부가세', '')
-                .item('OSPTotDomAmt').head('원화금액계', '')
+                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
+                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
+                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
+                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
                 .item('SizeText').head('필번', '')
-                .item('AssyItemName').head('공정품명', '')
-                .item('AssyItemNo').head('공정품번', '')
-                .item('AssyItemSpec').head('공정품규격', '')
-                .item('IsLastProc').head('최종공정여부', '')
+                .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
+                .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
+                .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
+                .item('IsLastProc').head('최종공정', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" @click="selectedMart(index);"/></div>')
-                .item('IsMatInput').head('자재투입여부', '')
+                .item('IsMatInput').head('자재투입', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" @click="selectedMart(index);"/></div>')
-                .item('IsGoodIn').head('입고여부', '')
+                .item('IsGoodIn').head('입고', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" @click="selectedMart(index);"/></div>')
-                .item('Weight').head('중량', '')
-                .item('RealLotNo').head('LotNo', '')
-                .item('Width').head('폭', '')
-                .item('Density').head('밀도', '')
-                .item('IsAccident').head('사고지유무', '')
+                .item('Weight').head('중량', '').body(null, 'text-r')
+                .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
+                .item('Width').head('폭', '').body(null, 'text-r')
+                .item('Density').head('밀도', '').body(null, 'text-r')
+                .item('IsAccident').head('사고지', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" @click="selectedMart(index);"/></div>')
                 .loadTemplate('#grid', 'rows.Query');
 
