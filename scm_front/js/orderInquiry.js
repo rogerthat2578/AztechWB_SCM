@@ -5,7 +5,7 @@ let app = new Vue({
 		deptName: GX.Cookie.get('DeptName'),
 		userName: GX.Cookie.get('UserName'),
 		params: GX.getParameters(),
-        BizUnitList: [], // 사업 단위 리스트
+        BizUnitList: Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType'))), // 사업 단위 리스트
         /**
          * rows.Query 조회 결과
          * rows.QuerySummary 조회 결과 합계 Object
@@ -20,6 +20,7 @@ let app = new Vue({
         queryForm: {
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
+            BizUnitName: '',
             PODateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             PODateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             DelvPlanDateFr: '',
@@ -302,11 +303,7 @@ let app = new Vue({
 			document.addEventListener('click', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
-            // 사업단위가 여러개일 수 있기에 아래와 같이 set/get함
-            let objBizUnitList = JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType'));
-            Object.keys(objBizUnitList).map((k) => {
-                vThis.BizUnitList.push(objBizUnitList[k]);
-            });
+            // 사업단위가 여러개일 수 있음
             vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;

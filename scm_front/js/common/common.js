@@ -1,6 +1,6 @@
 GX._DATAS_ = {
-	ajaxDataBlockKeys:['DataBlock1','DataBlock2'],
-	ajaxTableNameKeys:['DataBlock1','DataBlock11'],
+	ajaxDataBlockKeys:['DataBlock1','DataBlock2','DataBlock3','DataBlock4','DataBlock5','DataBlock6','DataBlock7'],
+	ajaxTableNameKeys:['DataBlock1','DataBlock11','DataBlock12','DataBlock13','DataBlock14','DataBlock15','DataBlock16'],
 	ajaxUrl:{
 		get:'/Angkor.Ylw.Common.HttpExecute/RestOutsideService.svc/GetServiceMethodJson',
 		post:'/Angkor.Ylw.Common.HttpExecute/RestOutsideService.svc/OpenApi/IsStoredProcedure/{methodId}'
@@ -309,5 +309,14 @@ GX._METHODS_ = {
 			document.getElementsByClassName('top-data-wrap')[0].style.paddingBottom = '20px';
 			document.getElementsByClassName('data-table')[0].style.height = '508px';
 		}
+	},
+	/**문자열 체크
+	 * @param str: 체크할 문자열
+	 * @param defaultStr: 문자열이 비어있을 경우 리턴할 기본 문자열
+	 */
+	nvl: function(str, defaultStr = '') {
+		if(typeof str == "undefined" || str == null || str == "")
+			str = defaultStr;
+		return str;
 	},
 };

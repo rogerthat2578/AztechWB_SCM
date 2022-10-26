@@ -1182,6 +1182,27 @@ main {
     width: 10vh;
 }
 
+.dummyAlert-wrap {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  background-color: #808080a1;
+  z-index: 3;
+}
+.dummyAlert-wrap .dummyAlert-container {
+  width: 100%;
+  top: 40%;
+  position: relative;
+  color: #000000;
+  font-size: 24px;
+  vertical-align: middle;
+}
+.dummyAlert-wrap .dummyAlert-container div {
+  margin: 0 20px;
+  background-color: #ffffffcf;
+}
+
 @media only screen and (min-width: 420px) and (max-width: 1900px) {
   body {
     min-width: 1900px;
