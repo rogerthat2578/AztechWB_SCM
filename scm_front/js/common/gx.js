@@ -768,6 +768,7 @@ GX = {
 		obj.setAttribute(checkKey, currentDateTime);
 	},
 	inputTypeDateEventHandler: function () {
+		this.openerName = event.target.name;
 		//console.log(event.target.value.test(/^\d{1,4}[^\d]*\d{1,2}[^\d]*\d{1,2}[^\d]*/))
 		let result = true;
 		let word = '';
@@ -778,8 +779,39 @@ GX = {
 		else if (['Backspace', 'Home', 'End'].indexOf(eventKey) != -1) result = false;
 		else if (eventKey == 'Process') event.target.setAttribute('readonly', 'readonly');
 		else if (['Enter'].indexOf(eventKey) != -1){
-		   let tmpInputDate = event.target.value.replace(/\-/g, '');
-		   result = false;
+			const info = GX.Calendar.dateFormatInfo(event.target);
+			const delimiterPattern = (info.delimiter.length > 0) ? '\\' + info.delimiter : '';
+			let tmpNowDate = GX.formatDate(GX.nowDate().full, 'Y-M-D').replace(/\-/g, '');
+			let tmpInputDate = event.target.value.replace(/\-/g, '');
+			let tmpResult = "";
+			let pattern = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '(0[1-9]|[12][0-9]|3[01])$');
+
+			let curIdx = tmpInputDate.length - tmpNowDate.length;
+			for(let i=0; i < tmpNowDate.length; i++){
+				if(i + curIdx >= 0){
+					tmpResult = tmpResult.concat(tmpInputDate[i + curIdx]);
+				}
+				else{
+					tmpResult = tmpResult.concat(tmpNowDate[i]);
+				}
+			}
+
+			if(pattern.test(tmpResult.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'))){
+				// 입력한 날짜가 유효한 날짜이면 여기서 처리
+				/*
+				let temp;
+
+				if (this.objOpenInRow && this.objOpenInRow.useYN)
+					temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+				else
+					temp = document.querySelector('[name="' + this.openerName + '"]');
+
+				const openerObj = temp;
+				const info = GX.Calendar.dateFormatInfo(openerObj);
+				openerObj.value = (tmpResult.length == 0) ? tmpResult : GX.formatDate(tmpResult, info.format);
+				*/
+			}
+			result = false;
 		}
 		else {
 		   const info = GX.Calendar.dateFormatInfo(event.target);
@@ -798,7 +830,7 @@ GX = {
 		   patterns.text_6 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '(0[1-9]|[12][0-9]|3[01])$');
   
 		   word = eventKey;
-  
+
 		   if (word.length > 0 && patterns.char_0.test(word)) {
 			  if (word.length == 0) result = false;
 			  else {
@@ -1521,6 +1553,11 @@ GX = {
 			if (!this.isVisible()) {
 				document.body.style.overflow = 'hidden';
 				this.display('block');
+
+				// 날짜 입력 창이 화면 밖으로 벗어날 경우 위치 조정
+				if(window.innerHeight < this.calendarObj.clientHeight + this.calendarObj.getBoundingClientRect().y){
+					this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y - (this.calendarObj.clientHeight + 36)) + 'px';
+				}
 			}
 		},
 		hide: function () {
