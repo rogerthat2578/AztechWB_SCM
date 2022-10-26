@@ -15,8 +15,8 @@ let app = new Vue({
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
-            DelvDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            DelvDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            WorkDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            WorkDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
@@ -114,8 +114,8 @@ let app = new Vue({
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
-            vThis.queryForm.DelvDateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
-            vThis.queryForm.DelvDateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.WorkDate = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.WorkDateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
             vThis.queryForm.WorkOrderNo = '';
             vThis.queryForm.GoodItemName = '';
             vThis.queryForm.GoodItemNo = '';
@@ -142,7 +142,7 @@ let app = new Vue({
             });
 
             GX._METHODS_
-                .setMethodId('')    // 여기에 호출ID를 입력해주세요.
+                .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
                     if(data.length > 0){
                         let summaryList = {
@@ -171,7 +171,10 @@ let app = new Vue({
                         alert('조회 결과가 없습니다.');
                     }
                 }]);
-        }
+        },
+
+        /** 점프 **/
+        // api : PDWorkReportJumpQuery
     },
 
     created(){
@@ -195,7 +198,7 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 
             GX.VueGrid
-                .bodyRow(':class="{\'check\':isChecked(index)}"')
+                //.bodyRow(':class="{\'check\':isChecked(index)}"')
                 .item('ROWNUM').head('No.', '')
                 .item('WorkDate').head('작업일', '')
                 .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
@@ -207,18 +210,18 @@ let app = new Vue({
                 .item('ProdQty').head('생산수량', '').body(null, 'text-r')
                 .item('BadQty').head('불량수량', '').body(null, 'text-r')
                 .item('OKQty').head('양품수량', '').body(null, 'text-r')
-                .item('Price').head('단가', '').body(null, 'text-r')
-                .item('IsVAT').head('부가세포함', '')
+                .item('Price').head('단가', '').body(null, 'text-r') // + 추가필요
+                .item('IsVAT').head('부가세포함', '') // + 추가필요
                     .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" @click="selectedMart(index);"/></div>')
-                .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
-                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
-                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
-                .item('CurrName').head('통화', '')
-                .item('ExRate').head('환율', '')
-                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
-                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
-                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
-                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
+                .item('OSPCurAmt').head('금액', '').body(null, 'text-r') // + 추가필요
+                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r') // + 추가필요
+                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r') // + 추가필요
+                .item('CurrName').head('통화', '')    // + 추가필요
+                .item('ExRate').head('환율', '')  // + 추가필요
+                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r') // + 추가필요
+                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r') // + 추가필요
+                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r') // + 추가필요
+                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r') // + 추가필요
                 .item('SizeText').head('필번', '')
                 .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
                 .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
@@ -229,9 +232,9 @@ let app = new Vue({
                     .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" @click="selectedMart(index);"/></div>')
                 .item('IsGoodIn').head('입고', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" @click="selectedMart(index);"/></div>')
-                .item('Weight').head('중량', '').body(null, 'text-r')
+                .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
                 .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
-                .item('Width').head('폭', '').body(null, 'text-r')
+                .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
                 .item('Density').head('밀도', '').body(null, 'text-r')
                 .item('IsAccident').head('사고지', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" @click="selectedMart(index);"/></div>')

@@ -18,9 +18,9 @@ let app = new Vue({
             WorkDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             WorkOrderDateFr: '',
             WorkOrderDateTo: '',
-            GoodItemName: '',
-            GoodItemNo: '',
-            GoodItemSpec: '',
+            ItemName: '',
+            ItemNo: '',
+            Spec: '',
             CustSeq: ''
         },
         keyCombi: {
@@ -115,9 +115,9 @@ let app = new Vue({
             vThis.queryForm.WorkDateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
             vThis.queryForm.WorkOrderDateFr = '';
             vThis.queryForm.WorkOrderDateTo = '';
-            vThis.queryForm.GoodItemName = '';
-            vThis.queryForm.GoodItemNo = '';
-            vThis.queryForm.GoodItemSpec = '';
+            vThis.queryForm.ItemName = '';
+            vThis.queryForm.ItemNo = '';
+            vThis.queryForm.Spec = '';
             vThis.queryForm.CustSeq = '';
         },
 
@@ -140,7 +140,7 @@ let app = new Vue({
             });
 
             GX._METHODS_
-                .setMethodId('')    // 여기에 호출ID를 입력해주세요.
+                .setMethodId('ProdProgressInfoQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
                     if(data.length > 0){
 
@@ -166,6 +166,7 @@ let app = new Vue({
         // 저장
         save: function(){
             console.log("저장 실행");
+            // api : ProdProGressInfoSave
         }
     },
 
@@ -190,7 +191,7 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 
             GX.VueGrid
-                .bodyRow(':class="{\'check\':isChecked(index)}"')
+                //.bodyRow(':class="{\'check\':isChecked(index)}"')
                 .item('ROWNUM').head('No.', '')
                 .item('WorkOrderDate').head('작업지시일', '')
                 .item('WorkDate').head('작업예정일', '')
