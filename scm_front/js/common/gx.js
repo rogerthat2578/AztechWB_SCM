@@ -1476,6 +1476,7 @@ GX = {
 		},
 		open: function (name) {
 			if (this.openerName != name || !this.isVisible()) {
+				this.objOpenInRow = { useYN: false, idx: 0 };
 				this.viewType = 'd';
 
 				this.openerName = name;
