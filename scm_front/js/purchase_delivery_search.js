@@ -74,8 +74,10 @@ let app = new Vue({
                     }, 1000)
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q)
-                    vThis.search(vThis.initKeyCombi);
+                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                    vThis.search();
+                    vThis.initKeyCombi();
+                }
             }
         },
         /**우측상단 유저 정보 클릭 시 */
@@ -204,19 +206,26 @@ let app = new Vue({
             let e = event;
 
             // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
-            document.querySelectorAll('[class="fill-color-sel-row"]').forEach(ele => {
+            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
                 ele.classList.remove('fill-color-sel-row');
             });
-            e.target.parentNode.classList.add('fill-color-sel-row');
+            if (e.target.nodeName.toUpperCase() === 'TD')
+                e.target.parentNode.classList.add('fill-color-sel-row');
 
-            if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                let jumpData = [vThis.rows.Query[idx]];
-                if (jumpData.length > 0) {
-                    GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                    location.href = 'purchase_delivery.html';
-                } else 
-                    alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
-            }
+            GX.doubleClickRun(event.target, function () {
+                if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                    let tempObj = {}, jumpData = [];
+                    tempObj.DelvSeq = vThis.rows.Query[idx].DelvSeq;
+                    tempObj.DelvSerl = vThis.rows.Query[idx].DelvSerl;
+                    jumpData.push(tempObj);
+                    if (jumpData.length > 0 && !isNaN(tempObj.DelvSeq) && !isNaN(tempObj.DelvSerl)) {
+                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                        GX.SessionStorage.set('jumpSetMethodId', 'DelvItemListJump');
+                        location.href = 'purchase_delivery.html';
+                    } else 
+                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                }
+            });
         },
         /**조회 */
         search: function(callback) {
@@ -341,23 +350,23 @@ let app = new Vue({
             .item('PONo').head('발주번호', '')
             .item('SMQcTypeName').head('검사구분', '')
             .item('DelvInDate').head('입고일', '')
-            .item('ItemNo').head('품번', '')
-            .item('ItemName').head('품명', '')
-            .item('Spec').head('규격', '')
+            .item('ItemNo').head('품번', '').body(null, 'text-l')
+            .item('ItemName').head('품명', '').body(null, 'text-l')
+            .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
-            .item('Price').head('납품단가', '')
-            .item('Qty').head('금회납품수량', '')
+            .item('Price').head('납품단가', '').body(null, 'text-r')
+            .item('Qty').head('금회납품수량', '').body(null, 'text-r')
             .item('IsVAT').head('부가세여부', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" disabled="true" /></div>', '')
-            .item('CurAmt').head('금액', '')
-            .item('CurVAT').head('부가세', '')
-            .item('TotCurAmt').head('금액계', '')
+            .item('CurAmt').head('금액', '').body(null, 'text-r')
+            .item('CurVAT').head('부가세', '').body(null, 'text-r')
+            .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
             .item('CurrName').head('통화', '')
             .item('ExRate').head('환율', '')
-            .item('DomPrice').head('원화단가', '')
-            .item('DomAmt').head('원화금액', '')
-            .item('DomVAT').head('원화부가세', '')
-            .item('TotDomAmt').head('원화금액계', '')
+            .item('DomPrice').head('원화단가', '').body(null, 'text-r')
+            .item('DomAmt').head('원화금액', '').body(null, 'text-r')
+            .item('DomVAT').head('원화부가세', '').body(null, 'text-r')
+            .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
             .item('WHName').head('창고', '')
             .item('Remark').head('비고', '')
             .item('SizeName').head('사이즈', '')

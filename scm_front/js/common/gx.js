@@ -388,6 +388,9 @@ GX = {
 			}
 
 			let result = (name != null && data[name] != null) ? data[name] : '';
+			console.log('00000000000', name)
+			console.log('111111111', data)
+			console.log('222222222', result)
 			return (name != null) ? result : data;
 		}
 	},

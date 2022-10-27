@@ -75,8 +75,10 @@ let app = new Vue({
                     }, 1000)
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q)
-                    vThis.search(vThis.initKeyCombi);
+                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                    vThis.search();
+                    vThis.initKeyCombi();
+                }
             }
         },
         /**우측상단 유저 정보 클릭 시 */
@@ -207,30 +209,39 @@ let app = new Vue({
             let e = event;
 
             // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
-            document.querySelectorAll('[class="fill-color-sel-row"]').forEach(ele => {
+            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
                 ele.classList.remove('fill-color-sel-row');
             });
-            e.target.parentNode.classList.add('fill-color-sel-row');
+            if (e.target.nodeName.toUpperCase() === 'TD')
+                e.target.parentNode.classList.add('fill-color-sel-row');
 
             GX.doubleClickRun(event.target, function () {
                 if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let jumpData = [vThis.rows.Query[idx]];
-                    if (jumpData.length > 0) {
+                    let tempObj = {}, jumpData = [];
+                    tempObj.POSeq = vThis.rows.Query[idx].POSeq;
+                    tempObj.POSerl = vThis.rows.Query[idx].POSerl;
+                    jumpData.push(tempObj);
+                    if (jumpData.length > 0 && !isNaN(tempObj.POSeq) && !isNaN(tempObj.POSerl)) {
                         GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                        GX.SessionStorage.set('jumpSetMethodId', 'PUORDPOJump');
                         location.href = 'purchase_delivery.html';
                     } else 
                         alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
                 }
             });
         },
-        /**납품등록 화면으로 점프 */
+        /**납품등록 화면으로 점프. 여러행 */
         pageJump: function () {
             let vThis = this;
 
             let jumpData = [];
             for (let i in vThis.isCheckList) {
-                if (vThis.isCheckList.hasOwnProperty(i)) 
-                    jumpData.push(vThis.rows.Query[vThis.isCheckList[i]]);
+                if (vThis.isCheckList.hasOwnProperty(i)) {
+                    let tempObj = {};
+                    tempObj.POSeq = vThis.rows.Query[vThis.isCheckList[i]].POSeq;
+                    tempObj.POSerl = vThis.rows.Query[vThis.isCheckList[i]].POSerl;
+                    jumpData.push(tempObj);
+                }
             }
 
             /**

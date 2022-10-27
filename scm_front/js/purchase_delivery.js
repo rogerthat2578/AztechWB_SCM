@@ -16,28 +16,25 @@ let app = new Vue({
         },
         /**
          * 조회 조건
+         * 점프로 해당 화면으로 들어오면서 조회할때 사용함.
          */
         queryForm: {
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
             BizUnitName: '',
-            PODateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            PODateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            DelvPlanDateFr: '',
-            DelvPlanDateTo: '',
-            SMCurrStatus: 0,
-            SMCurrStatusName: '전체',
-            PONo: '',
-            ItemName: '',
-            ItemNo: '',
-            Spec: '',
+            DelvDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            DelvNo: '',
+            RemarkM: '',
+            SMImpType: 8008001,
+            SMImpTypeName: '내수',
+            CurrName: '',
+            ExRate: '',
         },
-        SMCurrStatusList: [
-            { key: 0, val: '전체' },
-            { key: 1, val: '진행중' },
-            { key: 2, val: '작성' },
-            { key: 3, val: '확정' },
-            // '전체', '진행중', '작성', '확정'
+        /**내외자구분 */
+        SMImpTypeList: [
+            { key: 8008001, val: '내수' },
+            { key: 8008002, val: 'Local1(후LC)' },
+            { key: 8008003, val: 'Local2(선LC)' },
         ],
         /**단축키로 기능 실행 (K-System 참고)
          * Control + Q = 조회
@@ -47,6 +44,13 @@ let app = new Vue({
             Q: false,
         },
         isCheckList: [],
+        jumpDataList: [],
+        jumpSetMethodId: '',
+        summaryArea: {
+            SumCurAmt: 0,
+            SumCurVAT: 0,
+            SumTotCurAmt: 0,
+        },
 	},
     methods: {
         /**이벤트 처리 */
@@ -75,8 +79,10 @@ let app = new Vue({
                     }, 1000)
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q)
-                    vThis.search(vThis.initKeyCombi);
+                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                    vThis.search(vThis.calSum);
+                    vThis.initKeyCombi();
+                }
             }
         },
         /**우측상단 유저 정보 클릭 시 */
@@ -99,8 +105,8 @@ let app = new Vue({
             let e = event;
 
             if (e.target.nodeName.toUpperCase() === 'LI') {
-                this.queryForm.SMCurrStatus = e.target.value;
-                this.queryForm.SMCurrStatusName = e.target.innerText;
+                this.queryForm.SMImpType = e.target.value;
+                this.queryForm.SMImpTypeName = e.target.innerText;
                 e.target.parentNode.style.display = 'none';
             } else {
                 if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
@@ -109,31 +115,9 @@ let app = new Vue({
                     e.target.nextElementSibling.style.display = 'none';
             }
         },
-        /**날짜 번경 후처리
-         * v: 날짜
-         * o: 날짜 input 엘리먼트
-         */
+        /**날짜 번경 후처리 */
         updateDate: function(v = '', o = null) {
-            if (v && o) {
-                let vThis = this;
-
-                let selEle = o;
-                let selVal = v;
-                let selEleName = selEle.getAttribute('name');
-                if (selEleName.indexOf('Fr') > -1) { // 선택한 날짜가 from일 때 to와 비교.
-                    if (new Date(selVal) > new Date(vThis.queryForm[selEleName.replace('Fr', 'To')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('Fr', 'To')];
-                    }
-                } else if (selEleName.indexOf('To') > -1) { // 선택한 날짜가 to일 때 from과 비교.
-                    if (new Date(selVal) < new Date(vThis.queryForm[selEleName.replace('To', 'Fr')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('To', 'Fr')];
-                    }
-                }
-            }
+            this.queryForm.DelvDate = v;
         },
         /**
          * 
@@ -155,16 +139,6 @@ let app = new Vue({
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
-            vThis.queryForm.PODateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
-            vThis.queryForm.PODateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
-            vThis.queryForm.DelvPlanDateFr = '';
-            vThis.queryForm.DelvPlanDateTo = '';
-            vThis.queryForm.SMCurrStatus = 0;
-            vThis.queryForm.SMCurrStatusName = '전체';
-            vThis.queryForm.PONo = '';
-            vThis.queryForm.ItemName = '';
-            vThis.queryForm.ItemNo = '';
-            vThis.queryForm.Spec = '';
         },
         initKeyCombi: function () {
             Object.keys(this.keyCombi).map(k => {
@@ -207,98 +181,65 @@ let app = new Vue({
             let e = event;
 
             // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
-            document.querySelectorAll('[class="fill-color-sel-row"]').forEach(ele => {
+            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
                 ele.classList.remove('fill-color-sel-row');
             });
-            e.target.parentNode.classList.add('fill-color-sel-row');
-
-            GX.doubleClickRun(event.target, function () {
-                if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let jumpData = [vThis.rows.Query[idx]];
-                    if (jumpData.length > 0)
-                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                    else 
-                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.')
-                }
-            });
+            if (e.target.nodeName.toUpperCase() === 'TD')
+                e.target.parentNode.classList.add('fill-color-sel-row');
         },
-        /**납품등록 화면으로 점프 */
-        pageJump: function () {
+        calSum: function () {
             let vThis = this;
-
-            let jumpData = [];
-            for (let i in vThis.isCheckList) {
-                if (vThis.isCheckList.hasOwnProperty(i)) 
-                    jumpData.push(vThis.rows.Query[vThis.isCheckList[i]]);
+            
+            if (vThis.rows.Query.length > 0) {
+                let calList = GX.deepCopy(vThis.rows.Query);
+                for (let i in calList) {
+                    if (calList.hasOwnProperty(i)) {
+                        Object.keys(vThis.summaryArea).map(k => {
+                            // if (!isNaN(calList[i][k.replace('Sum', '')]))
+                            //     vThis.summaryArea[k] += parseFloat(calList[i][k.replace('Sum', '')]);
+                        });
+                    }
+                }
             }
-
-            /**
-             * sessionStorage 사용.
-             * > 해당 탭 닫으면 없어짐.
-             * > 현재 PDA, SCM이 돌고있는 Web Server를 수정할 수 없음.
-             */
-            if (jumpData.length > 0)
-                GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-            else
-                alert('선택한 행이 없습니다.')
         },
         /**조회 */
         search: function(callback) {
             let vThis = this; 
 
             let params = GX.deepCopy(vThis.queryForm);
-
-            Object.keys(params).map((k) => {
-                if (k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1) {
-                    if (params[k].length > 0 && params[k].indexOf('-') > -1)
-                        params[k] = params[k].replace(/\-/g, '');
-                }
-            });
+            
+            let paramsList = [];
+            for (let i in vThis.jumpDataList) {
+                if (vThis.jumpDataList.hasOwnProperty(i))
+                    paramsList.push(Object.assign(params, vThis.jumpDataList[i]));
+            }
 
             GX._METHODS_
-            .setMethodId('PUORDPOQuery')
-            .ajax([params], [function (data) {
+            .setMethodId(vThis.jumpSetMethodId)
+            .ajax(paramsList, [function (data) {
                 if (data.length > 0) {
-                    // data for loop
-                    let noDataIndex = [];
-                    let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0};
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
-                            data[i].RowEdit = false;
-                            data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
-                            data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                            
-                            if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
-                                data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
-                            } else {
-                                data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                                noDataIndex.push(i);
-                            }
-
-                            Object.keys(summaryList).map((k) => {
-                                if (!isNaN(data[i][k.replace('sum', '')]))
-                                    summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
-                            });
                         }
                     }
-
-                    // bind data, bind summary data
+                    // 그리드와 바인딩
                     vThis.rows.Query = data;
-                    vThis.rows.QuerySummary = summaryList;
 
-                    /**DOM에 아직 그리드(table tags)가 다 그려지지 않아서 바로 DOM에 접근하면 Element를 못찾음... setTimeout 그냥 쓸까..? */
-                    // element for loop
-                    if (noDataIndex.length > 0) {
-                        setTimeout(() => {
-                            for (let i in noDataIndex) {
-                                if (noDataIndex.hasOwnProperty(i)) {
-                                    document.getElementsByName('DelvPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
-                                    vThis.rows.Query[noDataIndex[i]].RowEdit = true;
+                    // 마스터 영역 데이터 바인딩
+                    let oneData = data[0];
+                    Object.keys(vThis.queryForm).map(k => {
+                        if (k != 'CompanySeq' || k != 'BizUnit' || k != 'BizUnitName') {
+                            Object.keys(oneData).map(j => {
+                                if (k == j && GX._METHODS_.nvl(oneData[j]).length > 0) {
+                                    if (k === 'DelvDate')
+                                        vThis.queryForm[k] = oneData[j].length == 8 ? oneData[j].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : oneData[j];
+                                    else
+                                        vThis.queryForm[k] = oneData[j];
                                 }
-                            }
-                        }, 20);
-                    }
+                            });
+                        }
+                    });
                 } else {
                     vThis.rows.Query = [];
                     vThis.rows.QuerySummary = {};
@@ -317,7 +258,7 @@ let app = new Vue({
                 if (saveArrData[i].RowEdit) {
                     saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
                     saveArrData[i].WorkingTag = 'U';
-                    saveArrData[i].DelvPlanDate = saveArrData[i].DelvPlanDate.indexOf('-') > -1 ? saveArrData[i].DelvPlanDate.replace(/\-/g, "") : saveArrData[i].DelvPlanDate;
+                    saveArrData[i].DelvDate = saveArrData[i].DelvDate.indexOf('-') > -1 ? saveArrData[i].DelvDate.replace(/\-/g, "") : saveArrData[i].DelvDate;
                 } else {
                     saveArrData.splice(i, 1);
                 }
@@ -325,19 +266,53 @@ let app = new Vue({
 
             if (saveArrData.length > 0) {
                 GX._METHODS_
-                .setMethodId('PUORDPOSave')
+                .setMethodId('')
                 .ajax(saveArrData, [], [function (data) {
                     vThis.initSelected();
                     vThis.initKeyCombi();
                     vThis.rows.Query = [];
                     vThis.rows.QuerySummary = {};
                     alert('저장 성공');
-                    vThis.search();
                 }, function (data) {
                 }]);
             } else {
                 alert('파라메터 세팅 중<br>예외사항 발생.');
             }
+        },
+        delRow: function () {
+            let vThis = this;
+            
+            if (vThis.rows.Query.length < 1 || vThis.isCheckList.length == 0) {
+                alert('삭제할 데이터가 없습니다<br>삭제할 데이터를 선택 후<br>삭제해주세요.');
+            } else if (vThis.rows.Query.length == vThis.isCheckList.length) {
+                // 전체 선택 시 전체 삭제
+                if (confirm('모든 데이터를 삭제하시겠습니까?')) {
+                    vThis.del();
+                }
+            } else {
+                let temp = GX.deepCopy(vThis.rows.Query);
+                let tempChk = vThis.isCheckList.sort(function(a, b) {
+                    return b - a;
+                });
+
+                for (let i in tempChk) {
+                    if (tempChk.hasOwnProperty(i))
+                        temp.splice(tempChk[i], 1);
+                }
+
+                for (let i in temp) {
+                    if (temp.hasOwnProperty(i))
+                        temp[i].ROWNUM = parseInt(i) + 1;
+                }
+                
+                vThis.rows.Query = temp;
+                vThis.initSelected();
+            }
+        },
+        del: function () {
+            let vThis = this;
+
+            alert('전체 삭제');
         },
     },
     created() {
@@ -360,29 +335,26 @@ let app = new Vue({
             .item('ROWNUM').head('No.', '')
             .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
                 .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
-            .item('SMCurrStatusName').head('진행상태', '')
-            .item('PODate').head('발주일', '')
-            .item('PONo').head('발주번호', '')
-            .item('DelvDate').head('납기일', '')
-            .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
             .item('ItemName').head('품명', '').body(null, 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
-            .item('Qty').head('발주수량', '').body(null, 'text-r')
-            .item('Price').head('발주단가', '').body(null, 'text-r')
-            .item('CurAmt').head('발주금액', '').body(null, 'text-r')
+            .item('Qty').head('납품수량', '')
+                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent;" /></div>', '')
+            .item('Price').head('단가', '').body(null, 'text-r')
+            .item('CurAmt').head('금액', '').body(null, 'text-r')
+            .item('IsVAT').head('부가세여부', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" disabled="true" /></div>', 'text-r')
             .item('CurVAT').head('부가세', '').body(null, 'text-r')
             .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
-            .item('RemainQty').head('미납수량', '').body(null, 'text-r')
-            .item('DelvQty').head('납품수량', '').body(null, 'text-r')
-            .item('DelvCurAmt').head('납품금액', '').body(null, 'text-r')
-            .item('WHName').head('입고창고', '')
-            .item('Remark1').head('비고', '')
-            .item('SizeName').head('사이즈', '')
+            .item('DomPrice').head('원화단가', '').body(null, 'text-r')
+            .item('DomAmt').head('원화금액', '').body(null, 'text-r')
+            .item('DomVAT').head('원화부가세', '').body(null, 'text-r')
+            .item('TotDomAmt').head('원화금액계', '')
+            .item('WHName').head('창고', '')
+            .item('Remark').head('비고', '')
+                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent;" /></div>', '')
             .item('ColorNo').head('색상', '')
-            .item('UseSelect').head('사용부위', '')
             .loadTemplate('#grid', 'rows.Query');
         }
     },
@@ -408,5 +380,22 @@ let app = new Vue({
                 }
             }
         });
+
+        let jumpData = GX.SessionStorage.get('jumpData') != null ? JSON.parse(GX.SessionStorage.get('jumpData')) : [];
+        let jumpSetMethodId = GX.SessionStorage.get('jumpSetMethodId') != null ? GX.SessionStorage.get('jumpSetMethodId') : '';
+        if (jumpData.length > 0 && jumpSetMethodId.length > 0) {
+            jumpData.forEach(v => {
+                vThis.jumpDataList.push(v);
+            });
+            vThis.jumpSetMethodId = jumpSetMethodId;
+
+            GX.SessionStorage.remove('jumpData');
+            GX.SessionStorage.remove('jumpSetMethodId');
+
+            vThis.search(vThis.calSum);
+        } else {
+            alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+            history.back(-1);
+        }
     }
 });

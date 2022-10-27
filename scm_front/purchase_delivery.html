@@ -70,7 +70,7 @@
 									<label>납품일</label>
 								</li>
 								<li>
-									<input type="text">
+									<input type="text" class="datepicker" name="DelvDate" v-model.trim="queryForm.DelvDate" gx-datepicker="queryForm.DelvDate" @chagne="updateDate">
 								</li>
 							</ul>
 							<ul class="condition num">
@@ -78,7 +78,7 @@
 									<label>납품번호</label>
 								</li>
 								<li class="text">
-									<input type="text" readonly>
+									<input type="text" v-model="queryForm.DelvNo" readonly>
 								</li>
 							</ul>
 							<ul class="condition sub">
@@ -86,7 +86,7 @@
 									<label>특이사항</label>
 								</li>
 								<li class="text">
-									<input type="text">
+									<input type="text" v-model="queryForm.RemarkM">
 								</li>
 							</ul>				
 						</div>
@@ -97,10 +97,9 @@
 								</li>
 								<li>
 									<div class="select">
-										<input type="text" readonly>
+										<input type="text" class="drop-box-input" v-model="queryForm.SMImpTypeName" @click="openCloseDropBox" readonly>
 										<ul class="drop-box">
-											<li>내수</li>
-											<li>외수</li>
+											<li v-for="item in SMImpTypeList" @click="openCloseDropBox" :value="item.key">{{item.val}}</li>
 										</ul>
 									</div>
 								</li>
@@ -110,7 +109,7 @@
 									<label>통화</label>
 								</li>
 								<li class="txt">
-									<input type="text">
+									<input type="text" v-model="queryForm.CurrName" readonly>
 								</li>
 							</ul>
 							<ul class="condition currency">
@@ -118,7 +117,7 @@
 									<label>환율</label>
 								</li>
 								<li class="txt">
-									<input type="text">
+									<input type="text" v-model="queryForm.ExRate" readonly>
 								</li>
 							</ul>				
 						</div>
@@ -127,7 +126,7 @@
 						<ul class="condition value-1">
 							<li class="name">+ 금액계</li>
 							<li class="txt">
-								<input type="text">
+								<input type="text" v-model="summaryArea.SumAmt">
 								<span class="won">원</span>
 							</li>
 						</ul>
@@ -135,7 +134,7 @@
 						<ul class="condition value-2">
 							<li class="name">+ 부가세계</li>
 							<li class="txt">
-								<input type="text">
+								<input type="text" v-model="summaryArea.SumAmt">
 								<span class="won">원</span>
 							</li>
 						</ul>
@@ -143,7 +142,7 @@
 						<ul class="condition value-3">
 							<li class="name">= 금액총계</li>
 							<li class="txt">
-								<input type="text">
+								<input type="text" v-model="summaryArea.SumAmt">
 								<span class="won">원</span>
 							</li>
 						</ul>
@@ -153,7 +152,7 @@
 
 			<div class="main-data-container">
 				<div class="btn-row">
-					<button class="btn-stlye-06">행 삭제하기</button>
+					<button class="btn-stlye-06" @click="delRow">행 삭제하기</button>
 				</div>
 				<div class="data-table" id="grid"></div>
 			</div>
