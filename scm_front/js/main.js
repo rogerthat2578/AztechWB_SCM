@@ -2,10 +2,10 @@ let app = new Vue({
 	el: '#app',
 	data: {
 		leftMenu: GX._METHODS_.createLeftMenu(),
-		deptName: GX.Cookie.get('DeptName'),
-		userName: GX.Cookie.get('UserName'),
+		deptName: '',
+		userName: '',
 		params: GX.getParameters(),
-		BizUnitList: Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType'))), // 사업 단위 리스트
+		BizUnitList: [], // 사업 단위 리스트
 		/**
 		 * 조회 결과
          * rows.NoticeQuery 공지사항 1,2
@@ -64,10 +64,10 @@ let app = new Vue({
          * 조회 조건
          */
 		 queryForm: {
-            CompanySeq: GX.Cookie.get('CompanySeq'),
-            BizUnit: '1',
+            CompanySeq: '',
+            BizUnit: '',
 			DateYear: new Date().toLocaleDateString().substring(0, 4),
-			CustSeq: GX.Cookie.get('CustSeq'),
+			CustSeq: '',
         },
 		YearList: [],
 		ValTimer: null,
@@ -294,13 +294,22 @@ let app = new Vue({
 			
 			document.addEventListener('click', vThis.eventCheck, false);
 
-			let vYear = new Date().getFullYear();
-			vThis.YearList.push(vYear.toString(), (vYear - 1).toString(), (vYear - 2).toString());
-
-			// 사업단위가 여러개일 수 있음
+			/**
+			 * Default data setting
+			 * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+			 * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+             * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+			 */
+			vThis.deptName = GX.Cookie.get('DeptName');
+			vThis.userName = GX.Cookie.get('UserName');
+			vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
             vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+
+			let vYear = new Date().getFullYear();
+			vThis.YearList.push(vYear.toString(), (vYear - 1).toString(), (vYear - 2).toString());
 
 			GX.VueGrid
 			.init()
@@ -381,6 +390,7 @@ let app = new Vue({
 			.item('SumDomAmt').head('년계', '')
             .loadTemplate('#ordRptMonthGrid', 'rows.OrdRptMonthQuery');
         }
+
     },
 	mounted() {
 		// this.search(this.searchInterval, 30);

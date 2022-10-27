@@ -378,7 +378,6 @@ GX = {
 			//exdate.setTime(exdate.getTime() + (days*24*60*60*1000));
 			// 설정 일수만큼 현재시간에 만료값으로 지정
 			document.cookie = name + '=' + escape(value) + ((days == null) ? '' : '; expires=' + exdate.toUTCString());
-			//console.log(document.cookie, value);
 		},
 		get: function (name) {
 			let parseData = document.cookie.split(/[\=\s\;]/i);
@@ -388,9 +387,6 @@ GX = {
 			}
 
 			let result = (name != null && data[name] != null) ? data[name] : '';
-			console.log('00000000000', name)
-			console.log('111111111', data)
-			console.log('222222222', result)
 			return (name != null) ? result : data;
 		}
 	},

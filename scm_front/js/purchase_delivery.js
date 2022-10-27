@@ -2,10 +2,10 @@ let app = new Vue({
 	el: '#app',
 	data: {
 		leftMenu: GX._METHODS_.createLeftMenu(),
-		deptName: GX.Cookie.get('DeptName'),
-		userName: GX.Cookie.get('UserName'),
+		deptName: '',
+		userName: '',
 		params: GX.getParameters(),
-        BizUnitList: Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType'))), // 사업 단위 리스트
+		BizUnitList: [], // 사업 단위 리스트
         /**
          * rows.Query 조회 결과
          * rows.QuerySummary 조회 결과 합계 Object
@@ -19,8 +19,8 @@ let app = new Vue({
          * 점프로 해당 화면으로 들어오면서 조회할때 사용함.
          */
         queryForm: {
-            CompanySeq: GX.Cookie.get('CompanySeq'),
-            BizUnit: '1',
+            CompanySeq: '',
+            BizUnit: '',
             BizUnitName: '',
             DelvDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             DelvNo: '',
@@ -195,8 +195,8 @@ let app = new Vue({
                 for (let i in calList) {
                     if (calList.hasOwnProperty(i)) {
                         Object.keys(vThis.summaryArea).map(k => {
-                            // if (!isNaN(calList[i][k.replace('Sum', '')]))
-                            //     vThis.summaryArea[k] += parseFloat(calList[i][k.replace('Sum', '')]);
+                            if (!isNaN(calList[i][k.replace('Sum', '')]))
+                                vThis.summaryArea[k] += parseFloat(calList[i][k.replace('Sum', '')]);
                         });
                     }
                 }
@@ -325,10 +325,19 @@ let app = new Vue({
 			document.addEventListener('click', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
-            // 사업단위가 여러개일 수 있음
+            /**
+			 * Default data setting
+			 * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+			 * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+             * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+			 */
+			vThis.deptName = GX.Cookie.get('DeptName');
+			vThis.userName = GX.Cookie.get('UserName');
+			vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
             vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
             GX.VueGrid
             .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
@@ -344,7 +353,7 @@ let app = new Vue({
             .item('Price').head('단가', '').body(null, 'text-r')
             .item('CurAmt').head('금액', '').body(null, 'text-r')
             .item('IsVAT').head('부가세여부', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" disabled="true" /></div>', 'text-r')
+                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" disabled="true" /></div>', '')
             .item('CurVAT').head('부가세', '').body(null, 'text-r')
             .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
             .item('DomPrice').head('원화단가', '').body(null, 'text-r')
