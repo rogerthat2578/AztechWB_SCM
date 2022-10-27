@@ -272,19 +272,21 @@ let app = new Vue({
 				vThis.search(vThis.searchInterval, rtyTime);
 			}, rtyTime * 1000)
 		},
-		openDummyAlert: function(msg='alert message', callback) {
-            this.alertMsg = msg;
-            document.getElementById('dummyAlert').style.display = 'block';
+		openFakeDialog: function(idx = 0, callback) {
+            document.getElementsByClassName('fake-dialog-title')[0].innerText = this.rows.NoticeQuery[idx].Title;
+			document.getElementsByClassName('fake-dialog-content')[0].innerText = this.rows.NoticeQuery[idx].Contant;
+            document.getElementById('fakeDialog').style.display = 'block';
             if (typeof callback === 'function') callback;
         },
-        closeDummyAlert: function(callback) {
-            document.getElementById('dummyAlert').style.display = 'none';
-            this.alertMsg = '';
+        closeFakeDialog: function(callback) {
+			document.getElementsByClassName('fake-dialog-title')[0].innerText = '';
+			document.getElementsByClassName('fake-dialog-content')[0].innerText = '';
+            document.getElementById('fakeDialog').style.display = 'none';
             if (typeof callback === 'function') callback;
         },
     },
     created() {
-        let vThis = this;d       
+        let vThis = this;
 
 		if (!GX._METHODS_.isLogin()) location.replace('login');
         else {
@@ -303,14 +305,14 @@ let app = new Vue({
 			GX.VueGrid
 			.init()
             .item('RowNum').head('No.', '')
-            .item('Title', { eventSyntax: '@click="openDummyAlert"' }).head('제목', '')
+            .item('Title', { eventSyntax: '@click="openFakeDialog(index)"' }).head('제목', '')
             .item('BegDate').head('등록일', '')
             .loadTemplate('#noticeGrid1', 'rows.NoticeQuery');
 
 			GX.VueGrid
 			.init()
             .item('RowNum').head('No.', '')
-            .item('Title', { eventSyntax: '@click="openDummyAlert"' }).head('제목', '')
+            .item('Title', { eventSyntax: '@click="openFakeDialog(index)"' }).head('제목', '')
             .item('BegDate').head('등록일', '')
             .loadTemplate('#noticeGrid2', 'rows.NoticeQuery');
 
