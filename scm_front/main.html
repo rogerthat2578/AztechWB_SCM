@@ -158,13 +158,13 @@
 								<div class="current-wrap">
 									<div class="current-01">
 										<span class="title">납품현황 1</span>
-										차트 들어가는 자리, 배경은 흰색으로 수정 부탁드립니다.
+										차트
 									</div>
 								</div>
 								<div class="current-wrap">
 									<div class="current-01">
 										<span class="title">납품현황 2</span>
-										차트 들어가는 자리, 배경은 흰색으로 수정 부탁드립니다.
+										차트
 									</div>
 								</div>
 							</div>
@@ -187,7 +187,7 @@
 							<div class="info-container">
 								<div class="order-wrap">
 									<div class="order">
-										<div class="title">발주</div>
+										<div class="title">지시</div>
 										<ul class="top">
 											<li class="box">
 												<div class="name">이월</div>
@@ -213,14 +213,14 @@
 										</ul>
 										<ul class="bottom">
 											<li class="box">
-												<div class="name">발주잔량</div>
+												<div class="name">지시잔량</div>
 												<div class="sub">
 													<p>{{rows.OrdRptQuery.OrdLessQty}}<span class="unit">수량</span></p>
 													<p>{{rows.OrdRptQuery.OrdLessDomAmt}}<span class="won">천원</span></p>
 												</div>
 											</li>
 											<li class="box">
-												<div class="name">납기준수율</div>
+												<div class="name">작업준수율</div>
 												<div class="sub">
 													<p class="num">{{rows.OrdRptQuery.OrdOkRate}}<span class="per">%</span></p>
 												</div>
@@ -228,7 +228,7 @@
 										</ul>									
 									</div>
 									<div class="delivery">
-										<div class="title">납품</div>
+										<div class="title">실적</div>
 										<ul class="top">
 											<li class="box">
 												<div class="name">이월</div>
@@ -272,112 +272,8 @@
 								</div>
 
 								<div class="order-list">
-									<div class="title">발주 품목 현황</div>
-									<div class="order-table">
-										<table>
-											<thead>
-												<tr>
-													<td>No.</td>
-													<td>발주일</td>
-													<td>납기일</td>
-													<td>납품예정일</td>
-													<td>품번</td>
-													<td>품명</td>
-													<td>규격</td>
-													<td>단위</td>
-													<td>발주수량</td>
-													<td>잔량</td>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>1</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-												<tr>
-													<td>2</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-												<tr>
-													<td>3</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-												<tr>
-													<td>4</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-												<tr>
-													<td>5</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-												<tr>
-													<td>6</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-												<tr>
-													<td>7</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2022-06-01</td>
-													<td>2260132</td>
-													<td>W/100 1/6</td>
-													<td>YB106W</td>
-													<td>KG</td>
-													<td>10,000</td>
-													<td>10,000</td>
-												</tr>
-											</tbody>
-		
-										</table>
-									</div>
+									<div class="title">지시 품목 현황</div>
+									<div class="order-table" id="ordItemGrid"></div>
 								</div>
 							</div>
 						</div>
@@ -397,105 +293,18 @@
 								</div>
 								<div class="current-wrap top">
 									<span class="title">월별 현황</span>
-									<div class="month-table">
-										<table>
-											<thead>
-												<tr>
-													<td>구분</td>
-													<td>1월</td>
-													<td>2월</td>
-													<td>3월</td>
-													<td>4월</td>
-													<td>5월</td>
-													<td>6월</td>
-													<td>7월</td>
-													<td>8월</td>
-													<td>9월</td>
-													<td>10월</td>
-													<td>11월</td>
-													<td>12월</td>
-													<td>년계</td>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>발주금액</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>120,000,000</td>
-												</tr>
-												<tr>
-													<td>납품금액</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>1,000,000</td>
-													<td>120,000,000</td>
-												</tr>
-												<tr>
-													<td>불량율(%)</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-													<td>0.2</td>
-												</tr>
-												<tr>
-													<td>준수율(%)</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-													<td>99.8</td>
-												</tr>
-											</tbody>
-										</table>
+									<div class="month-table" id="ordRptMonthGrid"></div>
+								</div>
+								<div class="current-wrap">
+									<div class="current-01">
+										<span class="title">실적현황 1</span>
+										차트
 									</div>
 								</div>
 								<div class="current-wrap">
 									<div class="current-01">
-										<span class="title">납품현황 1</span>
-										차트 들어가는 자리, 배경은 흰색으로 수정 부탁드립니다.
-									</div>
-								</div>
-								<div class="current-wrap">
-									<div class="current-01">
-										<span class="title">납품현황 2</span>
-										차트 들어가는 자리, 배경은 흰색으로 수정 부탁드립니다.
+										<span class="title">실적현황 2</span>
+										차트
 									</div>
 								</div>
 							</div>

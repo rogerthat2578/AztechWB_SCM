@@ -9,8 +9,12 @@ let app = new Vue({
 		/**
 		 * 조회 결과
          * rows.NoticeQuery 공지사항 1,2
-		 * rows.PODelvQuery 발주/납품 이월/당일/누계/발주잔량/납기준수율
+		 * rows.PODelvQuery 발주/납품 카드
 		 * rows.POItemQuery 발주 품목 현황
+		 * rows.PODelvMonthQuery 발주/납품 월별 현황
+		 * rows.OrdRptQuery 작업지시/실적 카드
+		 * rows.OrdItemQuery 작업지시 품목 조회
+		 * rows.OrdRptMonthQuery 작업지시/실적 월별 현황
          */
 		 rows: {
             NoticeQuery: [],
@@ -53,6 +57,8 @@ let app = new Vue({
 				RptBadQty: 0,
 				RptBadRate: 0,
 			},
+			OrdItemQuery: [],
+			OrdRptMonthQuery: [],
         },
 		/**
          * 조회 조건
@@ -172,16 +178,27 @@ let app = new Vue({
 					for (let i in data) {
 						if (data.hasOwnProperty(i)) {
 							data[i].RowNum = parseInt(i) + 1;
-							data[i].DelvDate = GX._METHODS_.nvl(data[i].DelvDate).length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
 							data[i].PODate = GX._METHODS_.nvl(data[i].PODate).length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
+							data[i].DelvDate = GX._METHODS_.nvl(data[i].DelvDate).length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
 							data[i].DelvPlanDate = GX._METHODS_.nvl(data[i].DelvPlanDate).length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
 						}
 					}
 					vThis.rows.POItemQuery = data;
 				}
 			}, function (data) {
-				console.log('callback5', data)
+				// console.log('callback5', data)
 				// 외주
+				if (data.length > 0) {
+					for (let i in data) {
+						if (data.hasOwnProperty(i)) {
+							data[i].RowNum = parseInt(i) + 1;
+							data[i].WorkOrderDate = GX._METHODS_.nvl(data[i].WorkOrderDate).length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
+							data[i].WorkDate = GX._METHODS_.nvl(data[i].WorkDate).length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+							data[i].WorkPlanDate = GX._METHODS_.nvl(data[i].WorkPlanDate).length == 8 ? (data[i].WorkPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkPlanDate;
+						}
+					}
+					vThis.rows.OrdItemQuery = data;
+				}
 			}, function (data) {
 				// console.log('callback6', data)
 				// 구매
@@ -208,8 +225,30 @@ let app = new Vue({
 					}
 				}
 			}, function (data) {
-				console.log('callback7', data)
+				// console.log('callback7', data)
 				// 외주
+				if (data.length > 0) {
+					vThis.rows.OrdRptMonthQuery = [];
+					for (let i in data) {
+						if (data.hasOwnProperty(i)) {
+							let obj = {};
+							let SumAvgAmt = 0;
+							Object.keys(data[i]).map(k => {
+								if (k.indexOf('DomAmt') > -1) {
+									if (i < 2) SumAvgAmt += data[i][k];
+									else SumAvgAmt += data[i][k];
+									obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+								} else {
+									obj[k] = data[i][k];
+								}
+							})
+							if (i < 2) obj.SumDomAmt = SumAvgAmt.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+							else obj.SumDomAmt = (SumAvgAmt / 12).toFixed(1);
+
+							vThis.rows.OrdRptMonthQuery.push(obj);
+						}
+					}
+				}
 
 				// 조회 콜백
 				if (typeof callback == 'function') {
@@ -291,6 +330,21 @@ let app = new Vue({
 
 			GX.VueGrid
 			.init()
+            .item('RowNum').head('No.', '')
+            .item('WorkOrderDate').head('작업지시일', '')
+            .item('WorkDate').head('작업일', '')
+			.item('WorkPlanDate').head('작업예정일', '')
+			.item('ItemNo').head('품번', '')
+			.item('ItemName').head('품명', '')
+			.item('Spec').head('규격', '')
+			.item('SizeText').head('사이즈', '')
+			.item('UnitName').head('단위', '')
+			.item('POQty').head('발주수량', '')
+			.item('LessQty').head('잔량', '')
+            .loadTemplate('#ordItemGrid', 'rows.OrdItemQuery');
+
+			GX.VueGrid
+			.init()
             .item('Gubun').head('구분', '')
             .item('DomAmt01').head('1월', '')
             .item('DomAmt02').head('2월', '')
@@ -306,6 +360,24 @@ let app = new Vue({
 			.item('DomAmt12').head('12월', '')
 			.item('SumDomAmt').head('년계', '')
             .loadTemplate('#poDelvMonthGrid', 'rows.PODelvMonthQuery');
+
+			GX.VueGrid
+			.init()
+            .item('Gubun').head('구분', '')
+            .item('DomAmt01').head('1월', '')
+            .item('DomAmt02').head('2월', '')
+			.item('DomAmt03').head('3월', '')
+			.item('DomAmt04').head('4월', '')
+			.item('DomAmt05').head('5월', '')
+			.item('DomAmt06').head('6월', '')
+			.item('DomAmt07').head('7월', '')
+			.item('DomAmt08').head('8월', '')
+			.item('DomAmt09').head('9월', '')
+			.item('DomAmt10').head('10월', '')
+			.item('DomAmt11').head('11월', '')
+			.item('DomAmt12').head('12월', '')
+			.item('SumDomAmt').head('년계', '')
+            .loadTemplate('#ordRptMonthGrid', 'rows.OrdRptMonthQuery');
         }
     },
 	mounted() {
