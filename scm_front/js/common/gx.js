@@ -1754,5 +1754,3 @@ function logoutFnc() {
 		location.href = '/logout/proc';
 	}
 }
-
-_PARAMETERS_: null,
