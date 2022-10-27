@@ -412,6 +412,27 @@ GX = {
 			return localStorage.key(idx);
 		}
 	},
+	SessionStorage: {
+		data: sessionStorage,
+		set: function (name, value) {
+			sessionStorage.setItem(name, value);
+		},
+		get: function (name) {
+			return sessionStorage.getItem(name);
+		},
+		remove: function (name) {
+			sessionStorage.removeItem(name);
+		},
+		clear: function () {
+			sessionStorage.clear();
+		},
+		count: function () {
+			return sessionStorage.length;
+		},
+		key: function (idx) {
+			return sessionStorage.key(idx);
+		}
+	},
 	VueGrid: {
 		pushDatas: {},
 		headTemplates: [],

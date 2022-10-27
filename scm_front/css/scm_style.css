@@ -1202,6 +1202,10 @@ main {
   box-shadow: 2px 3px 5px rgb(0 0 0 / 12%);
 }
 
+.fill-color-sel-row {
+  background-color: #e6e9f8;
+}
+
 @media only screen and (min-width: 420px) and (max-width: 1900px) {
   body {
     min-width: 1900px;

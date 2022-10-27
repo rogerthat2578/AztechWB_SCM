@@ -21,13 +21,12 @@ let app = new Vue({
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
             BizUnitName: '',
-            PODateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            PODateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            DelvPlanDateFr: '',
-            DelvPlanDateTo: '',
+            DelvDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            DelvDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
             SMCurrStatus: 0,
             SMCurrStatusName: '전체',
             PONo: '',
+            DelvNo: '',
             ItemName: '',
             ItemNo: '',
             Spec: '',
@@ -155,10 +154,8 @@ let app = new Vue({
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
-            vThis.queryForm.PODateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
-            vThis.queryForm.PODateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
-            vThis.queryForm.DelvPlanDateFr = '';
-            vThis.queryForm.DelvPlanDateTo = '';
+            vThis.queryForm.DelvDateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.DelvDateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
             vThis.queryForm.SMCurrStatus = 0;
             vThis.queryForm.SMCurrStatusName = '전체';
             vThis.queryForm.PONo = '';
@@ -214,33 +211,9 @@ let app = new Vue({
 
             GX.doubleClickRun(event.target, function () {
                 if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let jumpData = [vThis.rows.Query[idx]];
-                    if (jumpData.length > 0)
-                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                    else 
-                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.')
+                    console.log('더블클릭 발생 행 index', idx);
                 }
             });
-        },
-        /**납품등록 화면으로 점프 */
-        pageJump: function () {
-            let vThis = this;
-
-            let jumpData = [];
-            for (let i in vThis.isCheckList) {
-                if (vThis.isCheckList.hasOwnProperty(i)) 
-                    jumpData.push(vThis.rows.Query[vThis.isCheckList[i]]);
-            }
-
-            /**
-             * sessionStorage 사용.
-             * > 해당 탭 닫으면 없어짐.
-             * > 현재 PDA, SCM이 돌고있는 Web Server를 수정할 수 없음.
-             */
-            if (jumpData.length > 0)
-                GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-            else
-                alert('선택한 행이 없습니다.')
         },
         /**조회 */
         search: function(callback) {
@@ -256,25 +229,26 @@ let app = new Vue({
             });
 
             GX._METHODS_
-            .setMethodId('PUORDPOQuery')
+            .setMethodId('DelvItemListQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
                     // data for loop
-                    let noDataIndex = [];
+                    // let noDataIndex = [];
                     let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0};
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
-                            data[i].RowEdit = false;
+                            // data[i].RowEdit = false;
+                            data[i].DelvInDate = data[i].DelvInDate.length == 8 ? (data[i].DelvInDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvInDate;
                             data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
                             data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
                             
-                            if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
-                                data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
-                            } else {
-                                data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                                noDataIndex.push(i);
-                            }
+                            // if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
+                            //     data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
+                            // } else {
+                            //     data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
+                            //     noDataIndex.push(i);
+                            // }
 
                             Object.keys(summaryList).map((k) => {
                                 if (!isNaN(data[i][k.replace('sum', '')]))
@@ -289,16 +263,16 @@ let app = new Vue({
 
                     /**DOM에 아직 그리드(table tags)가 다 그려지지 않아서 바로 DOM에 접근하면 Element를 못찾음... setTimeout 그냥 쓸까..? */
                     // element for loop
-                    if (noDataIndex.length > 0) {
-                        setTimeout(() => {
-                            for (let i in noDataIndex) {
-                                if (noDataIndex.hasOwnProperty(i)) {
-                                    document.getElementsByName('DelvPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
-                                    vThis.rows.Query[noDataIndex[i]].RowEdit = true;
-                                }
-                            }
-                        }, 20);
-                    }
+                    // if (noDataIndex.length > 0) {
+                    //     setTimeout(() => {
+                    //         for (let i in noDataIndex) {
+                    //             if (noDataIndex.hasOwnProperty(i)) {
+                    //                 document.getElementsByName('DelvPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
+                    //                 vThis.rows.Query[noDataIndex[i]].RowEdit = true;
+                    //             }
+                    //         }
+                    //     }, 20);
+                    // }
                 } else {
                     vThis.rows.Query = [];
                     vThis.rows.QuerySummary = {};
@@ -356,33 +330,43 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 
             GX.VueGrid
-            .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
+            .bodyRow('@click="selectRow(index);"')
             .item('ROWNUM').head('No.', '')
-            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
-                .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
-            .item('SMCurrStatusName').head('진행상태', '')
+            .item('SMDelvInTypeName').head('입고진행상태', '')
+            .item('DelvDate').head('납품일', '')
             .item('PODate').head('발주일', '')
             .item('PONo').head('발주번호', '')
-            .item('DelvDate').head('납기일', '')
-            .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
-            .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('ItemName').head('품명', '').body(null, 'text-l')
-            .item('Spec').head('규격', '').body(null, 'text-l')
+            .item('SMQcTypeName').head('검사구분', '')
+            .item('DelvInDate').head('입고일', '')
+            .item('ItemNo').head('품번', '')
+            .item('ItemName').head('품명', '')
+            .item('Spec').head('규격', '')
             .item('UnitName').head('단위', '')
-            .item('Qty').head('발주수량', '').body(null, 'text-r')
-            .item('Price').head('발주단가', '').body(null, 'text-r')
-            .item('CurAmt').head('발주금액', '').body(null, 'text-r')
-            .item('CurVAT').head('부가세', '').body(null, 'text-r')
-            .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
-            .item('RemainQty').head('미납수량', '').body(null, 'text-r')
-            .item('DelvQty').head('납품수량', '').body(null, 'text-r')
-            .item('DelvCurAmt').head('납품금액', '').body(null, 'text-r')
-            .item('WHName').head('입고창고', '')
-            .item('Remark1').head('비고', '')
+            .item('Price').head('납품단가', '')
+            .item('Qty').head('금회납품수량', '')
+            .item('IsVAT').head('부가세여부', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" disabled="true" /></div>', '')
+            .item('CurAmt').head('금액', '')
+            .item('CurVAT').head('부가세', '')
+            .item('TotCurAmt').head('금액계', '')
+            .item('CurrName').head('통화', '')
+            .item('ExRate').head('환율', '')
+            .item('DomPrice').head('원화단가', '')
+            .item('DomAmt').head('원화금액', '')
+            .item('DomVAT').head('원화부가세', '')
+            .item('TotDomAmt').head('원화금액계', '')
+            .item('WHName').head('창고', '')
+            .item('Remark').head('비고', '')
             .item('SizeName').head('사이즈', '')
+            .item('Purpose').head('용도', '')
             .item('ColorNo').head('색상', '')
+            .item('OrderItemNo').head('Order품번', '')
+            .item('OrderItemName').head('Order품명', '')
             .item('UseSelect').head('사용부위', '')
+            .item('BuyerNo').head('Buyer No.', '')
+            .item('BangJukTypeName').head('방적형태', '')
+            .item('ProcureName').head('조달형태', '')
+            .item('ColorGbn').head('담농색구분', '')
             .loadTemplate('#grid', 'rows.Query');
         }
     },
