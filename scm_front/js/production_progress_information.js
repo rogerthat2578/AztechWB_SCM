@@ -104,6 +104,16 @@ let app = new Vue({
             }
         },
 
+        updateRowData: function(idx = null){
+            let evtTarget = event.target;
+            if(idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
+                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != ''){
+                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
+                this.rows.Query[idx].RowEdit = true;
+                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+            }
+        },
+
         // 초기화
         init: function(){
             let vThis = this;
@@ -125,6 +135,11 @@ let app = new Vue({
             Object.keys(this.keyCombi).map(k => {
                 this.keyCombi[k] = false;
             });
+        },
+
+        applyAll: function (name, idx) {
+            event.target.setAttribute('gx-datepicker', idx);
+            GX.Calendar.openInRow(name, { useYN: true, idx: idx });
         },
 
         /** 조회 **/
@@ -152,6 +167,15 @@ let app = new Vue({
                                 data[i].WorkOrderDate = data[i].WorkOrderDate.length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
                                 data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
 
+                                if(data[i].CutInPutDate != null && data[i].CutInPutDate.replace(/\ /g, '') != '' && data[i].CutInPutDate != undefined){
+                                    data[i].CutInPutDate = data[i].CutInPutDate.length == 8 ? (data[i].CutInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].CutInPutDate;
+                                }
+                                if(data[i].SewInPutDate != null && data[i].SewInPutDate.replace(/\ /g, '') != '' && data[i].SewInPutDate != undefined){
+                                    data[i].SewInPutDate = data[i].SewInPutDate.length == 8 ? (data[i].SewInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].SewInPutDate;
+                                }
+                                if(data[i].FinishInPutDate != null && data[i].FinishInPutDate.replace(/\ /g, '') != '' && data[i].FinishInPutDate != undefined){
+                                    data[i].FinishInPutDate = data[i].FinishInPutDate.length == 8 ? (data[i].FinishInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].FinishInPutDate;
+                                }
                             }
                         }
                         vThis.rows.Query = data;
@@ -163,10 +187,39 @@ let app = new Vue({
                 }])
         },
 
-        // 저장
+        /** 저장 **/
         save: function(){
-            console.log("저장 실행");
-            // api : ProdProGressInfoSave
+            let vThis = this;
+            let saveArrData = GX.deepCopy(vThis.rows.Query);
+
+            // DataBlock1에 공통으로 들어가야 하는 파라미터 세팅
+            for(let i = saveArrData.length - 1; i >= 0; i--){
+                if(saveArrData[i].RowEdit){
+                    saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
+                    saveArrData[i].WorkingTag = 'U';
+                    saveArrData[i].CutInPutDate = saveArrData[i].CutInPutDate.indexOf('-') > -1 ? saveArrData[i].CutInPutDate.replace(/\-/g, "") : saveArrData[i].CutInPutDate;
+                    saveArrData[i].SewInPutDate = saveArrData[i].SewInPutDate.indexOf('-') > -1 ? saveArrData[i].SewInPutDate.replace(/\-/g, "") : saveArrData[i].SewInPutDate;
+                    saveArrData[i].FinishInPutDate = saveArrData[i].FinishInPutDate.indexOf('-') > -1 ? saveArrData[i].FinishInPutDate.replace(/\-/g, "") : saveArrData[i].FinishInPutDate;
+                } else{
+                    saveArrData.splice(i, 1);
+                }
+            }
+
+            console.log(saveArrData);
+
+            if(saveArrData.length > 0){
+                GX._METHODS_
+                    .setMethodId('ProdProGressInfoSave')
+                    .ajax(saveArrData, [], [function(data){
+                        vThis.initKeyCombi();
+                        vThis.rows.Query = [];
+                        alert('저장 성공');
+                        vThis.search();
+                    }]);
+
+            } else{
+                alert('파라메터 세팅 중<br>예외사항 발생.');
+            }
         }
     },
 
@@ -199,12 +252,18 @@ let app = new Vue({
                 .item('ItemName').head('품명', '').body(null, 'text-l')
                 .item('ItemNo').head('품번', '').body(null, 'text-l')
                 .item('Spec').head('규격', '').body(null, 'text-l')
-                .item('CutInPutDate').head('재단최초투입일', '') // Input
-                .item('CutQty').head('재단량', '') // Input
-                .item('SewInPutDate').head('봉제최초투입일', '') // Input
-                .item('SewQty').head('봉제량', '') // Input
-                .item('FinishInPutDate').head('완성투입일', '') // Input
-                .item('FinishQty').head('완성량', '') // Input
+                .item('CutInPutDate').head('재단최초투입일', '')
+                    .body('<div><input type="text" class="datepicker" name="CutInPutDate" gx-datepicker="" attr-condition="" :value="row.CutInPutDate" @input="updateRowData(index)" @click="applyAll(\'CutInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .item('CutQty').head('재단량', '')
+                    .body('<div><input type="number" name="CutQty" attr-condition="" :value="row.CutQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+                .item('SewInPutDate').head('봉제최초투입일', '')
+                    .body('<div><input type="text" class="datepicker" name="SewInPutDate" gx-datepicker="" attr-condition="" :value="row.SewInPutDate" @input="updateRowData(index)" @click="applyAll(\'SewInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .item('SewQty').head('봉제량', '')
+                    .body('<div><input type="number" name="SewQty" attr-condition="" :value="row.SewQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+                .item('FinishInPutDate').head('완성투입일', '')
+                    .body('<div><input type="text" class="datepicker" name="FinishInPutDate" gx-datepicker="" attr-condition="" :value="row.FinishInPutDate" @input="updateRowData(index)" @click="applyAll(\'FinishInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .item('FinishQty').head('완성량', '')
+                    .body('<div><input type="number" name="FinishQty" attr-condition="" :value="row.FinishQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
                 .loadTemplate('#grid', 'rows.Query');
         }
     },
