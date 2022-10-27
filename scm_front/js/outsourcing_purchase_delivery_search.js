@@ -201,7 +201,7 @@ let app = new Vue({
 
         if(!GX._METHODS_.isLogin()) location.replace('login');
         else{
-            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_finger.gif" alt=""></div>', 'prepend');
+            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 
             document.addEventListener('click', vThis.eventCheck, false);
             document.addEventListener('keydown', vThis.eventCheck, false);
