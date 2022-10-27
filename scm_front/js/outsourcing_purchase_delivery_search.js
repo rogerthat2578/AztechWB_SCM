@@ -141,6 +141,8 @@ let app = new Vue({
                 }
             });
 
+            let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
+
             GX._METHODS_
                 .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
@@ -154,6 +156,23 @@ let app = new Vue({
                             if(data.hasOwnProperty(i)){
                                 data[i].ROWNUM = parseInt(i) + 1;
                                 data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+                                data[i].IsVAT = parseInt(data[i].IsVAT);
+                                data[i].IsLastProc = parseInt(data[i].IsLastProc);
+                                data[i].IsMatInput = parseInt(data[i].IsMatInput);
+                                data[i].IsGoodIn = parseInt(data[i].IsGoodIn);
+                                data[i].IsAccident = parseInt(data[i].IsAccident);
+                                data[i].ProdQty = data[i].ProdQty.toString().replace(regex, '$1,');
+                                data[i].BadQty = data[i].BadQty.toString().replace(regex, '$1,');
+                                data[i].OKQty = data[i].OKQty.toString().replace(regex, '$1,');
+                                data[i].Price = data[i].Price.toString().replace(regex, '$1,');
+                                data[i].OSPCurAmt = data[i].OSPCurAmt.toString().replace(regex, '$1,');
+                                data[i].OSPCurVAT = data[i].OSPCurVAT.toString().replace(regex, '$1,');
+                                data[i].OSPTotCurAmt = data[i].OSPTotCurAmt.toString().replace(regex, '$1,');
+                                data[i].ExRate = data[i].ExRate.toString().replace(regex, '$1,');
+                                data[i].OSPDomPrice = data[i].OSPDomPrice.toString().replace(regex, '$1,');
+                                data[i].OSPDomAmt = data[i].OSPDomAmt.toString().replace(regex, '$1,');
+                                data[i].OSPDomVAT = data[i].OSPDomVAT.toString().replace(regex, '$1,');
+                                data[i].OSPTotDomAmt = data[i].OSPTotDomAmt.toString().replace(regex, '$1,');
 
                                 Object.keys(summaryList).map((k) => {
                                     if(!isNaN(data[i][k.replace('sum', '')]))
@@ -161,7 +180,7 @@ let app = new Vue({
                                 });
                             }
                         }
-
+                        console.log(data);
                         vThis.rows.Query = data;
                         vThis.rows.QuerySummary = summaryList;
 
@@ -210,34 +229,34 @@ let app = new Vue({
                 .item('ProdQty').head('생산수량', '').body(null, 'text-r')
                 .item('BadQty').head('불량수량', '').body(null, 'text-r')
                 .item('OKQty').head('양품수량', '').body(null, 'text-r')
-                .item('Price').head('단가', '').body(null, 'text-r') // + 추가필요
-                .item('IsVAT').head('부가세포함', '') // + 추가필요
-                    .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" @click="selectedMart(index);"/></div>')
-                .item('OSPCurAmt').head('금액', '').body(null, 'text-r') // + 추가필요
-                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r') // + 추가필요
-                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r') // + 추가필요
-                .item('CurrName').head('통화', '')    // + 추가필요
-                .item('ExRate').head('환율', '')  // + 추가필요
-                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r') // + 추가필요
-                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r') // + 추가필요
-                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r') // + 추가필요
-                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r') // + 추가필요
+                .item('Price').head('단가', '').body(null, 'text-r')
+                .item('IsVAT').head('부가세포함', '')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" :checked="row.IsVAT" disabled/></div>')
+                .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
+                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
+                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
+                .item('CurrName').head('통화', '')
+                .item('ExRate').head('환율', '').body(null, 'text-r')
+                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
+                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
+                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
+                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
                 .item('SizeText').head('필번', '')
                 .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
                 .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
                 .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
                 .item('IsLastProc').head('최종공정', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" @click="selectedMart(index);"/></div>')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" :checked="row.IsLastProc" disabled/></div>')
                 .item('IsMatInput').head('자재투입', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" @click="selectedMart(index);"/></div>')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" :checked="row.IsMatInput" disabled/></div>')
                 .item('IsGoodIn').head('입고', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" @click="selectedMart(index);"/></div>')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" :checked="row.IsGoodIn" disabled/></div>')
                 .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
                 .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
                 .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
                 .item('Density').head('밀도', '').body(null, 'text-r')
                 .item('IsAccident').head('사고지', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" @click="selectedMart(index);"/></div>')
+                    .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
                 .loadTemplate('#grid', 'rows.Query');
 
             // 참고화면 : FrmWPDSFCWorkReport_03_KNIC
