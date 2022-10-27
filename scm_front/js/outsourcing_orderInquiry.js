@@ -311,7 +311,23 @@ let app = new Vue({
 
         /** 납품등록 점프 **/
         jumpOutPoDelv: function(){
-            console.log("납품등록 점프 실행");
+            let vThis = this;
+            let current = vThis.isCheckList.length - 1;
+
+            if(current >= 0) {
+                let jumpData = GX.deepCopy(vThis.rows.Query);
+                for (let i = jumpData.length - 1; i >= 0; i--) {
+                    if (vThis.isCheckList.indexOf(i) == -1) {
+                        jumpData.splice(i, 1);
+                    }
+                }
+                // 세션 스토리지에 체크한 값을 넣고 납품등록 화면으로 이동
+                GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                location.href = 'purchase_delivery.html';
+
+            } else{
+                alert("선택된 데이터가 없습니다.");
+            }
         }
     },
 
@@ -320,7 +336,7 @@ let app = new Vue({
 
         if(!GX._METHODS_.isLogin()) location.replace('login');
         else{
-            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_finger.gif" alt=""></div>', 'prepend');
+            GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 
             document.addEventListener('click', vThis.eventCheck, false);
             document.addEventListener('keydown', vThis.eventCheck, false);
