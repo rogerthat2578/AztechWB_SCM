@@ -24,7 +24,6 @@ GX = {
 	_DATAS_: {},
 	_METHODS_: {},
 	_MATCHES_: null,
-	_PARAMETERS_: null,
 	_BOARD_ID_: null,
 	_SITE_ID_: null,
 	_IS_SPINNER_: false,
@@ -36,13 +35,13 @@ GX = {
 				if (typeof selector.length == 'undefined') obj = selector;
 				else obj = selector[0];
 			}
-
+			
 			if (obj != null) {
 				if (obj.style.display != '') return obj.style.display;
 				else return document.defaultView.getComputedStyle(obj).getPropertyValue('display');
 			}
 		}
-
+		
 		return '';
 	},
 	elementSiblingIndex: function (selector) {
@@ -59,15 +58,15 @@ GX = {
 	eventTrigger: function (obj, eventName) {
 		if (obj != null) {
 			let objs;
-
+			
 			if (typeof obj == 'string') objs = document.querySelectorAll(obj);
 			else if (typeof obj == 'object') {
 				if (typeof obj.length == 'undefined') objs.push(obj);
 				else objs = obj;
 			}
-
+			
 			let e = new Event(eventName);
-
+			
 			for (let i in objs) {
 				if (objs.hasOwnProperty(i)) objs[i].dispatchEvent(e);
 			}
@@ -123,7 +122,7 @@ GX = {
 		},
 		init: function () {
 			let inputObj = document.querySelectorAll('[gx-time="Y"]');
-
+			
 			for (let i in inputObj) {
 				if (inputObj.hasOwnProperty(i)) {
 					inputObj[i].setAttribute('maxlength', '5');
@@ -140,7 +139,7 @@ GX = {
 		init: function () {
 			// select box에 scannr enter evnet 막기 시작 /////////////
 			let selectObj = document.querySelectorAll('select');
-
+			
 			for (let i in selectObj) {
 				if (selectObj.hasOwnProperty(i)) selectObj[i].setAttribute('onkeydown', 'GX.SelectBoxEnterPrevention.fire();');
 			}
@@ -262,8 +261,8 @@ GX = {
 	getParameters: function () {
 		if (this._PARAMETERS_ == null) {
 			this._PARAMETERS_ = {};
-			var matches = location.search.split(/[\?\&]?([^\?\&\=]+)\=([^\?\&\=]+)/i)
 			for (var i in matches) {
+				var matches = location.search.split(/[\?\&]?([^\?\&\=]+)\=([^\?\&\=]+)/i)
 				if (matches.hasOwnProperty(i) && Number(i) % 3 == 1) this._PARAMETERS_[matches[i]] = matches[Number(i) + 1];
 			}
 		}
@@ -296,11 +295,11 @@ GX = {
 		//GX.initForm('add-form-default');
 		if (!Array.isArray(extra)) extra = [];
 		let objs = document.querySelectorAll('[gx-init="' + initGroup + '"]');
-
+		
 		for (let i in objs) {
 			if (objs.hasOwnProperty(i)) {
 				objs[i].value = objs[i].getAttribute('gx-default');
-
+				
 				for (let eIdx in extra) {
 					if (extra.hasOwnProperty(eIdx) && objs[i].hasAttribute(extra[eIdx])) {
 						objs[i].setAttribute(extra[eIdx], objs[i].getAttribute('gx-default'));
@@ -385,7 +384,7 @@ GX = {
 			for (let i in parseData) {
 				if (parseData.hasOwnProperty(i) && (Number(i) % 3) == 0) data[parseData[i]] = unescape(parseData[Number(i) + 1]);
 			}
-
+			
 			let result = (name != null && data[name] != null) ? data[name] : '';
 			return (name != null) ? result : data;
 		}
@@ -474,7 +473,7 @@ GX = {
 				let bindRowspan = (options['rowspan'] != null) ? ' rowspan="' + options['rowspan'] + '"' : '';
 				let bindEvent = (options['eventSyntax'] != null) ? ' ' + options['eventSyntax'] : '';
 				let bindStyle = (options['styleSyntax'] != null) ? ' ' + options['styleSyntax'] : '';
-
+				
 				this[type + 'Templates'].push('<td' + bindEvent + bindClass + bindColspan + bindRowspan + bindStyle + '>' + bindValue + '</td>');
 
 				if (this.newLines.indexOf(key) != -1) {
@@ -508,7 +507,7 @@ GX = {
 					for (let type in this.pushDatas[key]) {
 						this.push(type, key, this.pushDatas[key][type][0], this.pushDatas[key][type][1], this.pushDatas[key][type][2]);
 					}
-
+					
 					if (this.pushDatas[key]['body'] == null) {
 						let className = (this.pushDatas[key]['head'] == null) ? {} : this.pushDatas[key]['head'][1];
 						let options = (this.pushDatas[key]['head'] == null) ? {} : this.pushDatas[key]['head'][2];
@@ -516,7 +515,7 @@ GX = {
 					}
 				}
 			}
-
+			
 			let templates = [];
 			let types = ['head', 'body'];
 			let isExist = false;
@@ -528,18 +527,18 @@ GX = {
 			}
 			if (isExist) {
 				templates.push('<table>');
-
+				
 				for (let i in types) {
 					if (this[types[i] + 'Templates'].length > 0) {
 						let bodyFor = (types[i] == 'body') ? ' v-for="(row, index) in ' + rowsName + '"' : '';
-
+						
 						templates.push('<t' + types[i] + '>');
 						templates.push('<template' + bodyFor + '>');
 						templates.push('<tr' + this.rowProperties[types[i]] + '>');
 						templates.push(this[types[i] + 'Templates'].join(''));
 						templates.push('</tr>');
 						templates.push('</template>');
-
+						
 						templates.push('</t' + types[i] + '>');
 					}
 				}
@@ -553,18 +552,18 @@ GX = {
 		byteCalculation: function (bytes) {
 			var retFormat = "0";
 			var size = bytes;
-
+			
 			var s = ["bytes", "KB", "MB", "GB", "TB", "PB"];
-
+			
 			if (bytes != "0") {
 				var idx = Math.floor(Math.log(size) / Math.log(1024));
 				var ret = ((size / Math.pow(1024, Math.floor(idx))));
-
+				
 				retFormat = (ret + '').replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " " + s[idx];
 			} else {
 				retFormat += " " + s[0];
 			}
-
+			
 			return retFormat;
 		}
 	},
@@ -585,12 +584,12 @@ GX = {
 			title = encodeURIComponent($.trim(title));
 			var url = tg + sUrl + '&title=' + title;
 			var opt = 'left=0, top=0, width=557, height=400, scrollbars=yes, resizable=no';
-
+			
 			this.newopen(url, opt);
 		},
 		//kakaotalk
 		kakaotalk: function (title, sUrl, pic, desc) {
-
+			
 			title = $.trim(title);
 			/*
 			Kakao.Link.sendScrap({
@@ -600,12 +599,12 @@ GX = {
 				}
 			});
 			
-
+			
 			Kakao.Story.open({
-				  url: sUrl,
-				  text: title
-				});
-*/
+				url: sUrl,
+				text: title
+			});
+			*/
 			Kakao.Link.sendDefault({
 				objectType: 'text',
 				text: title,
@@ -629,7 +628,7 @@ GX = {
 			document.body.removeChild(textarea);
 			alert("URL이 복사되었습니다.")
 			*/
-
+			
 			var dummy = document.createElement("input");
 			document.body.appendChild(dummy);
 			dummy.value = sUrl;
@@ -637,7 +636,7 @@ GX = {
 			document.execCommand("copy");
 			document.body.removeChild(dummy);
 			alert(msg);
-
+			
 			return false;
 		},
 		//newopen
@@ -664,23 +663,23 @@ GX = {
 				spinnerHtml += '<p>처리중..</p>';
 				spinnerHtml += '</div>';
 			}
-
+			
 			this.obj = document.createElement("div");
 			this.obj.id = containerId || "loading";
 			this.obj.style.display = "none";
-
+			
 			this.obj.className = containerClass || 'loading-spinner vertical-center';
 			this.obj.innerHTML = spinnerHtml;
 			/*
 			this.obj ==
 			<div class="loading-wrap">
-				<div class="container"><img src="img/loading.gif" alt=""><span>처리중입니다...</span></div>
+			<div class="container"><img src="img/loading.gif" alt=""><span>처리중입니다...</span></div>
 			</div>
 			*/
 			if (appendPosition == 'append')
-				document.body.append(this.obj);
+			document.body.append(this.obj);
 			else if (appendPosition == 'prepend')
-				document.body.prepend(this.obj);
+			document.body.prepend(this.obj);
 		},
 		show: function () {
 			this.obj.style.display = "block";
@@ -728,7 +727,7 @@ GX = {
 		if (typeof curDate == 'object') resultDate = curDate;
 		else {
 			let parseData = curDate.split(/[\-\s:\.]/);
-
+			
 			let year = (parseData[0] != null) ? Number(parseData[0]) : 1970;
 			let month = (parseData[1] != null) ? Number(parseData[1]) : 1;
 			let day = (parseData[2] != null) ? Number(parseData[2]) : 1;
@@ -736,12 +735,12 @@ GX = {
 			let minutes = (parseData[4] != null) ? Number(parseData[4]) : 0;
 			let seconds = (parseData[5] != null) ? Number(parseData[5]) : 0;
 			let milliseconds = (parseData[6] != null) ? Number(parseData[6]) : 0;
-
+			
 			resultDate = new Date(year, month - 1, day, hours, minutes, seconds, milliseconds);//curDate
 		}
-
+		
 		timegap = (today - resultDate) / (60 * 60 * 1000);
-
+		
 		let curYear = String(resultDate.getFullYear());
 		let curMonth = String(resultDate.getMonth() + 1);
 		let curDay = String(resultDate.getDate());
@@ -777,7 +776,7 @@ GX = {
 				resultDate = curYear + '-' + curMonth.padStart(2, '0') + '-' + curDay.padStart(2, '0');
 			}
 		}
-
+		
 		return resultDate;
 	},
 	doubleClickRun: function (obj, callback) {
@@ -792,7 +791,7 @@ GX = {
 		//console.log(event.target.value.test(/^\d{1,4}[^\d]*\d{1,2}[^\d]*\d{1,2}[^\d]*/))
 		let result = true;
 		let word = '';
-  
+		
 		let eventKey = (event.key == null || event.key == 'Unidentified') ? '' : event.key;
   
 		if (['F1', 'F4', 'F5', 'Shift', 'Control', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(eventKey) != -1) result = false;
@@ -815,17 +814,17 @@ GX = {
 					tmpResult = tmpResult.concat(tmpNowDate[i]);
 				}
 			}
-
+			
 			if(pattern.test(tmpResult.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'))){
 				// 입력한 날짜가 유효한 날짜이면 여기서 처리
 				/*
 				let temp;
-
+				
 				if (this.objOpenInRow && this.objOpenInRow.useYN)
-					temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 				else
-					temp = document.querySelector('[name="' + this.openerName + '"]');
-
+				temp = document.querySelector('[name="' + this.openerName + '"]');
+				
 				const openerObj = temp;
 				const info = GX.Calendar.dateFormatInfo(openerObj);
 				openerObj.value = (tmpResult.length == 0) ? tmpResult : GX.formatDate(tmpResult, info.format);
@@ -834,159 +833,159 @@ GX = {
 			result = false;
 		}
 		else {
-		   const info = GX.Calendar.dateFormatInfo(event.target);
-		   const delimiterPattern = (info.delimiter.length > 0) ? '\\' + info.delimiter : '';
-		   let patterns = {};
-		   patterns.char_0 = new RegExp('[\\d' + delimiterPattern + ']');//0
-		   patterns.char_1 = new RegExp('^[01]$');//8
-		   patterns.char_2 = new RegExp('^[0123]$');//8
+			const info = GX.Calendar.dateFormatInfo(event.target);
+			const delimiterPattern = (info.delimiter.length > 0) ? '\\' + info.delimiter : '';
+			let patterns = {};
+			patterns.char_0 = new RegExp('[\\d' + delimiterPattern + ']');//0
+			patterns.char_1 = new RegExp('^[01]$');//8
+			patterns.char_2 = new RegExp('^[0123]$');//8
+			
+			patterns.text_0 = new RegExp('^[1-9]\\d{0,3}$');
+			patterns.text_1 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '$');
+			patterns.text_2 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '[01]$');
+			patterns.text_3 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])$');
+			patterns.text_4 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '$');
+			patterns.text_5 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '[0123]$');
+			patterns.text_6 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '(0[1-9]|[12][0-9]|3[01])$');
   
-		   patterns.text_0 = new RegExp('^[1-9]\\d{0,3}$');
-		   patterns.text_1 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '$');
-		   patterns.text_2 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '[01]$');
-		   patterns.text_3 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])$');
-		   patterns.text_4 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '$');
-		   patterns.text_5 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '[0123]$');
-		   patterns.text_6 = new RegExp('^[1-9]\\d{0,3}' + delimiterPattern + '(0[1-9]|1[012])' + delimiterPattern + '(0[1-9]|[12][0-9]|3[01])$');
-  
-		   word = eventKey;
-
-		   if (word.length > 0 && patterns.char_0.test(word)) {
-			  if (word.length == 0) result = false;
+			word = eventKey;
+			
+			if (word.length > 0 && patterns.char_0.test(word)) {
+				if (word.length == 0) result = false;
 			  else {
-				 word = event.target.value + word;
-				 //console.log(info);
-				 if (info.delimiter.length == 0) {
-					if (word.length <= 4) {
-					   if (patterns.text_0.test(word)) result = false;
-					}
+				  word = event.target.value + word;
+				  //console.log(info);
+				  if (info.delimiter.length == 0) {
+					  if (word.length <= 4) {
+						  if (patterns.text_0.test(word)) result = false;
+						}
 					else if (word.length == 5) {
 					   if (patterns.text_2.test(word)) result = false;
 					}
 					else if (word.length == 6) {
-					   if (patterns.text_3.test(word)) result = false;
+						if (patterns.text_3.test(word)) result = false;
 					}
 					else if (word.length == 7) {
 					   if (patterns.text_5.test(word)) result = false;
 					}
 					else if (word.length == 8) {
-					   if (patterns.text_6.test(word)) {
-						  let matches = word.match(/^(\d{4})(\d{2})(\d{2})$/);
-						  let part = [];
-						  part[0] = matches[1];
-						  part[1] = GX.zeroFill(Number(matches[2]), 1);
-						  part[2] = GX.zeroFill(Number(matches[3]), 1);
-						  let checkDateStr = part.join('-');
-						  if (GX.formatDate(checkDateStr, 'Y-M-D') == checkDateStr) result = false;
-					   }
+						if (patterns.text_6.test(word)) {
+							let matches = word.match(/^(\d{4})(\d{2})(\d{2})$/);
+							let part = [];
+							part[0] = matches[1];
+							part[1] = GX.zeroFill(Number(matches[2]), 1);
+							part[2] = GX.zeroFill(Number(matches[3]), 1);
+							let checkDateStr = part.join('-');
+							if (GX.formatDate(checkDateStr, 'Y-M-D') == checkDateStr) result = false;
+						}
 					}
-  
-				 }
+					
+				}
 				 else if (info.delimiter.length == 1) {
-					if (word.length <= 4) {
-					   if (patterns.text_0.test(word)) result = false;
-					}
-					else if (word.length == 5) {
-					   if (patterns.text_1.test(word)) result = false;
-					   else if (patterns.char_1.test(eventKey)) {
-						  result = false;
-						  event.target.value = event.target.value + info.delimiter;
-					   }
-					}
-					else if (word.length == 6) {
-					   if (patterns.text_2.test(word)) result = false;
-					}
-					else if (word.length == 7) {
-					   if (patterns.text_3.test(word)) result = false;
-					}
-					else if (word.length == 8) {
-					   if (patterns.text_4.test(word)) result = false;
+					 if (word.length <= 4) {
+						 if (patterns.text_0.test(word)) result = false;
+						}
+						else if (word.length == 5) {
+							if (patterns.text_1.test(word)) result = false;
+							else if (patterns.char_1.test(eventKey)) {
+								result = false;
+								event.target.value = event.target.value + info.delimiter;
+							}
+						}
+						else if (word.length == 6) {
+							if (patterns.text_2.test(word)) result = false;
+						}
+						else if (word.length == 7) {
+							if (patterns.text_3.test(word)) result = false;
+						}
+						else if (word.length == 8) {
+							if (patterns.text_4.test(word)) result = false;
 					   else if (patterns.char_2.test(eventKey)) {
-						  result = false;
-						  event.target.value = event.target.value + info.delimiter;
-					   }
+						   result = false;
+						   event.target.value = event.target.value + info.delimiter;
+						}
 					}
 					else if (word.length == 9) {
-					   if (patterns.text_5.test(word)) result = false;
+						if (patterns.text_5.test(word)) result = false;
 					}
 					else if (word.length == 10) {
-					   if (patterns.text_6.test(word)) {
-						  let part = word.split(info.delimiter);
-						  //part[0] = String(Number(part[0]));
-						  //if(part[0].length <= 2) part[0] = '19' + part[0];
-						  part[1] = GX.zeroFill(Number(part[1]), 1);
-						  part[2] = GX.zeroFill(Number(part[2]), 1);
-						  console.log(GX.formatDate(word, info.format))
-						  if (GX.formatDate(word, info.format) == part.join(info.delimiter)) result = false;
-					   }
+						if (patterns.text_6.test(word)) {
+							let part = word.split(info.delimiter);
+							//part[0] = String(Number(part[0]));
+							//if(part[0].length <= 2) part[0] = '19' + part[0];
+							part[1] = GX.zeroFill(Number(part[1]), 1);
+							part[2] = GX.zeroFill(Number(part[2]), 1);
+							console.log(GX.formatDate(word, info.format))
+							if (GX.formatDate(word, info.format) == part.join(info.delimiter)) result = false;
+						}
 					}
-  
-  
-				 }
-  
-			  }
-  
-		   }
-  
-		   /*
-		   if(word.length > 0 && /[\d\-]/.test(word)){
-			  
-			  if(word.length == 0) result = false;
-			  else {
-				 word = event.target.value + word;
-				 if(word.length <= 4){
+					
+					
+				}
+				
+			}
+			
+		}
+		
+		/*
+		if(word.length > 0 && /[\d\-]/.test(word)){
+			
+			if(word.length == 0) result = false;
+			else {
+				word = event.target.value + word;
+				if(word.length <= 4){
 					if(/^[1-9]\d{0,3}$/.test(word)) result = false;
-				 }
-				 else if(word.length == 5){
+				}
+				else if(word.length == 5){
 					if(/^[1-9]\d{0,3}\-$/.test(word)) result = false;
 					else if(/[\d\-]/.test(event.key)){
-					   result = false;
-					   event.target.value = event.target.value + '-';
+						result = false;
+						event.target.value = event.target.value + '-';
 					}
-				 }
-				 else if(word.length == 6){
+				}
+				else if(word.length == 6){
 					if(/^[1-9]\d{0,3}\-[01]$/.test(word)) result = false;
-				 }
-				 else if(word.length == 7){
+				}
+				else if(word.length == 7){
 					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])$/.test(word)) result = false;
-				 }
-				 else if(word.length == 8){
+				}
+				else if(word.length == 8){
 					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-$/.test(word)) result = false;
 					else if(/[\d\-]/.test(event.key)){
-					   result = false;
-					   event.target.value = event.target.value + '-';
+						result = false;
+						event.target.value = event.target.value + '-';
 					}
-				 }
-				 else if(word.length == 9){
+				}
+				else if(word.length == 9){
 					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-[0123]$/.test(word)) result = false;
 				 }
 				 else if(word.length == 10){
-					if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(word)){
-					   let part = word.split('-');
-					   //part[0] = String(Number(part[0]));
-					   //if(part[0].length <= 2) part[0] = '19' + part[0];
-					   part[1] = GX.zeroFill(Number(part[1]), 1);
+					 if(/^[1-9]\d{0,3}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(word)){
+						 let part = word.split('-');
+						 //part[0] = String(Number(part[0]));
+						 //if(part[0].length <= 2) part[0] = '19' + part[0];
+						 part[1] = GX.zeroFill(Number(part[1]), 1);
 					   part[2] = GX.zeroFill(Number(part[2]), 1);
 					   console.log(GX.formatDate(word, 'Y-M-D'))
 					   if(GX.formatDate(word, 'Y-M-D') == part.join('-')) result = false;
 					}
-				 }
-			  }
-		   }*/
-		}
-  
-		if (result) {
-		   // if(isPass){
-		   //    event.target.value = event.target.value + eventKey;
-		   //    event.target.setAttribute('readonly', 'readonly');
-		   // }
-		   // else event.preventDefault();
-  
-		   event.preventDefault();
+				}
+			}
+		}*/
+	}
+	
+	if (result) {
+		// if(isPass){
+			//    event.target.value = event.target.value + eventKey;
+			//    event.target.setAttribute('readonly', 'readonly');
+			// }
+			// else event.preventDefault();
+			
+			event.preventDefault();
 		}
 		//alert(event.target.temp +'='+ event.target.value);
-  
-	 },
+		
+	},
 	inputTypeDateEventAfterHandler: function () {
 		//alert(event.type)
 		//if(event.target.hasAttribute('readonly')) event.target.removeAttribute('readonly');
@@ -1018,7 +1017,7 @@ GX = {
 					m: 'gx-calendar-month',
 					y: 'gx-calendar-years'
 				},
-
+				
 				control: 'gx-calendar-buttons',
 				today: 'today',
 				select: 'date-select'
@@ -1053,7 +1052,7 @@ GX = {
 				result.m = Number(matches[2]);
 				result.d = Number(matches[3]);
 			}
-
+			
 			return result;
 		},
 		createElement: function (tagName, content, attributes) {
@@ -1077,19 +1076,19 @@ GX = {
 			for (let key in calendarInputs) {
 				if (calendarInputs.hasOwnProperty(key)) {
 					calendarInputs[key].setAttribute('inputmode', 'none');
-
+					
 					calendarInputs[key].addEventListener('click', function () {
 						GX.Calendar.open(event.target.name);
 					}, false); //inputDateCalendar
 					calendarInputs[key].addEventListener('blur', function () {
 						GX.Calendar.selectMode();
 					}, false); //inputDateDirectPrevention
-
+					
 					if (this.config.useInputTypeDate) {
 						calendarInputs[key].addEventListener('keydown', GX.inputTypeDateEventHandler, false);
 						//calendarInputs[key].addEventListener('input', GX.inputTypeDateEventHandler, false);
 						calendarInputs[key].addEventListener('keyup', GX.inputTypeDateEventAfterHandler, false);
-
+						
 					}
 				}
 			}
@@ -1097,11 +1096,11 @@ GX = {
 		before: function () {
 			let ly = 0;
 			let lm = 0;
-
+			
 			if (this.viewType == 'd') {
 				ly = this.endDateOfMonth.this.year;
 				lm = this.endDateOfMonth.this.month - 1;
-
+				
 				if (this.endDateOfMonth.this.month == 1) {
 					ly = this.endDateOfMonth.this.year - 1;
 					lm = 12;
@@ -1120,11 +1119,11 @@ GX = {
 		next: function () {
 			let ny = 0;
 			let nm = 0;
-
+			
 			if (this.viewType == 'd') {
 				ny = this.endDateOfMonth.this.year;
 				nm = this.endDateOfMonth.this.month + 1;
-
+				
 				if (this.endDateOfMonth.this.month == 12) {
 					ny = this.endDateOfMonth.this.year + 1;
 					nm = 1;
@@ -1162,7 +1161,7 @@ GX = {
 		},
 		openDaySelect: function () {
 			this.isInClick = true;
-
+			
 			let remained = this.endDateOfMonth.this.day % 7;
 			let ld = this.endDateOfMonth.last.weekday;
 			let nd = 7 - (this.endDateOfMonth.this.weekday + 1);
@@ -1174,7 +1173,7 @@ GX = {
 					days.push({ date: GX.formatDate(dateStr + String(this.endDateOfMonth.last.day - d), 'Y-M-D'), d: this.endDateOfMonth.last.day - d });
 				}
 			}
-
+			
 			dateStr = String(this.endDateOfMonth.this.year) + '-' + String(this.endDateOfMonth.this.month) + '-'
 			for (d = 1; d <= this.endDateOfMonth.this.day; d++) {
 				days.push({ date: GX.formatDate(dateStr + String(d), 'Y-M-D'), d: d });
@@ -1186,7 +1185,7 @@ GX = {
 			for (d = 1; d <= nd; d++) {
 				days.push({ date: GX.formatDate(dateStr + String(d), 'Y-M-D'), d: d });
 			}
-
+			
 			let metrics = [];
 			let isColorOpacity = true;
 			let colorOpacity = '';
@@ -1194,47 +1193,47 @@ GX = {
 			for (i = 0; i < 7; i++) {
 				metrics.push(this.cell('', this.weekendNames[i].name, this.weekendNames[i].color, ''));
 			}
-
+			
 			let temp;
 			if (this.objOpenInRow && this.objOpenInRow.useYN)
-				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 			else
-				temp = document.querySelector('[name="' + this.openerName + '"]');
+			temp = document.querySelector('[name="' + this.openerName + '"]');
 			const openerObj = temp;
 			let inputDate = (openerObj != null) ? openerObj.value : '';
-
+			
 			const parseDate = this.parseNowDate(inputDate);
 			if (inputDate.length > 0 && parseDate.y != null) inputDate = GX.formatDate(new Date(parseDate.y, parseDate.m - 1, parseDate.d), 'Y-M-D');
-
+			
 			let todayClassName = '';
 			for (i = 0; i < days.length; i++) {
 				if (days[i].d == 1) isColorOpacity = !isColorOpacity;
-
+				
 				colorOpacity = isColorOpacity ? '55' : 'FF';
-
+				
 				todayClassName = (days[i].date == this.thisDate) ? this.config.classes.today : '';
 				if (days[i].date == inputDate) todayClassName = this.config.classes.select;
-
+				
 				metrics.push(this.cell(days[i].date, String(days[i].d), this.weekendNames[i % 7].color + colorOpacity, todayClassName));
-
+				
 			}
 			document.getElementById(this.calendarObj.id + '-view').className = this.config.classes.viewWrap.d;
 			this.insertView('view', metrics.join(''));
-
-
+			
+			
 		},
 		openMonthSelect: function () {
 			this.isInClick = true;
 			let metrics = [];
 			let now = this.parseNowDate();
-
+			
 			let year = 1;
 			const viewTypeValue = document.getElementById(this.calendarObj.id + '-viewtype').innerHTML;
-
+			
 			matches = viewTypeValue.match(/^(\d{4,})[^\d]*/);
 			year = Number(matches[1]);
-
-
+			
+			
 			metrics.push('<div class="' + this.config.classes.view.m + '">');
 			let todayMonthClassName = '';
 			for (let i = 1; i <= 12; i++) {
@@ -1252,16 +1251,16 @@ GX = {
 			let end = year + 11;
 			let metrics = [];
 			let now = this.parseNowDate();
-
+			
 			metrics.push('<div class="' + this.config.classes.view.y + '">');
-
+			
 			let todayYearClassName = '';
 			for (let i = begin; i <= end; i++) {
 				todayYearClassName = (Number(now.y) == i) ? this.config.classes.today : '';
 				//metrics.push('<span class="'+todayYearClassName+'" style="width:25%;" onclick="GX.Calendar.selectYear('+i+');">'+i+'</span>');
 				metrics.push('<span style="width:' + this.config.monthSelectWidth + '" class="' + todayYearClassName + '" onclick="GX.Calendar.selectYear(' + i + ');">' + i + '</span>');
 			}
-
+			
 			metrics.push('</div>');
 			document.getElementById(this.calendarObj.id + '-view').className = this.config.classes.viewWrap.y;
 			this.insertView('view', metrics.join(''));
@@ -1283,21 +1282,21 @@ GX = {
 			if (this.objOpenInRow && this.objOpenInRow.useYN)
 				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 			else
-				temp = document.querySelector('[name="' + this.openerName + '"]');
+			temp = document.querySelector('[name="' + this.openerName + '"]');
 			const openerObj = temp;
 			const info = GX.Calendar.dateFormatInfo(openerObj);
 			openerObj.value = (date.length == 0) ? date : GX.formatDate(date, info.format);//date;
-
+			
 			this.config.callback(date, openerObj.getAttribute(this.calendarObj.id)); //app.listQueryForm[this.openerName] = date;
 			//gx-calendar="listQueryForm.InOutDateFr
 			this.offset();
 			this.close();
 		},
-
+		
 		setWeekendNames: function (weekendNames) {
 			this.weekendNames = weekendNames;
 		},
-
+		
 		box: function (calendarName) {
 			let now = this.parseNowDate()
 			let dateObj = new Date(now.y, now.m - 1, now.d);
@@ -1326,16 +1325,16 @@ GX = {
 		set: function (year, month) {
 			// 지난 달의 마지막날 날짜와 요일 구하기
 			this.endDateOfMonth.last = this.getDateOfMonth(year, month - 1);
-
+			
 			// 이번 달의 마지막날 날짜와 요일 구하기
 			this.endDateOfMonth.this = this.getDateOfMonth(year, month);
-
+			
 			let now = this.parseNowDate();
 			this.yearRange.begin = Number(now.y - 100);
 			this.yearRange.end = Number(now.y + 100);
-
+			
 			document.getElementById(this.calendarObj.id + '-control').style.display = 'none';
-
+			
 			let viewTypeValue = '';
 			if (this.viewType == 'd') {
 				viewTypeValue = String(year) + '년 &nbsp;' + GX.zeroFill(month, 1) + '월';
@@ -1353,10 +1352,10 @@ GX = {
 				this.openYearSelect(year);
 				//this.calendarObj.style.height = '430px';//'255px';
 			}
-
+			
 			document.getElementById(this.calendarObj.id + '-viewtype').innerHTML = viewTypeValue;
-
-
+			
+			
 		},
 		setConfig: function (configures) {
 			for (let k in this.config) {
@@ -1370,17 +1369,17 @@ GX = {
 
 			// 현재 날짜
 			this.thisDate = GX.formatDate(GX.nowDate().full, 'Y-M-D');
-
+			
 			const calendarName = calendarId;
 			this.inputLink(calendarName);
-
+			
 			this.calendarObj = this.createElement('div', '', { id: calendarName, className: this.config.classes.container });
 			//this.calendarObj.className = this.config.classes.container;
 			//this.calendarObj.style.width = '96%';
 			this.calendarObj.style.height = this.config.height;
-
+			
 			this.hide();//this.calendarObj.style.display = 'none';
-
+			
 			this.calendarObj.innerHTML = this.box(calendarName);
 			this.bind('appendChild', document.body, this.calendarObj);
 			//document.querySelectorAll('[' + this.calendarObj.id + ']');
@@ -1391,44 +1390,44 @@ GX = {
 				//console.log('this.isInClick', vThis.isInClick, event.target.hasAttribute(calendarId))
 				let temp;
 				if (this.objOpenInRow && this.objOpenInRow.useYN)
-					temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 				else
-					temp = document.querySelector('[name="' + this.openerName + '"]');
+				temp = document.querySelector('[name="' + this.openerName + '"]');
 				const openerObj = temp;
 				if (!event.target.hasAttribute(calendarId) && !vThis.isInClick && event.target != temp && event.target.closest('#' + calendarName) == null) {
 					vThis.hide();
 				}
 				vThis.isInClick = false;
 			};
-
+			
 			return this;
 		},
 		getLoadYearMonth: function () {
 			let temp;
 			if (this.objOpenInRow && this.objOpenInRow.useYN)
-				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 			else
 				temp = document.querySelector('[name="' + this.openerName + '"]');
-			const openerObj = temp;
-			const inputDate = (openerObj != null) ? openerObj.value : '';
-			const matches = inputDate.match(/^(\d{4,})[^\d]*(\d{2,2})[^\d]*(\d{2,2})[^\d]*$/);
-			let result = {};
-			if (matches != null) {
-				result.y = Number(matches[1]);
-				result.m = Number(matches[2]);
-
-			}
-			else if (this.endDateOfMonth.this != null) {
-				result.y = this.endDateOfMonth.this.year;
-				result.m = this.endDateOfMonth.this.month;
-			}
-			else {
-				console.log(this.endDateOfMonth.this)
-				let now = this.parseNowDate();
+				const openerObj = temp;
+				const inputDate = (openerObj != null) ? openerObj.value : '';
+				const matches = inputDate.match(/^(\d{4,})[^\d]*(\d{2,2})[^\d]*(\d{2,2})[^\d]*$/);
+				let result = {};
+				if (matches != null) {
+					result.y = Number(matches[1]);
+					result.m = Number(matches[2]);
+					
+				}
+				else if (this.endDateOfMonth.this != null) {
+					result.y = this.endDateOfMonth.this.year;
+					result.m = this.endDateOfMonth.this.month;
+				}
+				else {
+					console.log(this.endDateOfMonth.this)
+					let now = this.parseNowDate();
 				result.y = now.y;
 				result.m = now.m;
 			}
-
+			
 			return result;
 		},
 		changeViewType: function (isInit) {
@@ -1455,9 +1454,9 @@ GX = {
 						matches = viewTypeValue.match(/^(\d{4,})[^\d]*$/);
 						y = Number(matches[1]);
 					}
-
+					
 				}
-
+				
 				if (y > 0) {
 					GX.Calendar.set(y, m);
 					this.offset();
@@ -1482,34 +1481,34 @@ GX = {
 					let calendarWidth = parseFloat((this.calendarObj.offsetWidth == 0) ? this.config.width : this.calendarObj.offsetWidth) + calendarShadowWidth;
 					let bodyHeight = parseFloat(document.body.offsetHeight);
 					let bodyWidth = parseFloat(document.body.offsetWidth);
-
+					
 					let top = 0;
 
 					if (openerTop - calendarHeight >= 0) top = openerTop - calendarHeight;
 					else if ((openerTop + openerHeight) + calendarHeight >= bodyHeight) top = (openerTop + openerHeight);
 					
 					if (calendarHeight == 0) calendarHeight = parseFloat(this.config.height);
-
+					
 					let y = bodyHeight - calendarHeight;
 					if (y > (openerTop + openerHeight)) y = (openerTop + openerHeight);
 					else if ((openerTop - calendarHeight) >= 0) y = (openerTop - calendarHeight);
 					this.calendarObj.style.top = String(y) + 'px';
-
+					
 					let x = bodyWidth - calendarWidth;
 					if (x > openerLeft) x = openerLeft;
-
+					
 					this.calendarObj.style.left = String(x) + 'px';
 				}
 			}
 		},
-
+		
 		setMode: function (mode) {
 			if (this.objOpenInRow && this.objOpenInRow.useYN) {
 				if (this.openerName != null && this.openerName.length > 0)
-					document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx].setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
+				document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx].setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
 			} else {
 				if (this.openerName != null && this.openerName.length > 0)
-					document.querySelector('[name="' + this.openerName + '"]').setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
+				document.querySelector('[name="' + this.openerName + '"]').setAttribute('inputmode', mode); // 스캐너 입력박스 - 포커스 인 일때 모바일 가상 키보드 막기 기본 설정
 			}
 		},
 		selectMode: function () {
@@ -1520,36 +1519,36 @@ GX = {
 			this.close();
 			let temp;
 			if (this.objOpenInRow && this.objOpenInRow.useYN)
-				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+			temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 			else
 				temp = document.querySelector('[name="' + this.openerName + '"]');
-			const openerObj = temp;
-			openerObj.focus();
-		},
-		open: function (name) {
-			if (this.openerName != name || !this.isVisible()) {
-				this.objOpenInRow = { useYN: false, idx: 0 };
-				this.viewType = 'd';
-
-				this.openerName = name;
-				this.selectMode();
-
-				let loadYearMonth = this.getLoadYearMonth();
-				this.set(loadYearMonth.y, loadYearMonth.m);
-				this.offset();
-				this.show();
-				document.querySelector('[name="' + this.openerName + '"]').blur();// 모바일 문제로 커서가 달력을 가리는 문제로 추가
-			}
-			else if (this.openerName == name) this.close();
+				const openerObj = temp;
+				openerObj.focus();
+			},
+			open: function (name) {
+				if (this.openerName != name || !this.isVisible()) {
+					this.objOpenInRow = { useYN: false, idx: 0 };
+					this.viewType = 'd';
+					
+					this.openerName = name;
+					this.selectMode();
+					
+					let loadYearMonth = this.getLoadYearMonth();
+					this.set(loadYearMonth.y, loadYearMonth.m);
+					this.offset();
+					this.show();
+					document.querySelector('[name="' + this.openerName + '"]').blur();// 모바일 문제로 커서가 달력을 가리는 문제로 추가
+				}
+				else if (this.openerName == name) this.close();
 		},
 		openInRow: function (name, attrOpenInRow) {
 			if (this.openerName != name || !this.isVisible()) {
 				this.viewType = 'd';
-
+				
 				this.openerName = name;
 				this.objOpenInRow = attrOpenInRow;
 				this.selectMode();
-
+				
 				let loadYearMonth = this.getLoadYearMonth();
 				this.set(loadYearMonth.y, loadYearMonth.m);
 				this.offset();
@@ -1573,14 +1572,14 @@ GX = {
 			if (!this.isVisible()) {
 				document.body.style.overflow = 'hidden';
 				this.display('block');
-
+				
 				// 날짜 입력 창이 화면 밖으로 벗어날 경우 위치 조정
 				if(window.outerHeight - window.pageYOffset < this.calendarObj.clientHeight + this.calendarObj.getBoundingClientRect().y){
 					this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y - (this.calendarObj.clientHeight + 36)) + 'px';
 				} else{
 					this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y) + 'px';
 				}
-
+				
 				if(window.outerWidth + window.pageXOffset < this.calendarObj.clientWidth + this.calendarObj.getBoundingClientRect().x){
 					this.calendarObj.style.left = (this.calendarObj.getBoundingClientRect().x + window.pageXOffset - (this.calendarObj.clientWidth)) + 'px';
 				} else{
@@ -1622,14 +1621,14 @@ GX = {
 		result.pageEnd = pageOffset * perPage;
 		result.pageTotal = Math.ceil(totalCount / limit);
 		result.pageBegin = result.pageEnd - perPage + 1;
-
+		
 		if (result.pageEnd > result.pageTotal) result.pageEnd = result.pageTotal;
-
+		
 		result.pages = [];
 		for (var i = result.pageBegin; i <= result.pageEnd; i++) {
 			result.pages.push(i);
 		}
-
+		
 		result.page = page;
 		result.perPage = perPage;
 		result.totalCount = totalCount;
@@ -1673,7 +1672,7 @@ GX = {
 				var matches = null;
 				var validations = {};
 				var methods = Object.keys(this);
-
+				
 				for (var i in methods) {
 					if (methods.hasOwnProperty(i)) {
 						re = new RegExp('^' + attrName + '(.+)$', 'i');
@@ -1683,7 +1682,7 @@ GX = {
 					}
 				}
 				//console.log(validations)
-
+				
 				var objs = document.querySelectorAll(formName + ' [' + attrName + ']');
 				for (var idx in objs) {
 					if (objs.hasOwnProperty(idx)) {
@@ -1691,15 +1690,15 @@ GX = {
 							if (validations.hasOwnProperty(i)) {
 								re = new RegExp('\\b' + validations[i] + '\\b', 'i');
 								//if(objs[idx].getAttribute(attrName).indexOf(validations[i]) == 0){
-								if (re.test(objs[idx].getAttribute(attrName))) {
-									re = new RegExp(',?' + validations[i] + '\@([^\:,]+)', 'i');
+									if (re.test(objs[idx].getAttribute(attrName))) {
+										re = new RegExp(',?' + validations[i] + '\@([^\:,]+)', 'i');
 									matches = objs[idx].getAttribute(attrName).match(re);
 									//if(matches != null && matches.length == 2) console.log(matches, this.with, GX.Validation.with);
 
 									var isWith = (matches != null && matches.length == 2) ? this.with[matches[1]] : true;
 									//console.log(i, objs[idx], this[i](objs[idx]), objs[idx].value);
 									var msg = this[i](objs[idx]);// validation method 실행 결과
-
+									
 									if (msg.trim().length > 0 && isWith) {
 										re = new RegExp(',?' + validations[i] + '\:([^,]+)', 'i');
 										matches = objs[idx].getAttribute(attrName).match(re);
@@ -1725,7 +1724,7 @@ GX = {
 						}
 					}
 				}
-
+				
 				return true;
 			}
 			else {
@@ -1736,7 +1735,7 @@ GX = {
 	},
 	Code: {
 		getSelectList: function (obj, parentCode, isEmpt, setVal) {
-
+			
 		}
 	},
 };
@@ -1755,3 +1754,5 @@ function logoutFnc() {
 		location.href = '/logout/proc';
 	}
 }
+
+_PARAMETERS_: null,
