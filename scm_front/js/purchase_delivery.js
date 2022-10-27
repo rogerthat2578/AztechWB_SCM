@@ -359,7 +359,7 @@ let app = new Vue({
             .item('DomPrice').head('원화단가', '').body(null, 'text-r')
             .item('DomAmt').head('원화금액', '').body(null, 'text-r')
             .item('DomVAT').head('원화부가세', '').body(null, 'text-r')
-            .item('TotDomAmt').head('원화금액계', '')
+            .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
             .item('WHName').head('창고', '')
             .item('Remark').head('비고', '')
                 .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent;" /></div>', '')

@@ -251,6 +251,7 @@ let app = new Vue({
              */
             if (jumpData.length > 0) {
                 GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                GX.SessionStorage.set('jumpSetMethodId', 'PUORDPOJump');
                 location.href = 'purchase_delivery.html';
             } else
                 alert('선택한 행이 없습니다.')
@@ -272,6 +273,8 @@ let app = new Vue({
             .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
+                    vThis.initKeyCombi();
+                    vThis.initSelected();
                     // data for loop
                     let noDataIndex = [];
                     let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0};
@@ -324,6 +327,8 @@ let app = new Vue({
             let vThis = this;
 
             let saveArrData = GX.deepCopy(vThis.rows.Query);
+
+            console.log()
 
             // DataBlock1에 공통으로 들어가야하는 파라메터 세팅
             for (let i = saveArrData.length - 1; i >= 0; i--) {
