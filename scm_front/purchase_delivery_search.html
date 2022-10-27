@@ -17,28 +17,28 @@
 
 <body>
 	<div v-cloak id="app">
-	<header>		
-		<div class="con">
-			<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
-			<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
-				<img src="img/logo.png" alt="로고이미지">
-			</a>
-			<span class="page-name">구매납품품목조회</span>
-		</div>
-		<div class="con">
-			<div class="cart">
-				<img src="img/ic_01.png" alt="알림이미지">
-				<span class="alarm">12</span>
+		<header>		
+			<div class="con">
+				<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
+				<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
+					<img src="img/logo.png" alt="로고이미지">
+				</a>
+				<span class="page-name">구매납품품목조회</span>
 			</div>
-			<div class="user-info web" @click="userInfoClick()">
-				<div class="frame">
-					<img src="img/user.png" alt="유저이미지">
+			<div class="con">
+				<div class="cart">
+					<img src="img/ic_01.png" alt="알림이미지">
+					<span class="alarm">12</span>
 				</div>
-				<p class="user-name" v-if="deptName !== ''">{{userName}}</p>
-				<p class="user-name" v-else>{{deptName}} {{userName}}</p>
+				<div class="user-info web" @click="userInfoClick()">
+					<div class="frame">
+						<img src="img/user.png" alt="유저이미지">
+					</div>
+					<p class="user-name" v-if="deptName !== ''">{{userName}}</p>
+					<p class="user-name" v-else>{{deptName}} {{userName}}</p>
+				</div>
 			</div>
-		</div>
-	</header>
+		</header>
 		<main>
 			<div class="left-menu" v-html="leftMenu"></div>
 			<div class="top-data-wrap">

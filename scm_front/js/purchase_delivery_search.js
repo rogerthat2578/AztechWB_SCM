@@ -209,11 +209,14 @@ let app = new Vue({
             });
             e.target.parentNode.classList.add('fill-color-sel-row');
 
-            GX.doubleClickRun(event.target, function () {
-                if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    console.log('더블클릭 발생 행 index', idx);
-                }
-            });
+            if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                let jumpData = [vThis.rows.Query[idx]];
+                if (jumpData.length > 0) {
+                    GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                    location.href = 'purchase_delivery.html';
+                } else 
+                    alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+            }
         },
         /**조회 */
         search: function(callback) {

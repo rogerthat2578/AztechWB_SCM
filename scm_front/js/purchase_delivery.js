@@ -215,11 +215,10 @@ let app = new Vue({
             GX.doubleClickRun(event.target, function () {
                 if (confirm('입력 화면으로 이동하시겠습니까?')) {
                     let jumpData = [vThis.rows.Query[idx]];
-                    if (jumpData.length > 0) {
+                    if (jumpData.length > 0)
                         GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                        location.href = 'purchase_delivery.html';
-                    } else 
-                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                    else 
+                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.')
                 }
             });
         },
@@ -238,10 +237,9 @@ let app = new Vue({
              * > 해당 탭 닫으면 없어짐.
              * > 현재 PDA, SCM이 돌고있는 Web Server를 수정할 수 없음.
              */
-            if (jumpData.length > 0) {
+            if (jumpData.length > 0)
                 GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                location.href = 'purchase_delivery.html';
-            } else
+            else
                 alert('선택한 행이 없습니다.')
         },
         /**조회 */
