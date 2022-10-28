@@ -321,6 +321,9 @@ let app = new Vue({
                 //tempObj.POSerl = vThis.rows.Query[vThis.isCheckList[i]].POSerl;
                 tempObj.WorkOrderSeq = vThis.rows.Query[vThis.isCheckList[i]].WorkOrderSeq;
                 tempObj.WorkOrderSerl = vThis.rows.Query[vThis.isCheckList[i]].WorkOrderSerl;
+                tempObj.SizeName = vThis.rows.Query[vThis.isCheckList[i]].SizeName;
+                tempObj.DivSerl = vThis.rows.Query[vThis.isCheckList[i]].DivSerl;
+                tempObj.BizUnit = vThis.rows.Query[vThis.isCheckList[i]].BizUnit;
                 jumpData.push(tempObj);
             }
 
