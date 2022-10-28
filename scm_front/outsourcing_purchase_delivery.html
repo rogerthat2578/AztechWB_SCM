@@ -5,251 +5,219 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>외주납품입력</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha512-uto9mlQzrs59VwILcLiRYeLKPPbS/bT71da/OEBYEwcdNUk8jYIy+D176RYoop1Da+f9mvkYrmj5MCLZWEtQuA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha512-aOG0c6nPNzGk+5zjwyJaoRUgCdOrfSDhmMID2u4+OIslr0GjpLKo7Xm0Ao3xmpM4T8AmIouRkqwj1nrdVsLKEQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="stylesheet" href="css/setup.css">
 	<link rel="stylesheet" href="css/scm_style.css">
+	<link rel="stylesheet" href="css/date_picker.css">
+	<style>
+		[v-cloak] {
+			display: none;
+		}
+	</style>
 </head>
 <body>
-	<header>		
-		<div class="con">
-			<button class="btn-menu" onclick="menu();"></button>
-			<a href="#" class="web">
-				<img src="img/logo.png" alt="로고이미지">
-			</a>
-			<span class="page-name">외주납품입력</span>
-		</div>
-		<div class="con">
-			<div class="cart">
-				<img src="img/ic_01.png" alt="알림이미지">
-				<span class="alarm">12</span>
+	<div v-cloak id="app">
+		<header>
+			<div class="con">
+				<button class="btn-menu" onclick="GX._METHODS_.clickLeftMenu()"></button>
+				<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
+					<img src="img/logo.png" alt="로고이미지">
+				</a>
+				<span class="page-name">외주납품입력</span>
 			</div>
-			<div class="user-info web">
-				<div class="frame">
-					<img src="img/user.png" alt="유저이미지">
+			<div class="con">
+				<div class="cart">
+					<img src="img/ic_01.png" alt="알림이미지">
+					<span class="alarm">12</span>
 				</div>
-				<p class="user-name">A업체 김납품</p>
+				<div class="user-info web" @click="userInfoClick()">
+					<div class="frame">
+						<img src="img/user.png" alt="유저이미지">
+					</div>
+					<p class="user-name" v-if="deptName !== ''">{{userName}}</p>
+					<p class="user-name" v-else>{{deptName}} {{userName}}</p>
+				</div>
 			</div>
-		</div>
-	</header>
-	<main>
-		<div class="left-menu">
-			<div class="list-bg"></div>
-			<div class="list-container">
-				<div class="menu-title">구매</div>
-				<ul class="list-wrap">
-					<li>
-						<a href="#">
-							<span class="list-img menu-01"></span>
-							<span>구매발주품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-02"></span>
-							<span>구매납품품목조회</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-			<div class="list-container">
-				<div class="menu-title">외주가공</div>
-				<ul class="list-wrap">
-					<li>
-						<a href="#">
-							<span class="list-img menu-03"></span>
-							<span>외주발주품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-04"></span>
-							<span>외주납품품목조회</span>
-						</a>
-					</li>
-					<li>
-						<a href="#">
-							<span class="list-img menu-05"></span>
-							<span>생산진행정보입력</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
-		<div class="top-input-wrap">
-			
-			<div class="btn-row">
-				<div>
-					<button class="btn-stlye-05">
-						<img src="img/ic_02.png" alt="삭제버튼이미지">
-						<span class="web">삭제</span>
+		</header>
+		<main>
+			<div class="left-menu" v-html="leftMenu"></div>
+			<div class="top-input-wrap">
+
+				<div class="btn-row">
+					<div>
+						<button class="btn-stlye-05" @Click="del">
+							<img src="img/ic_02.png" alt="삭제버튼이미지">
+							<span class="web">삭제</span>
+						</button>
+					</div>
+
+					<button class="btn-stlye-03" @Click="save">
+						<img src="img/ic_06.png" alt="저장버튼이미지">
+						<span>저장</span>
 					</button>
 				</div>
 
-				<button class="btn-stlye-03">
-					<img src="img/ic_06.png" alt="저장버튼이미지">
-					<span>저장</span>
-				</button>	
-			</div>
+				<div class="input-container">
+					<div class="input-wrap">
+						<div class="left">
+							<ul class="condition date">
+								<li class="name essential">
+									<label>외주작업일(납품일)</label>
+								</li>
+								<li>
+									<input type="text" class="datepicker" name="DelvDate" v-model.trim="queryForm.DelvDate" gx-datepicker="queryForm.DelvDate" @chagne="updateDate">
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="sum-wrap">
+						<ul class="condition value-1">
+							<li class="name">+ 금액계</li>
+							<li class="txt">
+								<input type="text" v-model="summaryArea.SumOSPCurAmt" readonly>
+								<span class="won">원</span>
+							</li>
+						</ul>
 
-			<div class="input-container outsourcing">
-				<div class="input-wrap">
-					<div class="left">
-						<ul class="condition date">
-							<li class="name essential">
-								<label>외주작업일(납품일)</label>
+						<ul class="condition value-2">
+							<li class="name">+ 부가세계</li>
+							<li class="txt">
+								<input type="text" v-model="summaryArea.SumOSPCurVAT" readonly>
+								<span class="won">원</span>
 							</li>
-							<li>
-								<input type="text">
+						</ul>
+
+						<ul class="condition value-3">
+							<li class="name">= 금액총계</li>
+							<li class="txt">
+								<input type="text" v-model="summaryArea.SumOSPTotCurAmt" readonly>
+								<span class="won">원</span>
 							</li>
-						</ul>										
+						</ul>
 					</div>
 				</div>
-				<div class="sum-wrap">
-					<ul class="condition value-1">
-						<li class="name">+ 금액계</li>
-						<li class="txt">
-							<input type="text" readonly>
-							<span class="won">원</span>
-						</li>
-					</ul>
+			</div>
 
-					<ul class="condition value-2">
-						<li class="name">+ 부가세계</li>
-						<li class="txt">
-							<input type="text" readonly>
-							<span class="won">원</span>
-						</li>
-					</ul>
-
-					<ul class="condition value-3">
-						<li class="name">= 금액총계</li>
-						<li class="txt">
-							<input type="text" readonly>
-							<span class="won">원</span>
-						</li>
-					</ul>
+			<div class="main-data-container">
+				<div class="btn-row">
+					<button class="btn-stlye-06" @click="delRow">행 삭제하기</button>
 				</div>
+				<div class="data-table" id="grid"></div>
+				<!--
+				<div class="data-table">
+					<table>
+						<thead>
+							<tr>
+								<td>No.</td>
+								<td><input type="checkbox"></td>
+								<td>작업지시번호</td>
+								<td>품번</td>
+								<td>품명</td>
+								<td>규격</td>
+								<td>공정</td>
+								<td>사이즈</td>
+								<td>단위</td>
+								<td>작업지시수량</td>
+								<td>기생산수량</td>
+								<td>생산수량</td>
+								<td>양품수량</td>
+								<td>불량수량</td>
+								<td>입고창고</td>
+								<td>특이사항</td>
+								<td>완료여부 <input type="checkbox"></td>
+								<td>단가</td>
+								<td>부가세포함</td>
+								<td>금액</td>
+								<td>부가세</td>
+								<td>금액계</td>
+								<td>통화</td>
+								<td>환율</td>
+								<td>원화단가</td>
+								<td>원화부가세</td>
+								<td>원화금액</td>
+								<td>원화금액계</td>
+								<td>공정품번호</td>
+								<td>공정품명</td>
+								<td>공정품규격</td>
+								<td>생산계획번호</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>1</td>
+								<td><input type="checkbox"></td>
+								<td>0123456789</td>
+								<td class="text-l">2260132</td>
+								<td class="text-l">W/100 1/6</td>
+								<td class="text-l">YB106W</td>
+								<td class="text-l">공정01</td>
+								<td class="text-l">사이즈</td>
+								<td>KG</td>
+								<td class="text-r">100</td>
+								<td class="text-r">100</td>
+								<td class="no-data"></td>
+								<td class="no-data"></td>
+								<td class="no-data"></td>
+								<td>아바몰리 자재창고</td>
+								<td class="no-data"></td>
+								<td><input type="checkbox"></td>
+								<td class="text-r">100.00</td>
+								<td><input type="checkbox" disabled></td>
+								<td class="text-r">90,000.00</td>
+								<td class="text-r">10,000.00</td>
+								<td class="text-r">100,000.00</td>
+								<td>KRW</td>
+								<td class="text-r">1.00</td>
+								<td class="text-r" >10,000.00</td>
+								<td class="text-r">100,000.000</td>
+								<td class="text-r">90,000.00</td>
+								<td class="text-r">100,000.00</td>
+								<td>P22WURCP002</td>
+								<td>바지</td>
+								<td class="text-l">ROHMCP52A</td>
+								<td>202209150015</td>
+							</tr>
+							<tr class="click">
+								<td>2</td>
+								<td><input type="checkbox"></td>
+								<td>0123456789</td>
+								<td class="text-l">2260132</td>
+								<td class="text-l">W/100 1/6</td>
+								<td class="text-l">YB106W</td>
+								<td class="text-l">공정01</td>
+								<td class="text-l">사이즈</td>
+								<td>KG</td>
+								<td class="text-r">100</td>
+								<td class="text-r">100</td>
+								<td class="no-data"></td>
+								<td class="no-data"></td>
+								<td class="no-data"></td>
+								<td>아바몰리 자재창고</td>
+								<td class="no-data"></td>
+								<td><input type="checkbox"></td>
+								<td class="text-r">100.00</td>
+								<td><input type="checkbox" disabled></td>
+								<td class="text-r">90,000.00</td>
+								<td class="text-r">10,000.00</td>
+								<td class="text-r">100,000.00</td>
+								<td>KRW</td>
+								<td class="text-r">1.00</td>
+								<td class="text-r" >10,000.00</td>
+								<td class="text-r">100,000.000</td>
+								<td class="text-r">90,000.00</td>
+								<td class="text-r">100,000.00</td>
+								<td>P22WURCP002</td>
+								<td>바지</td>
+								<td class="text-l">ROHMCP52A</td>
+								<td>202209150015</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				-->
 			</div>
-		</div>
+		</main>
+	</div>
 
-		<div class="main-data-container">
-			<div class="btn-row">
-				<button class="btn-stlye-06">행 삭제하기</button>
-			</div>
-			<div class="data-table">
-				<table>
-					<thead>
-						<tr>
-							<td>No.</td>
-							<td><input type="checkbox"></td>
-							<td>작업지시번호</td>
-							<td>품번</td>
-							<td>품명</td>
-							<td>규격</td>
-							<td>공정</td>
-							<td>사이즈</td>
-							<td>단위</td>
-							<td>작업지시수량</td>
-							<td>기생산수량</td>
-							<td>생산수량</td>
-							<td>양품수량</td>
-							<td>불량수량</td>
-							<td>입고창고</td>
-							<td>특이사항</td>
-							<td>완료여부 <input type="checkbox"></td>
-							<td>단가</td>
-							<td>부가세포함</td>
-							<td>금액</td>
-							<td>부가세</td>
-							<td>금액계</td>
-							<td>통화</td> 
-							<td>환율</td>
-							<td>원화단가</td>
-							<td>원화부가세</td>
-							<td>원화금액</td>
-							<td>원화금액계</td>
-							<td>공정품번호</td>
-							<td>공정품명</td>
-							<td>공정품규격</td>
-							<td>생산계획번호</td>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>1</td>
-							<td><input type="checkbox"></td>
-							<td>0123456789</td>
-							<td class="text-l">2260132</td>
-							<td class="text-l">W/100 1/6</td>
-							<td class="text-l">YB106W</td>
-							<td class="text-l">공정01</td>
-							<td class="text-l">사이즈</td>
-							<td>KG</td>
-							<td class="text-r">100</td>
-							<td class="text-r">100</td>
-							<td class="no-data"></td>
-							<td class="no-data"></td>
-							<td class="no-data"></td>
-							<td>아바몰리 자재창고</td>
-							<td class="no-data"></td>
-							<td><input type="checkbox"></td>
-							<td class="text-r">100.00</td>
-							<td><input type="checkbox" disabled></td>
-							<td class="text-r">90,000.00</td>
-							<td class="text-r">10,000.00</td>
-							<td class="text-r">100,000.00</td>
-							<td>KRW</td> 
-							<td class="text-r">1.00</td>
-							<td class="text-r" >10,000.00</td>
-							<td class="text-r">100,000.000</td>
-							<td class="text-r">90,000.00</td>
-							<td class="text-r">100,000.00</td>
-							<td>P22WURCP002</td>
-							<td>바지</td>
-							<td class="text-l">ROHMCP52A</td>
-							<td>202209150015</td>
-						</tr>
-						<tr class="click">
-							<td>2</td>
-							<td><input type="checkbox"></td>
-							<td>0123456789</td>
-							<td class="text-l">2260132</td>
-							<td class="text-l">W/100 1/6</td>
-							<td class="text-l">YB106W</td>
-							<td class="text-l">공정01</td>
-							<td class="text-l">사이즈</td>
-							<td>KG</td>
-							<td class="text-r">100</td>
-							<td class="text-r">100</td>
-							<td class="no-data"></td>
-							<td class="no-data"></td>
-							<td class="no-data"></td>
-							<td>아바몰리 자재창고</td>
-							<td class="no-data"></td>
-							<td><input type="checkbox"></td>
-							<td class="text-r">100.00</td>
-							<td><input type="checkbox" disabled></td>
-							<td class="text-r">90,000.00</td>
-							<td class="text-r">10,000.00</td>
-							<td class="text-r">100,000.00</td>
-							<td>KRW</td> 
-							<td class="text-r">1.00</td>
-							<td class="text-r" >10,000.00</td>
-							<td class="text-r">100,000.000</td>
-							<td class="text-r">90,000.00</td>
-							<td class="text-r">100,000.00</td>
-							<td>P22WURCP002</td>
-							<td>바지</td>
-							<td class="text-l">ROHMCP52A</td>
-							<td>202209150015</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</main>
 	<div class="bg-wrap">
 		<div class="bad-container">
 			<div class="title">[품번] 불량 입력</div>
@@ -353,15 +321,7 @@
 			</div>
 		</div>
 	</div>
+
+	<script src="js/common/app.js?v=1665537373142"></script>
 </body>
-<script>
-//메뉴
-function menu() {
-	if(document.getElementsByClassName('left-menu')[0].style.display === 'block') {
-		document.getElementsByClassName('left-menu')[0].style.display = 'none';
-	} else {
-		document.getElementsByClassName('left-menu')[0].style.display = 'block';
-	}
-}
-</script>
 </html>

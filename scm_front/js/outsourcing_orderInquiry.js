@@ -250,6 +250,7 @@ let app = new Vue({
 
                         vThis.rows.Query = data;
                         vThis.rows.QuerySummary = summaryList;
+                        console.log(data);
 
                         // 작업예정일이 없는 데이터 행에 대한 처리
                         if(noDataIndex.length > 0){
@@ -312,18 +313,21 @@ let app = new Vue({
         /** 납품등록 점프 **/
         jumpOutPoDelv: function(){
             let vThis = this;
-            let current = vThis.isCheckList.length - 1;
+            let jumpData = [];
 
-            if(current >= 0) {
-                let jumpData = GX.deepCopy(vThis.rows.Query);
-                for (let i = jumpData.length - 1; i >= 0; i--) {
-                    if (vThis.isCheckList.indexOf(i) == -1) {
-                        jumpData.splice(i, 1);
-                    }
-                }
-                // 세션 스토리지에 체크한 값을 넣고 납품등록 화면으로 이동
+            for(let i in vThis.isCheckList){
+                let tempObj = {};
+                //tempObj.POSeq = vThis.rows.Query[vThis.isCheckList[i]].POSeq;
+                //tempObj.POSerl = vThis.rows.Query[vThis.isCheckList[i]].POSerl;
+                tempObj.WorkOrderSeq = vThis.rows.Query[vThis.isCheckList[i]].WorkOrderSeq;
+                tempObj.WorkOrderSerl = vThis.rows.Query[vThis.isCheckList[i]].WorkOrderSerl;
+                jumpData.push(tempObj);
+            }
+
+            if(jumpData.length > 0){
                 GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                location.href = 'purchase_delivery.html';
+                GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
+                location.href = 'outsourcing_purchase_delivery.html';
 
             } else{
                 alert("선택된 데이터가 없습니다.");
