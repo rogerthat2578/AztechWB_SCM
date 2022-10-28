@@ -59,6 +59,14 @@ let app = new Vue({
 			},
 			OrdItemQuery: [],
 			OrdRptMonthQuery: [],
+			PODelvChartData1Label: [],
+			PODelvChartData1Value: [],
+			PODelvChartData2Label: [],
+			PODelvChartData2Value: [],
+			OrdRptChartData1Label: [],
+			OrdRptChartData1Value: [],
+			OrdRptChartData2Label: [],
+			OrdRptChartData2Value: [],
         },
 		/**
          * 조회 조건
@@ -223,6 +231,18 @@ let app = new Vue({
 							vThis.rows.PODelvMonthQuery.push(obj);
 						}
 					}
+
+					console.log(data)
+					
+					// 구매 차트1
+					let arrTemp1 = [];
+					arrTemp1.push(data[0], data[1]);
+					
+					vThis.rows.PODelvChartData1 = arrTemp1;
+					// 구매 차트2
+					let arrTemp2 = [];
+					arrTemp2.push(data[2], data[3]);
+					vThis.rows.PODelvChartData2 = arrTemp2;
 				}
 			}, function (data) {
 				// console.log('callback7', data)
@@ -248,6 +268,15 @@ let app = new Vue({
 							vThis.rows.OrdRptMonthQuery.push(obj);
 						}
 					}
+
+					// 외주 차트1
+					let arrTemp1 = [];
+					arrTemp1.push(data[0], data[1]);
+					vThis.rows.OrdRptChartData1 = arrTemp1;
+					// 외주 차트2
+					let arrTemp2 = [];
+					arrTemp2.push(data[2], data[3]);
+					vThis.rows.OrdRptChartData2 = arrTemp2;
 				}
 
 				// 조회 콜백
@@ -393,6 +422,32 @@ let app = new Vue({
 
     },
 	mounted() {
+
+		const poDelvCtx1 = document.getElementById('PODelvChart1').getContext('2d');
+		const poDelvCtx2 = document.getElementById('PODelvChart2').getContext('2d');
+		const ordRptCtx1 = document.getElementById('OrdRptChart1').getContext('2d');
+		const ordRptCtx2 = document.getElementById('OrdRptChart2').getContext('2d');
+
+		new Chart(poDelvCtx1, {
+			type: 'line',
+			data: {
+				labels: this.PODelvChartData1Label,
+				datasets: [{
+					label: '# temp',
+					data: this.PODelvChartData1Value,
+					borderWidth: 2
+				}]
+			},
+			options: {
+				responsive: false,
+				scales: {
+					y: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+
 		// this.search(this.searchInterval, 30);
 		this.search(this.searchInterval);
 	}

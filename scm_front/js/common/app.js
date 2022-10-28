@@ -3,6 +3,7 @@
 	'js/lib/vue.js',
 	'js/lib/axios.min.js',
 	'js/lib/jquery-3.6.0.js',
+	'js/lib/chart.min-3.9.1.js',
 	'js/common/gx.js',
 	'js/common/common.js',
 ],'js/');
