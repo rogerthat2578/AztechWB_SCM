@@ -59,14 +59,23 @@ let app = new Vue({
 			},
 			OrdItemQuery: [],
 			OrdRptMonthQuery: [],
-			PODelvChartData1Label: [],
-			PODelvChartData1Value: [],
-			PODelvChartData2Label: [],
-			PODelvChartData2Value: [],
-			OrdRptChartData1Label: [],
-			OrdRptChartData1Value: [],
-			OrdRptChartData2Label: [],
-			OrdRptChartData2Value: [],
+			ChartMonthDataLabel: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+			POAmtValue: [],
+			DelvAmtValue: [],
+			BadRateValuePODelv: [],
+			OkRateValuePODelv: [],
+			OrdAmtValue: [],
+			RptAmtValue: [],
+			BadRateValueOrdRpt: [],
+			OkRateValueOrdRpt: [],
+			poDelvCtx1: null,
+			poDelvCtx2: null,
+			ordRptCtx1: null,
+			ordRptCtx2: null,
+			poDelvChartObj1: null,
+			poDelvChartObj2: null,
+			ordRptChartObj1: null,
+			ordRptChartObj2: null,
         },
 		/**
          * 조회 조건
@@ -231,18 +240,38 @@ let app = new Vue({
 							vThis.rows.PODelvMonthQuery.push(obj);
 						}
 					}
+					
+					// 구매 차트 데이터 배열에 담기
+					let arrPOAmtValue = [], arrDelvAmtValue = [], arrBadRateValue = [], arrOkRateValue = [];
+					Object.keys(data[0]).map(k => {
+						if (k.indexOf('DomAmt') > -1) {
+							arrPOAmtValue.push(data[0][k].toString());
+							arrDelvAmtValue.push(data[1][k].toString());
+							arrBadRateValue.push(data[2][k].toString());
+							arrOkRateValue.push(data[3][k].toString());
+						}
+					});
+					vThis.POAmtValue = arrPOAmtValue;
+					vThis.DelvAmtValue = arrDelvAmtValue;
+					vThis.BadRateValuePODelv = arrBadRateValue;
+					vThis.OkRateValuePODelv = arrOkRateValue;
+					
+					if (vThis.poDelvChartObj1 == null) 
+						vThis.poDelvChartObj1 = vThis.newChart(vThis.poDelvCtx1, '발주금액', '납품금액', vThis.POAmtValue, vThis.DelvAmtValue, 'line');
+					else {
+						vThis.poDelvChartObj1.data.datasets[0].data = vThis.POAmtValue;
+						vThis.poDelvChartObj1.update();
+						vThis.poDelvChartObj1.data.datasets[1].data = vThis.DelvAmtValue;
+						vThis.poDelvChartObj1.update();
+					}
 
-					console.log(data)
-					
-					// 구매 차트1
-					let arrTemp1 = [];
-					arrTemp1.push(data[0], data[1]);
-					
-					vThis.rows.PODelvChartData1 = arrTemp1;
-					// 구매 차트2
-					let arrTemp2 = [];
-					arrTemp2.push(data[2], data[3]);
-					vThis.rows.PODelvChartData2 = arrTemp2;
+					if (vThis.poDelvChartObj2 == null)
+						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '불량율(%)', '준수율(%)', vThis.BadRateValuePODelv, vThis.OkRateValuePODelv, 'line');
+					else {
+						vThis.poDelvChartObj2.data.datasets[0].data = vThis.BadRateValuePODelv;
+						vThis.poDelvChartObj2.data.datasets[1].data = vThis.OkRateValuePODelv;
+
+					}
 				}
 			}, function (data) {
 				// console.log('callback7', data)
@@ -269,14 +298,34 @@ let app = new Vue({
 						}
 					}
 
-					// 외주 차트1
-					let arrTemp1 = [];
-					arrTemp1.push(data[0], data[1]);
-					vThis.rows.OrdRptChartData1 = arrTemp1;
-					// 외주 차트2
-					let arrTemp2 = [];
-					arrTemp2.push(data[2], data[3]);
-					vThis.rows.OrdRptChartData2 = arrTemp2;
+					// 외주 차트 데이터 배열에 담기
+					let arrOrdAmtValue = [], arrRptAmtValue = [], arrBadRateValue = [], arrOkRateValue = [];
+					Object.keys(data[0]).map(k => {
+						if (k.indexOf('DomAmt') > -1) {
+							arrOrdAmtValue.push(data[0][k].toString());
+							arrRptAmtValue.push(data[1][k].toString());
+							arrBadRateValue.push(data[2][k].toString());
+							arrOkRateValue.push(data[3][k].toString());
+						}
+					});
+					vThis.OrdAmtValue = arrOrdAmtValue;
+					vThis.RptAmtValue = arrRptAmtValue;
+					vThis.BadRateValueOrdRpt = arrBadRateValue;
+					vThis.OkRateValueOrdRpt = arrOkRateValue;
+					
+					if (vThis.ordRptChartObj1 == null)
+						vThis.ordRptChartObj1 = vThis.newChart(vThis.ordRptCtx1, '작업지시금액', '작업실적금액', vThis.OrdAmtValue, vThis.RptAmtValue, 'line');
+					else {
+						vThis.ordRptChartObj1.data.datasets[0].data = vThis.OrdAmtValue;
+						vThis.ordRptChartObj1.data.datasets[1].data = vThis.RptAmtValue;
+					}
+
+					if (vThis.ordRptChartObj2 == null)
+						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '실적불량율(%)', '준수율(%)', vThis.BadRateValueOrdRpt, vThis.OkRateValueOrdRpt, 'line');
+					else {
+						vThis.ordRptChartObj2.data.datasets[0].data = vThis.BadRateValueOrdRpt;
+						vThis.ordRptChartObj2.data.datasets[1].data = vThis.OkRateValueOrdRpt;
+					}
 				}
 
 				// 조회 콜백
@@ -313,6 +362,36 @@ let app = new Vue({
             document.getElementById('fakeDialog').style.display = 'none';
             if (typeof callback === 'function') callback;
         },
+		/**차트
+		 * chart.js
+		 */
+		newChart: function (ctx, dtLabel1, dtLabel2, data1, data2, chartType = 'line') {
+			let vThis = this;
+			return new Chart(ctx, {
+				data: {
+					labels: vThis.rows.ChartMonthDataLabel,
+					datasets: [{
+						label: dtLabel1,
+						type: chartType,
+						data: data1,
+						borderWidth: 2
+					},{
+						label: dtLabel2,
+						type: chartType,
+						data: data2,
+						borderWidth: 2
+					}]
+				},
+				options: {
+					responsive: false,
+					scales: {
+						y: {
+							beginAtZero: true
+						}
+					}
+				}
+			});
+		}
     },
     created() {
         let vThis = this;
@@ -422,31 +501,10 @@ let app = new Vue({
 
     },
 	mounted() {
-
-		const poDelvCtx1 = document.getElementById('PODelvChart1').getContext('2d');
-		const poDelvCtx2 = document.getElementById('PODelvChart2').getContext('2d');
-		const ordRptCtx1 = document.getElementById('OrdRptChart1').getContext('2d');
-		const ordRptCtx2 = document.getElementById('OrdRptChart2').getContext('2d');
-
-		new Chart(poDelvCtx1, {
-			type: 'line',
-			data: {
-				labels: this.PODelvChartData1Label,
-				datasets: [{
-					label: '# temp',
-					data: this.PODelvChartData1Value,
-					borderWidth: 2
-				}]
-			},
-			options: {
-				responsive: false,
-				scales: {
-					y: {
-						beginAtZero: true
-					}
-				}
-			}
-		});
+		this.poDelvCtx1 = document.getElementById('PODelvChart1').getContext('2d');
+		this.poDelvCtx2 = document.getElementById('PODelvChart2').getContext('2d');
+		this.ordRptCtx1 = document.getElementById('OrdRptChart1').getContext('2d');
+		this.ordRptCtx2 = document.getElementById('OrdRptChart2').getContext('2d');
 
 		// this.search(this.searchInterval, 30);
 		this.search(this.searchInterval);

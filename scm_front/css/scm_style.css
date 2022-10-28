@@ -988,7 +988,8 @@ main {
   font-size: 12px;
   font-family: SCDream4;
   vertical-align: baseline;
-  margin: 0 8px 0 6px;
+  margin-left: 6px;
+  /* margin: 0 8px 0 6px; */
 }
 .order-wrap .box .sub .won {
   color: #B5B5B5;
