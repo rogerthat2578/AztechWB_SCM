@@ -379,12 +379,16 @@ let app = new Vue({
 						label: dtLabel1,
 						type: chartType,
 						data: data1,
-						borderWidth: 2
+						borderWidth: 2,
+						backgroundColor: ['#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c', '#0f1d6c'],
+						borderColor: ['#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8', '#0f1d6cb8']
 					},{
 						label: dtLabel2,
 						type: chartType,
 						data: data2,
-						borderWidth: 2
+						borderWidth: 2,
+						backgroundColor: ['#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384', '#ff6384'],
+						borderColor: ['#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8', '#ff6384b8']
 					}]
 				},
 				options: {

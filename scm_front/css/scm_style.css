@@ -1150,12 +1150,13 @@ main {
   height: 227px;
   width: 100%;
   position: relative;
-  background-color: #eaeaea;
+  background-color: #eaeaea2b;
+  /* background-color: #eaeaea; */
   text-align: center;
 }
 .container .current-wrap .current-01 .title {
   position: absolute;
-  top: 10px;
+  /* top: 10px; */
   left: 20px;
 }
 
