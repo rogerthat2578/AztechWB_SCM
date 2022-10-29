@@ -338,9 +338,9 @@ let app = new Vue({
 			}])
 		},
 		/**로딩 이미지 없이 조회 갱신.
-		 * rtyTime: 기본 갱신 주기 60초. 단위: s (초)
+		 * rtyTime: 기본 갱신 주기 1800초(=30분). 단위: s (초) -박태근이사님 요청
 		 */
-		searchInterval: function (rtyTime = 60) {
+		searchInterval: function (rtyTime = 1800) {
 			let vThis = this;
 
 			if (document.querySelector('[class="info-tab click"]') != null)
@@ -405,7 +405,7 @@ let app = new Vue({
     created() {
         let vThis = this;
 
-		if (!GX._METHODS_.isLogin()) location.replace('login');
+		if (!GX._METHODS_.isLogin()) location.replace('login.html');
         else {
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
