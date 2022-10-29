@@ -113,6 +113,39 @@ let app = new Vue({
 
 				e.target.classList.add('click');
 				document.getElementById(tabId).classList.add('click');
+
+				// 구매 탭
+				if (e.target.getAttribute('data-tab') == 'info-1') {
+					if (vThis.poDelvChartObj1 == null)
+						vThis.poDelvChartObj1 = vThis.newChart(vThis.poDelvCtx1, '발주금액', '납품금액', vThis.POAmtValue, vThis.DelvAmtValue, 'line');
+					else {
+						vThis.poDelvChartObj1.data.datasets[0].data = vThis.POAmtValue;
+						vThis.poDelvChartObj1.update();
+						vThis.poDelvChartObj1.data.datasets[1].data = vThis.DelvAmtValue;
+						vThis.poDelvChartObj1.update();
+					}
+
+					if (vThis.poDelvChartObj2 == null)
+						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '불량율(%)', '준수율(%)', vThis.BadRateValuePODelv, vThis.OkRateValuePODelv, 'line');
+					else {
+						vThis.poDelvChartObj2.data.datasets[0].data = vThis.BadRateValuePODelv;
+						vThis.poDelvChartObj2.data.datasets[1].data = vThis.OkRateValuePODelv;
+					}
+				} else if (e.target.getAttribute('data-tab') == 'info-2') {
+					if (vThis.ordRptChartObj1 == null)
+						vThis.ordRptChartObj1 = vThis.newChart(vThis.ordRptCtx1, '작업지시금액', '작업실적금액', vThis.OrdAmtValue, vThis.RptAmtValue, 'line');
+					else {
+						vThis.ordRptChartObj1.data.datasets[0].data = vThis.OrdAmtValue;
+						vThis.ordRptChartObj1.data.datasets[1].data = vThis.RptAmtValue;
+					}
+
+					if (vThis.ordRptChartObj2 == null)
+						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '실적불량율(%)', '준수율(%)', vThis.BadRateValueOrdRpt, vThis.OkRateValueOrdRpt, 'line');
+					else {
+						vThis.ordRptChartObj2.data.datasets[0].data = vThis.BadRateValueOrdRpt;
+						vThis.ordRptChartObj2.data.datasets[1].data = vThis.OkRateValueOrdRpt;
+					}
+				}
 			}
         },
 		/**우측상단 유저 정보 클릭 시 */
@@ -255,23 +288,6 @@ let app = new Vue({
 					vThis.DelvAmtValue = arrDelvAmtValue;
 					vThis.BadRateValuePODelv = arrBadRateValue;
 					vThis.OkRateValuePODelv = arrOkRateValue;
-					
-					if (vThis.poDelvChartObj1 == null) 
-						vThis.poDelvChartObj1 = vThis.newChart(vThis.poDelvCtx1, '발주금액', '납품금액', vThis.POAmtValue, vThis.DelvAmtValue, 'line');
-					else {
-						vThis.poDelvChartObj1.data.datasets[0].data = vThis.POAmtValue;
-						vThis.poDelvChartObj1.update();
-						vThis.poDelvChartObj1.data.datasets[1].data = vThis.DelvAmtValue;
-						vThis.poDelvChartObj1.update();
-					}
-
-					if (vThis.poDelvChartObj2 == null)
-						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '불량율(%)', '준수율(%)', vThis.BadRateValuePODelv, vThis.OkRateValuePODelv, 'line');
-					else {
-						vThis.poDelvChartObj2.data.datasets[0].data = vThis.BadRateValuePODelv;
-						vThis.poDelvChartObj2.data.datasets[1].data = vThis.OkRateValuePODelv;
-
-					}
 				}
 			}, function (data) {
 				// console.log('callback7', data)
@@ -312,20 +328,6 @@ let app = new Vue({
 					vThis.RptAmtValue = arrRptAmtValue;
 					vThis.BadRateValueOrdRpt = arrBadRateValue;
 					vThis.OkRateValueOrdRpt = arrOkRateValue;
-					
-					if (vThis.ordRptChartObj1 == null)
-						vThis.ordRptChartObj1 = vThis.newChart(vThis.ordRptCtx1, '작업지시금액', '작업실적금액', vThis.OrdAmtValue, vThis.RptAmtValue, 'line');
-					else {
-						vThis.ordRptChartObj1.data.datasets[0].data = vThis.OrdAmtValue;
-						vThis.ordRptChartObj1.data.datasets[1].data = vThis.RptAmtValue;
-					}
-
-					if (vThis.ordRptChartObj2 == null)
-						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '실적불량율(%)', '준수율(%)', vThis.BadRateValueOrdRpt, vThis.OkRateValueOrdRpt, 'line');
-					else {
-						vThis.ordRptChartObj2.data.datasets[0].data = vThis.BadRateValueOrdRpt;
-						vThis.ordRptChartObj2.data.datasets[1].data = vThis.OkRateValueOrdRpt;
-					}
 				}
 
 				// 조회 콜백
@@ -340,6 +342,9 @@ let app = new Vue({
 		 */
 		searchInterval: function (rtyTime = 60) {
 			let vThis = this;
+
+			if (document.querySelector('[class="info-tab click"]') != null)
+				document.querySelector('[class="info-tab click"]').click();
 
 			if (document.getElementById('loading').className.length > 0) {
 				document.getElementById('loading').classList.remove('loading-wrap');
