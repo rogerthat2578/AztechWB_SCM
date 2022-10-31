@@ -190,17 +190,17 @@ let app = new Vue({
                                 data[i].RowEdit = true;
                                 data[i].OrderQty = data[i].OrderQty.toString().replace(regex, '$1,');
                                 data[i].ProgressQty = data[i].ProgressQty.toString().replace(regex, '$1,');
-                                data[i].ProdQty = data[i].ProdQty.toString().replace(regex, '$1,');
-                                data[i].OKQty = data[i].OKQty.toString().replace(regex, '$1,');
-                                data[i].BadQty = data[i].BadQty.toString().replace(regex, '$1,');
-                                data[i].OSPPrice = data[i].OSPPrice.toString().replace(regex, '$1,');
-                                data[i].OSPCurAmt = data[i].OSPCurAmt.toString().replace(regex, '$1,');
-                                data[i].OSPCurVAT = data[i].OSPCurVAT.toString().replace(regex, '$1,');
-                                data[i].OSPTotCurAmt = data[i].OSPTotCurAmt.toString().replace(regex, '$1,');
-                                data[i].OSPDomPrice = data[i].OSPDomPrice.toString().replace(regex, '$1,');
-                                data[i].OSPDomVAT = data[i].OSPDomVAT.toString().replace(regex, '$1,');
-                                data[i].OSPDomAmt = data[i].OSPDomAmt.toString().replace(regex, '$1,');
-                                data[i].OSPTotDomAmt = data[i].OSPTotDomAmt.toString().replace(regex, '$1,');
+                                data[i].ProdQty = data[i].ProdQty != null ? data[i].ProdQty.toString().replace(regex, '$1,') : 0;
+                                data[i].OKQty = data[i].OKQty != null ? data[i].OKQty.toString().replace(regex, '$1,') : 0;
+                                data[i].BadQty = data[i].BadQty != null ? data[i].BadQty.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPPrice = data[i].OSPPrice != null ? data[i].OSPPrice.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPCurAmt = data[i].OSPCurAmt != null ? data[i].OSPCurAmt.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPCurVAT = data[i].OSPCurVAT != null ? data[i].OSPCurVAT.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPTotCurAmt = data[i].OSPTotCurAmt != null ? data[i].OSPTotCurAmt.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPDomPrice = data[i].OSPDomPrice != null ? data[i].OSPDomPrice.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPDomVAT = data[i].OSPDomVAT != null ? data[i].OSPDomVAT.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPDomAmt = data[i].OSPDomAmt != null ? data[i].OSPDomAmt.toString().replace(regex, '$1,') : 0;
+                                data[i].OSPTotDomAmt = data[i].OSPTotDomAmt != null ? data[i].OSPTotDomAmt.toString().replace(regex, '$1,') : 0;
                             }
                         }
                         vThis.rows.Query = data;
@@ -239,10 +239,14 @@ let app = new Vue({
             let vThis = this;
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
+            console.log(vThis.rows.Query);
+
             for(let i = saveArrData.length - 1; i >= 0; i--){
                 if(saveArrData[i].RowEdit){
                     saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
+                    saveArrData[i].WorkDate = this.queryForm.DelvDate.indexOf('-') > -1 ? this.queryForm.DelvDate.replace(/\-/g, "") : this.queryForm.DelvDate;
                     saveArrData[i].OrderQty = parseFloat(saveArrData[i].OrderQty.toString().replace(/\,/g, ''));
+                    saveArrData[i].ProgressQty = parseFloat(saveArrData[i].ProgressQty.toString().replace(/\,/g, ''));
                     saveArrData[i].ProgressQty = parseFloat(saveArrData[i].ProgressQty.toString().replace(/\,/g, ''));
                     saveArrData[i].ProdQty = parseFloat(saveArrData[i].ProdQty.toString().replace(/\,/g, ''));
                     saveArrData[i].OKQty = parseFloat(saveArrData[i].OKQty.toString().replace(/\,/g, ''));
@@ -365,7 +369,7 @@ let app = new Vue({
 
                     GX._METHODS_
                     .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
-                    .ajax(delArrData, [], [function (data) {
+                    .ajax([], delArrData, [function (data) {
                         if (data[0].Status && data[0].Status != 0) {
                             // 뭔가 문제가 발생했을 때 리턴
                             alert('삭제 실패\n' + data[0].Result);
