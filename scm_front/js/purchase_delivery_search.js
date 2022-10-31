@@ -229,7 +229,9 @@ let app = new Vue({
         },
         /**조회 */
         search: function(callback) {
-            let vThis = this; 
+            let vThis = this;
+
+            vThis.initKeyCombi();
 
             let params = GX.deepCopy(vThis.queryForm);
 

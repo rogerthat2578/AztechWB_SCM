@@ -133,6 +133,8 @@ let app = new Vue({
         search: function(){
             let vThis = this;
 
+            vThis.initKeyCombi();
+
             let params = GX.deepCopy(vThis.queryForm);
             Object.keys(params).map((k) => {
                 if(k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1){
@@ -180,7 +182,7 @@ let app = new Vue({
                                 });
                             }
                         }
-                        console.log(data);
+                        
                         vThis.rows.Query = data;
                         vThis.rows.QuerySummary = summaryList;
 
@@ -192,8 +194,35 @@ let app = new Vue({
                 }]);
         },
 
-        /** 점프 **/
-        // api : PDWorkReportJumpQuery
+        /**행 클릭(선택), 행 더블 시
+         * 클릭(선택) 행 색상으로 표시
+         * 입력화면으로 점프
+         */
+        selectRow: function (idx) {
+            let vThis = this;
+            let e = event;
+
+            // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
+            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
+                ele.classList.remove('fill-color-sel-row');
+            });
+            if (e.target.nodeName.toUpperCase() === 'TD')
+                e.target.parentNode.classList.add('fill-color-sel-row');
+
+            GX.doubleClickRun(event.target, function () {
+                if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                    let tempObj = {}, jumpData = [];
+                    tempObj.WorkReportSeq = vThis.rows.Query[idx].WorkReportSeq;
+                    jumpData.push(tempObj);
+                    if (jumpData.length > 0 && !isNaN(tempObj.WorkReportSeq)) {
+                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                        GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
+                        location.href = 'outsourcing_purchase_delivery.html';
+                    } else 
+                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                }
+            });
+        },
     },
 
     created(){
@@ -217,47 +246,47 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 
             GX.VueGrid
-                //.bodyRow(':class="{\'check\':isChecked(index)}"')
-                .item('ROWNUM').head('No.', '')
-                .item('WorkDate').head('작업일', '')
-                .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
-                .item('GoodItemNo').head('품번', '').body(null, 'text-l')
-                .item('GoodItemName').head('품명', '').body(null, 'text-l')
-                .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
-                .item('ProcName').head('공정', '').body(null, 'text-l')
-                .item('ProdUnitName').head('단위', '')
-                .item('ProdQty').head('생산수량', '').body(null, 'text-r')
-                .item('BadQty').head('불량수량', '').body(null, 'text-r')
-                .item('OKQty').head('양품수량', '').body(null, 'text-r')
-                .item('Price').head('단가', '').body(null, 'text-r')
-                .item('IsVAT').head('부가세포함', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" :checked="row.IsVAT" disabled/></div>')
-                .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
-                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
-                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
-                .item('CurrName').head('통화', '')
-                .item('ExRate').head('환율', '').body(null, 'text-r')
-                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
-                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
-                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
-                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
-                .item('SizeText').head('필번', '')
-                .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
-                .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
-                .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
-                .item('IsLastProc').head('최종공정', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" :checked="row.IsLastProc" disabled/></div>')
-                .item('IsMatInput').head('자재투입', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" :checked="row.IsMatInput" disabled/></div>')
-                .item('IsGoodIn').head('입고', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" :checked="row.IsGoodIn" disabled/></div>')
-                .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
-                .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
-                .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
-                .item('Density').head('밀도', '').body(null, 'text-r')
-                .item('IsAccident').head('사고지', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
-                .loadTemplate('#grid', 'rows.Query');
+            .bodyRow('@click="selectRow(index);"')
+            .item('ROWNUM').head('No.', '')
+            .item('WorkDate').head('작업일', '')
+            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
+            .item('GoodItemNo').head('품번', '').body(null, 'text-l')
+            .item('GoodItemName').head('품명', '').body(null, 'text-l')
+            .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
+            .item('ProcName').head('공정', '').body(null, 'text-l')
+            .item('ProdUnitName').head('단위', '')
+            .item('ProdQty').head('생산수량', '').body(null, 'text-r')
+            .item('BadQty').head('불량수량', '').body(null, 'text-r')
+            .item('OKQty').head('양품수량', '').body(null, 'text-r')
+            .item('Price').head('단가', '').body(null, 'text-r')
+            .item('IsVAT').head('부가세포함', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" :checked="row.IsVAT" disabled/></div>')
+            .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
+            .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
+            .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
+            .item('CurrName').head('통화', '')
+            .item('ExRate').head('환율', '').body(null, 'text-r')
+            .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
+            .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
+            .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
+            .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
+            .item('SizeText').head('필번', '')
+            .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
+            .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
+            .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
+            .item('IsLastProc').head('최종공정', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" :checked="row.IsLastProc" disabled/></div>')
+            .item('IsMatInput').head('자재투입', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" :checked="row.IsMatInput" disabled/></div>')
+            .item('IsGoodIn').head('입고', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" :checked="row.IsGoodIn" disabled/></div>')
+            .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
+            .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
+            .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
+            .item('Density').head('밀도', '').body(null, 'text-r')
+            .item('IsAccident').head('사고지', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
+            .loadTemplate('#grid', 'rows.Query');
 
             // 참고화면 : FrmWPDSFCWorkReport_03_KNIC
         }

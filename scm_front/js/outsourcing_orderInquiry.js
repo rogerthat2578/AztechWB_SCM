@@ -206,9 +206,44 @@ let app = new Vue({
             GX.Calendar.openInRow(name, { useYN: true, idx: idx });
         },
 
+        /**행 클릭(선택), 행 더블 시
+         * 클릭(선택) 행 색상으로 표시
+         * 입력화면으로 점프
+         */
+         selectRow: function (idx) {
+            let vThis = this;
+            let e = event;
+
+            // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
+            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
+                ele.classList.remove('fill-color-sel-row');
+            });
+            if (e.target.nodeName.toUpperCase() === 'TD')
+                e.target.parentNode.classList.add('fill-color-sel-row');
+
+            GX.doubleClickRun(event.target, function () {
+                if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                    let tempObj = {}, jumpData = [];
+                    tempObj.WorkOrderSeq = vThis.rows.Query[idx].WorkOrderSeq;
+                    tempObj.WorkOrderSerl = vThis.rows.Query[idx].WorkOrderSerl;
+                    jumpData.push(tempObj);
+                    console.log(jumpData)
+                    if (jumpData.length > 0 && !isNaN(tempObj.WorkOrderSeq) && !isNaN(tempObj.WorkOrderSerl)) {
+                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                        GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
+                        location.href = 'outsourcing_purchase_delivery.html';
+                    } else 
+                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                }
+            });
+        },
+
         /** 조회 **/
         search: function(){
             let vThis = this;
+
+            vThis.initKeyCombi();
+            vThis.initSelected();
 
             let params = GX.deepCopy(vThis.queryForm);
             Object.keys(params).map((k) => {
@@ -359,31 +394,29 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 
             GX.VueGrid
-                .bodyRow(':class="{\'check\':isChecked(index)}"')
-                .item('ROWNUM').head('No.', '')
-                .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);"/></div>', '')
-                .item('WorkOrderDate').head('작업지시일', '')
-                .item('WorkDate').head('작업예정일', '')
-                .item('WorkPlanDate').head('납품예정일', '')
-                    .body('<div><input type="text" class="datepicker" name="WorkPlanDate" gx-datepicker="" attr-condition="" :value="row.WorkPlanDate" @input="updateRowWorkPlanDate(index)" @click="applyAll(\'WorkPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
-                .item('WorkOrderNo').head('작업지시번호', '')
-                .item('ProgStatusName').head('진행상태', '')
-                .item('ProcName').head('공정', '')
-                .item('GoodItemName').head('제품명', '').body(null, 'text-l')
-                .item('GoodItemNo').head('제품번호', '').body(null, 'text-l')
-                .item('GoodItemSpec').head('제품규격', '').body(null, 'text-l')
-                .item('SizeName').head('사이즈', '')
-                .item('OrderQty').head('지시수량', '').body(null, 'text-r')
-                .item('ProgressQty').head('실적진행수량', '').body(null, 'text-r')
-                .item('NonProgressQty').head('미진행수량', '').body(null, 'text-r')
-                .item('ProdQty').head('생산수량', '').body(null, 'text-r')
-                .item('OKQty').head('양품수량', '').body(null, 'text-r')
-                .item('BadQty').head('불량수량', '').body(null, 'text-r')
-                .item('Remark').head('특이사항', '').body(null, 'text-l')
-                //.item('WorkOrderSeq').head('', '')
-                //.item('WorkOrderSerl').head('', '')
-                .loadTemplate('#grid', 'rows.Query');
+            .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
+            .item('ROWNUM').head('No.', '')
+            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
+                .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);"/></div>', '')
+            .item('WorkOrderDate').head('작업지시일', '')
+            .item('WorkDate').head('작업예정일', '')
+            .item('WorkPlanDate').head('납품예정일', '')
+                .body('<div><input type="text" class="datepicker" name="WorkPlanDate" gx-datepicker="" attr-condition="" :value="row.WorkPlanDate" @input="updateRowWorkPlanDate(index)" @click="applyAll(\'WorkPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+            .item('WorkOrderNo').head('작업지시번호', '')
+            .item('ProgStatusName').head('진행상태', '')
+            .item('ProcName').head('공정', '')
+            .item('GoodItemName').head('제품명', '').body(null, 'text-l')
+            .item('GoodItemNo').head('제품번호', '').body(null, 'text-l')
+            .item('GoodItemSpec').head('제품규격', '').body(null, 'text-l')
+            .item('SizeName').head('사이즈', '')
+            .item('OrderQty').head('지시수량', '').body(null, 'text-r')
+            .item('ProgressQty').head('실적진행수량', '').body(null, 'text-r')
+            .item('NonProgressQty').head('미진행수량', '').body(null, 'text-r')
+            .item('ProdQty').head('생산수량', '').body(null, 'text-r')
+            .item('OKQty').head('양품수량', '').body(null, 'text-r')
+            .item('BadQty').head('불량수량', '').body(null, 'text-r')
+            .item('Remark').head('특이사항', '').body(null, 'text-l')
+            .loadTemplate('#grid', 'rows.Query');
         }
     },
 

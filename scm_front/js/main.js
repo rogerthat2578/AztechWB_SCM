@@ -126,7 +126,7 @@ let app = new Vue({
 					}
 
 					if (vThis.poDelvChartObj2 == null)
-						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '불량율(%)', '준수율(%)', vThis.BadRateValuePODelv, vThis.OkRateValuePODelv, 'line');
+						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '준수율(%)', '불량율(%)', vThis.OkRateValuePODelv, vThis.BadRateValuePODelv, 'line');
 					else {
 						vThis.poDelvChartObj2.data.datasets[0].data = vThis.BadRateValuePODelv;
 						vThis.poDelvChartObj2.data.datasets[1].data = vThis.OkRateValuePODelv;
@@ -140,7 +140,7 @@ let app = new Vue({
 					}
 
 					if (vThis.ordRptChartObj2 == null)
-						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '실적불량율(%)', '준수율(%)', vThis.BadRateValueOrdRpt, vThis.OkRateValueOrdRpt, 'line');
+						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '준수율(%)', '불량율(%)', vThis.OkRateValueOrdRpt, vThis.BadRateValueOrdRpt, 'line');
 					else {
 						vThis.ordRptChartObj2.data.datasets[0].data = vThis.BadRateValueOrdRpt;
 						vThis.ordRptChartObj2.data.datasets[1].data = vThis.OkRateValueOrdRpt;
@@ -280,8 +280,8 @@ let app = new Vue({
 						if (k.indexOf('DomAmt') > -1) {
 							arrPOAmtValue.push(data[0][k].toString());
 							arrDelvAmtValue.push(data[1][k].toString());
-							arrBadRateValue.push(data[2][k].toString());
-							arrOkRateValue.push(data[3][k].toString());
+							arrOkRateValue.push(data[2][k].toString());
+							arrBadRateValue.push(data[3][k].toString());
 						}
 					});
 					vThis.POAmtValue = arrPOAmtValue;
@@ -290,7 +290,7 @@ let app = new Vue({
 					vThis.OkRateValuePODelv = arrOkRateValue;
 				}
 			}, function (data) {
-				// console.log('callback7', data)
+				console.log('callback7', data)
 				// 외주
 				if (data.length > 0) {
 					vThis.rows.OrdRptMonthQuery = [];
@@ -320,8 +320,8 @@ let app = new Vue({
 						if (k.indexOf('DomAmt') > -1) {
 							arrOrdAmtValue.push(data[0][k].toString());
 							arrRptAmtValue.push(data[1][k].toString());
-							arrBadRateValue.push(data[2][k].toString());
-							arrOkRateValue.push(data[3][k].toString());
+							arrOkRateValue.push(data[2][k].toString());
+							arrBadRateValue.push(data[3][k].toString());
 						}
 					});
 					vThis.OrdAmtValue = arrOrdAmtValue;
