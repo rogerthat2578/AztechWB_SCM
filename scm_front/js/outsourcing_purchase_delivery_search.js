@@ -180,7 +180,7 @@ let app = new Vue({
                                 });
                             }
                         }
-                        console.log(data);
+                        //console.log(data);
                         vThis.rows.Query = data;
                         vThis.rows.QuerySummary = summaryList;
 

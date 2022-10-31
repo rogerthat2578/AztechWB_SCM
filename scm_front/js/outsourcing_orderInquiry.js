@@ -247,10 +247,11 @@ let app = new Vue({
                                 });
                             }
                         }
-
+                        vThis.initSelected();
+                        vThis.initKeyCombi();
                         vThis.rows.Query = data;
                         vThis.rows.QuerySummary = summaryList;
-                        console.log(data);
+                        //console.log(data);
 
                         // 작업예정일이 없는 데이터 행에 대한 처리
                         if(noDataIndex.length > 0){
@@ -291,7 +292,7 @@ let app = new Vue({
                 }
             }
 
-            console.log(saveArrData);
+            //console.log(saveArrData);
 
             if(saveArrData.length > 0){
                 GX._METHODS_
