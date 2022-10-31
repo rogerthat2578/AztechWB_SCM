@@ -75,7 +75,7 @@ let app = new Vue({
 
                 if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
                     vThis.keyCombi.isKeyHold = true;
-                    vThis.search();
+                    vThis.search(vThis.addSummary);
                 }
             }
         },
@@ -238,8 +238,55 @@ let app = new Vue({
             });
         },
 
+        /**
+         * 소계 행 추가
+         */
+         addSummary: function () {
+            let vThis = this;
+
+            if (document.querySelectorAll('[id="grid"] table thead tr').length > 1) {
+                for (let i in document.querySelectorAll('[id="grid"] table thead tr')) {
+                    if (document.querySelectorAll('[id="grid"] table thead tr').hasOwnProperty(i) && i > 0)
+                        document.querySelectorAll('[id="grid"] table thead tr')[i].remove();
+                }
+            }
+
+            if (vThis.rows.Query.length > 0) {
+                let objQeury = GX.deepCopy(vThis.rows.QuerySummary);
+                let trList = document.querySelectorAll('[id="grid"] table thead tr td');
+                let strTd = '';
+                const keyMapping = {
+                    sumOrderQty: '지시수량',
+                    sumProgressQty: '실적진행수량',
+                    sumNonProgressQty: '미진행수량',
+                    sumProdQty: '생산수량',
+                    sumOKQty: '양품수량',
+                    sumBadQty: '불량수량',
+                }
+
+                for (let i in trList) {
+                    if (trList.hasOwnProperty(i)) {
+                        if (i >= 12 && i <= 17) {
+                            Object.keys(keyMapping).forEach(k => {
+                                if (trList[i].innerText == keyMapping[k])
+                                    strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
+                            });
+                        } else { 
+                            strTd += '<td></td>';
+                        }
+                    }
+                }
+
+                let createTr = document.createElement('tr');
+                createTr.style.backgroundColor = '#e0fec0';
+                createTr.style.color = 'black';
+                createTr.innerHTML = strTd;
+                document.querySelector('[id="grid"] table thead').append(createTr);
+            }
+        },
+
         /** 조회 **/
-        search: function(){
+        search: function(callback){
             let vThis = this;
 
             vThis.initKeyCombi();
@@ -254,58 +301,61 @@ let app = new Vue({
             });
 
             GX._METHODS_
-                .setMethodId('OSPWorkOrderQuery')
-                .ajax([params], [function (data){
-                    if(data.length > 0){
-                        let noDataIndex = [];
-                        let summaryList = {sumOrderQty: 0, sumProgressQty: 0, sumNonProgressQty: 0, sumProdQty: 0, sumOKQty: 0, sumBadQty: 0};
+            .setMethodId('OSPWorkOrderQuery')
+            .ajax([params], [function (data){
+                if(data.length > 0){
+                    let noDataIndex = [];
+                    let summaryList = {sumOrderQty: 0, sumProgressQty: 0, sumNonProgressQty: 0, sumProdQty: 0, sumOKQty: 0, sumBadQty: 0};
 
-                        // 조회 결과를 가져와서 그리드에 출력한다.
-                        for(let i in data){
-                            if(data.hasOwnProperty(i)) {
-                                data[i].ROWNUM = parseInt(i) + 1;
-                                data[i].RowEdit = false;
-                                data[i].WorkOrderDate = data[i].WorkOrderDate.length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
-                                data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+                    // 조회 결과를 가져와서 그리드에 출력한다.
+                    for(let i in data){
+                        if(data.hasOwnProperty(i)) {
+                            data[i].ROWNUM = parseInt(i) + 1;
+                            data[i].RowEdit = false;
+                            data[i].WorkOrderDate = data[i].WorkOrderDate.length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
+                            data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
 
-                                // 작업예정일에 데이터가 있으면 그대로 출력하고 없을 경우 작업지시일 날짜를 그대로 가져온다.
-                                if(data[i].WorkPlanDate != null && data[i].WorkPlanDate.replace(/\ /g, '') != '' && data[i].WorkPlanDate != undefined){
-                                    data[i].WorkPlanDate = data[i].WorkPlanDate.length == 8 ? (data[i].WorkPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkPlanDate;
-                                } else{
-                                    data[i].WorkPlanDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
-                                    noDataIndex.push(i);
-                                }
-
-                                Object.keys(summaryList).map((k) => {
-                                    if(!isNaN(data[i][k.replace('sum', '')]))
-                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
-                                });
+                            // 작업예정일에 데이터가 있으면 그대로 출력하고 없을 경우 작업지시일 날짜를 그대로 가져온다.
+                            if(data[i].WorkPlanDate != null && data[i].WorkPlanDate.replace(/\ /g, '') != '' && data[i].WorkPlanDate != undefined){
+                                data[i].WorkPlanDate = data[i].WorkPlanDate.length == 8 ? (data[i].WorkPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkPlanDate;
+                            } else{
+                                data[i].WorkPlanDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+                                noDataIndex.push(i);
                             }
-                        }
-                        
-                        vThis.rows.Query = data;
-                        vThis.rows.QuerySummary = summaryList;
 
-                        // 작업예정일이 없는 데이터 행에 대한 처리
-                        if(noDataIndex.length > 0){
-                            setTimeout(() => {
-                                for (let i in noDataIndex) {
-                                    if (noDataIndex.hasOwnProperty(i)) {
-                                        document.getElementsByName('WorkPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
-                                        vThis.rows.Query[noDataIndex[i]].RowEdit = true;
-                                    }
+                            Object.keys(summaryList).map((k) => {
+                                if(data[i][k.replace('sum', '')]) {
+                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')])))
+                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
+                                    else
+                                        summaryList[k] += 0;
                                 }
-                            }, 20);
+                            });
                         }
-                    } else{
-                        vThis.rows.Query = [];
-                        vThis.rows.QuerySummary = {};
-                        alert('조회 결과가 없습니다.');
                     }
+                    
+                    vThis.rows.Query = data;
+                    vThis.rows.QuerySummary = summaryList;
 
-                    if (typeof callback === 'function') callback();
+                    // 작업예정일이 없는 데이터 행에 대한 처리
+                    if(noDataIndex.length > 0){
+                        setTimeout(() => {
+                            for (let i in noDataIndex) {
+                                if (noDataIndex.hasOwnProperty(i)) {
+                                    document.getElementsByName('WorkPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
+                                    vThis.rows.Query[noDataIndex[i]].RowEdit = true;
+                                }
+                            }
+                        }, 20);
+                    }
+                } else{
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    alert('조회 결과가 없습니다.');
+                }
 
-                }]);
+                if (typeof callback === 'function') callback();
+            }]);
         },
 
         /** 저장 **/
@@ -336,7 +386,7 @@ let app = new Vue({
                         vThis.rows.Query = [];
                         vThis.rows.QuerySummary = {};
                         alert('저장 성공');
-                        vThis.search();
+                        vThis.search(vThis.addSummary);
                     }]);
 
             } else{

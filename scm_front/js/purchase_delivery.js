@@ -54,6 +54,18 @@ let app = new Vue({
             SumCurVAT: 0,
             SumTotCurAmt: 0,
         },
+        /**수량, 금액 관련 컬럼 3자리마다 쉼표(,) 삽입할 컬럼 */
+        keyMapping: {
+            Qty: '납품수량',
+            Price: '단가',
+            CurAmt: '금액',
+            CurVAT: '부가세',
+            TotCurAmt: '금액계',
+            DomPrice: '원화단가',
+            DomAmt: '원화금액',
+            DomVAT: '원화부가세',
+            TotDomAmt: '원화금액계',
+        },
 	},
     methods: {
         /**이벤트 처리 */
@@ -202,12 +214,16 @@ let app = new Vue({
                 for (let i in calList) {
                     if (calList.hasOwnProperty(i)) {
                         Object.keys(vThis.summaryArea).map(k => {
-                            if (!isNaN(calList[i][k.replace('Sum', '')]))
-                                vThis.summaryArea[k] += parseFloat(calList[i][k.replace('Sum', '')]);
+                            if (!isNaN(GX._METHODS_.nvl(calList[i][k.replace('Sum', '')]).toString().replace(/\,/, '')))
+                                vThis.summaryArea[k] += parseFloat(GX._METHODS_.nvl(calList[i][k.replace('Sum', '')]).toString().replace(/\,/, ''));
                         });
                     }
                 }
             }
+
+            Object.keys(vThis.summaryArea).map(k => {
+                vThis.summaryArea[k] = GX._METHODS_.nvl(vThis.summaryArea[k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+            });
         },
         updateRowQty: function (idx = null) {
             let evtTarget = event.target;
@@ -251,8 +267,13 @@ let app = new Vue({
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
                             data[i].RowEdit = true;
+
+                            Object.keys(vThis.keyMapping).map((k) => {
+                                data[i][k] = GX._METHODS_.nvl(data[i][k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                            });
                         }
                     }
+
                     // 그리드와 바인딩
                     vThis.rows.Query = data;
 
@@ -286,6 +307,12 @@ let app = new Vue({
 
             let params1 = [], params2 = [];
             let saveArrData = GX.deepCopy(vThis.rows.Query);
+
+            for (let i in saveArrData) {
+                Object.keys(vThis.keyMapping).map((k) => {
+                    saveArrData[i][k] = GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '').length > 0 ? parseFloat(GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '')) : 0;
+                });
+            }
             
             // params2 공통으로 들어가야하는 파라메터 세팅
             for (let i = saveArrData.length - 1; i >= 0; i--) {
@@ -411,19 +438,22 @@ let app = new Vue({
                 } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
                     // 구매납품조회
                     let delArrData = GX.deepCopy(vThis.rows.Query);
+                    let tempChk = vThis.isCheckList.sort(function(a, b) {
+                        return b - a;
+                    });
                     let params1 = [], params2 = [];
-                    for (let i in delArrData) {
+                    for (let i in tempChk) {
                         let objParams = {};
                         if (delArrData.hasOwnProperty(i)) {
-                            objParams.DelvSeq = delArrData[i].DelvSeq;
-                            objParams.DelvSerl = delArrData[i].DelvSerl;
+                            objParams.DelvSeq = delArrData[tempChk[i]].DelvSeq;
+                            objParams.DelvSerl = delArrData[tempChk[i]].DelvSerl;
                             objParams.WorkingTag = 'D';
                             params2.push(objParams);
                         }
                     }
 
-                    params1.push(params2[0]);
-
+                    // params1.push(params2[0]);
+                    
                     GX._METHODS_
                     .setMethodId('PUDelvSave')
                     .ajax(params1, params2, [function (data) {
@@ -433,6 +463,8 @@ let app = new Vue({
                             alert('삭제 실패\n' + data[0].Result);
                         } else {
                             alert('삭제 성공');
+                            vThis.initSelected();
+                            vThis.calSum();
                         }
                     }]);
                 }
