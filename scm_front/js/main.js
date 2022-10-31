@@ -290,7 +290,7 @@ let app = new Vue({
 					vThis.OkRateValuePODelv = arrOkRateValue;
 				}
 			}, function (data) {
-				console.log('callback7', data)
+				// console.log('callback7', data)
 				// 외주
 				if (data.length > 0) {
 					vThis.rows.OrdRptMonthQuery = [];
