@@ -91,9 +91,9 @@ let app = new Vue({
         initSelected: function(){
             this.isCheckList = [];
             let setAllObj = document.querySelector('thead [type="checkbox"]');
-            if(selAllObj != null){
-                selAllObj.checked = true;
-                selAllObj.click();
+            if(setAllObj != null){
+                setAllObj.checked = true;
+                setAllObj.click();
             }
         },
         isChecked: function(index){
@@ -202,7 +202,7 @@ let app = new Vue({
                                 });
                             }
                         });
-
+                        vThis.initSelected();
                         vThis.calSum();
 
                     } else{
