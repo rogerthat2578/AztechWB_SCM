@@ -288,7 +288,7 @@ let app = new Vue({
                         if (i >= 11 && i <= 18 && i != 12) {
                             Object.keys(keyMapping).forEach(k => {
                                 if (trList[i].innerText == keyMapping[k])
-                                    strTd += '<td class="text-r">' + objQeury[k] + '</td>';
+                                    strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
                             });
                         } else { 
                             strTd += '<td></td>';
@@ -341,8 +341,12 @@ let app = new Vue({
                             }
 
                             Object.keys(summaryList).map((k) => {
-                                if (!isNaN(data[i][k.replace('sum', '')]))
-                                    summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
+                                if(data[i][k.replace('sum', '')]) {
+                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')])))
+                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
+                                    else
+                                        summaryList[k] += 0;
+                                }
                             });
                         }
                     }

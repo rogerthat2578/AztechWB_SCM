@@ -61,7 +61,7 @@ let app = new Vue({
 
                 if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
                     vThis.keyCombi.isKeyHold = true;
-                    vThis.search();
+                    vThis.search(vThis.addSummary);
                 }
             }
         },
@@ -129,71 +129,6 @@ let app = new Vue({
             });
         },
 
-        /** 조회 **/
-        search: function(){
-            let vThis = this;
-
-            vThis.initKeyCombi();
-
-            let params = GX.deepCopy(vThis.queryForm);
-            Object.keys(params).map((k) => {
-                if(k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1){
-                    if(params[k].length > 0 && params[k].indexOf('-') > -1)
-                        params[k] = params[k].replace(/\-/g, '');
-                }
-            });
-
-            let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
-
-            GX._METHODS_
-                .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
-                .ajax([params], [function (data){
-                    if(data.length > 0){
-                        let summaryList = {
-                            sumProdQty: 0, sumBadQty: 0, sumOkQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
-                            sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, OSPTotDomAmt: 0
-                        }
-
-                        for(let i in data){
-                            if(data.hasOwnProperty(i)){
-                                data[i].ROWNUM = parseInt(i) + 1;
-                                data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
-                                data[i].IsVAT = parseInt(data[i].IsVAT);
-                                data[i].IsLastProc = parseInt(data[i].IsLastProc);
-                                data[i].IsMatInput = parseInt(data[i].IsMatInput);
-                                data[i].IsGoodIn = parseInt(data[i].IsGoodIn);
-                                data[i].IsAccident = parseInt(data[i].IsAccident);
-                                data[i].ProdQty = data[i].ProdQty.toString().replace(regex, '$1,');
-                                data[i].BadQty = data[i].BadQty.toString().replace(regex, '$1,');
-                                data[i].OKQty = data[i].OKQty.toString().replace(regex, '$1,');
-                                data[i].Price = data[i].Price.toString().replace(regex, '$1,');
-                                data[i].OSPCurAmt = data[i].OSPCurAmt.toString().replace(regex, '$1,');
-                                data[i].OSPCurVAT = data[i].OSPCurVAT.toString().replace(regex, '$1,');
-                                data[i].OSPTotCurAmt = data[i].OSPTotCurAmt.toString().replace(regex, '$1,');
-                                data[i].ExRate = data[i].ExRate.toString().replace(regex, '$1,');
-                                data[i].OSPDomPrice = data[i].OSPDomPrice.toString().replace(regex, '$1,');
-                                data[i].OSPDomAmt = data[i].OSPDomAmt.toString().replace(regex, '$1,');
-                                data[i].OSPDomVAT = data[i].OSPDomVAT.toString().replace(regex, '$1,');
-                                data[i].OSPTotDomAmt = data[i].OSPTotDomAmt.toString().replace(regex, '$1,');
-
-                                Object.keys(summaryList).map((k) => {
-                                    if(!isNaN(data[i][k.replace('sum', '')]))
-                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
-                                });
-                            }
-                        }
-                        
-                        vThis.rows.Query = data;
-                        vThis.rows.QuerySummary = summaryList;
-
-                    } else{
-                        vThis.rows.Query = [];
-                        vThis.rows.QuerySummary = {};
-                        alert('조회 결과가 없습니다.');
-                    }
-                }]);
-        },
-
         /**행 클릭(선택), 행 더블 시
          * 클릭(선택) 행 색상으로 표시
          * 입력화면으로 점프
@@ -222,6 +157,131 @@ let app = new Vue({
                         alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
                 }
             });
+        },
+
+        /**
+         * 소계 행 추가
+         */
+         addSummary: function () {
+            let vThis = this;
+
+            if (document.querySelectorAll('[id="grid"] table thead tr').length > 1) {
+                for (let i in document.querySelectorAll('[id="grid"] table thead tr')) {
+                    if (document.querySelectorAll('[id="grid"] table thead tr').hasOwnProperty(i) && i > 0)
+                        document.querySelectorAll('[id="grid"] table thead tr')[i].remove();
+                }
+            }
+
+            if (vThis.rows.Query.length > 0) {
+                let objQeury = GX.deepCopy(vThis.rows.QuerySummary);
+                let trList = document.querySelectorAll('[id="grid"] table thead tr td');
+                let strTd = '';
+                const keyMapping = {
+                    sumProdQty: '생산수량',
+                    sumBadQty: '불량수량',
+                    sumOKQty: '양품수량',
+                    sumPrice: '단가',
+                    sumOSPCurAmt: '금액',
+                    sumOSPCurVAT: '부가세',
+                    sumOSPTotCurAmt: '금액계',
+                    sumOSPDomPrice: '원화단가',
+                    sumOSPDomAmt: '원화금액',
+                    sumOSPDomVAT: '원화부가세',
+                    sumOSPTotDomAmt: '원화금액계',
+                }
+
+                for (let i in trList) {
+                    if (trList.hasOwnProperty(i)) {
+                        if (i >= 8 && i <= 21 && i != 12 && i != 16 && i != 17) {
+                            Object.keys(keyMapping).forEach(k => {
+                                if (trList[i].innerText == keyMapping[k])
+                                    strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
+                            });
+                        } else { 
+                            strTd += '<td></td>';
+                        }
+                    }
+                }
+
+                let createTr = document.createElement('tr');
+                createTr.style.backgroundColor = '#e0fec0';
+                createTr.style.color = 'black';
+                createTr.innerHTML = strTd;
+                document.querySelector('[id="grid"] table thead').append(createTr);
+            }
+        },
+
+        /** 조회 **/
+        search: function(callback){
+            let vThis = this;
+
+            vThis.initKeyCombi();
+
+            let params = GX.deepCopy(vThis.queryForm);
+            Object.keys(params).map((k) => {
+                if(k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1){
+                    if(params[k].length > 0 && params[k].indexOf('-') > -1)
+                        params[k] = params[k].replace(/\-/g, '');
+                }
+            });
+
+            let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
+
+            GX._METHODS_
+            .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
+            .ajax([params], [function (data){
+                if(data.length > 0){
+                    let summaryList = {
+                        sumProdQty: 0, sumBadQty: 0, sumOKQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
+                        sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, sumOSPTotDomAmt: 0
+                    }
+
+                    for(let i in data){
+                        if(data.hasOwnProperty(i)){
+                            data[i].ROWNUM = parseInt(i) + 1;
+                            data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+                            data[i].IsVAT = parseInt(data[i].IsVAT);
+                            data[i].IsLastProc = parseInt(data[i].IsLastProc);
+                            data[i].IsMatInput = parseInt(data[i].IsMatInput);
+                            data[i].IsGoodIn = parseInt(data[i].IsGoodIn);
+                            data[i].IsAccident = parseInt(data[i].IsAccident);
+                            data[i].ProdQty = data[i].ProdQty.toString().replace(regex, '$1,');
+                            data[i].BadQty = data[i].BadQty.toString().replace(regex, '$1,');
+                            data[i].OKQty = data[i].OKQty.toString().replace(regex, '$1,');
+                            data[i].Price = data[i].Price.toString().replace(regex, '$1,');
+                            data[i].OSPCurAmt = data[i].OSPCurAmt.toString().replace(regex, '$1,');
+                            data[i].OSPCurVAT = data[i].OSPCurVAT.toString().replace(regex, '$1,');
+                            data[i].OSPTotCurAmt = data[i].OSPTotCurAmt.toString().replace(regex, '$1,');
+                            data[i].ExRate = data[i].ExRate.toString().replace(regex, '$1,');
+                            data[i].OSPDomPrice = data[i].OSPDomPrice.toString().replace(regex, '$1,');
+                            data[i].OSPDomAmt = data[i].OSPDomAmt.toString().replace(regex, '$1,');
+                            data[i].OSPDomVAT = data[i].OSPDomVAT.toString().replace(regex, '$1,');
+                            data[i].OSPTotDomAmt = data[i].OSPTotDomAmt.toString().replace(regex, '$1,');
+
+                            Object.keys(summaryList).map((k) => {
+                                if(data[i][k.replace('sum', '')].replace(/\,/g, '')) {
+                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')].replace(/\,/g, ''))))
+                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')].replace(/\,/g, ''));
+                                    else
+                                        summaryList[k] += 0;
+
+                                    if (GX._METHODS_.nvl(summaryList[k].toString().split('.')[1]).length > 0)
+                                        summaryList[k] = parseFloat(summaryList[k].toFixed(2));
+                                }
+                            });
+                        }
+                    }
+                    
+                    vThis.rows.Query = data;
+                    vThis.rows.QuerySummary = summaryList;
+                } else{
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    alert('조회 결과가 없습니다.');
+                }
+
+                if (typeof callback === 'function') callback();
+            }]);
         },
     },
 
