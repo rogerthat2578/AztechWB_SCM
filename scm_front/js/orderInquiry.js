@@ -288,7 +288,7 @@ let app = new Vue({
                         if (i >= 11 && i <= 18 && i != 12) {
                             Object.keys(keyMapping).forEach(k => {
                                 if (trList[i].innerText == keyMapping[k])
-                                    strTd += '<td>' + objQeury[k] + '</td>';
+                                    strTd += '<td class="text-r">' + objQeury[k] + '</td>';
                             });
                         } else { 
                             strTd += '<td></td>';
@@ -297,7 +297,8 @@ let app = new Vue({
                 }
 
                 let createTr = document.createElement('tr');
-                createTr.style.backgroundColor = '#0080005e';
+                createTr.style.backgroundColor = '#e0fec0';
+                createTr.style.color = 'black';
                 createTr.innerHTML = strTd;
                 document.querySelector('[id="grid"] table thead').append(createTr);
             }

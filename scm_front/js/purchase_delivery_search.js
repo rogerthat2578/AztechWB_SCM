@@ -75,7 +75,7 @@ let app = new Vue({
                 }
 
                 if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
-                    vThis.search();
+                    vThis.search(vThis.addSummary);
                     vThis.initKeyCombi();
                 }
             }
@@ -227,6 +227,55 @@ let app = new Vue({
                 }
             });
         },
+        /**
+         * 소계 행 추가
+         */
+         addSummary: function () {
+            let vThis = this;
+
+            if (document.querySelectorAll('[id="grid"] table thead tr').length > 1) {
+                for (let i in document.querySelectorAll('[id="grid"] table thead tr')) {
+                    if (document.querySelectorAll('[id="grid"] table thead tr').hasOwnProperty(i) && i > 0)
+                        document.querySelectorAll('[id="grid"] table thead tr')[i].remove();
+                }
+            }
+
+            if (vThis.rows.Query.length > 0) {
+                let objQeury = GX.deepCopy(vThis.rows.QuerySummary);
+                let trList = document.querySelectorAll('[id="grid"] table thead tr td');
+                let strTd = '';
+                const keyMapping = {
+                    sumPrice: '납품단가',
+                    sumQty: '금회납품수량',
+                    sumCurAmt: '금액',
+                    sumCurVAT: '부가세',
+                    sumTotCurAmt: '금액계',
+                    sumDomPrice: '원화단가',
+                    sumDomAmt: '원화금액',
+                    sumDomVAT: '원화부가세',
+                    sumTotDomAmt: '원화금액계'
+                }
+
+                for (let i in trList) {
+                    if (trList.hasOwnProperty(i)) {
+                        if (i >= 11 && i <= 22 && i != 13 && i != 17 && i != 18) {
+                            Object.keys(keyMapping).forEach(k => {
+                                if (trList[i].innerText == keyMapping[k])
+                                    strTd += '<td class="text-r">' + objQeury[k] + '</td>';
+                            });
+                        } else { 
+                            strTd += '<td></td>';
+                        }
+                    }
+                }
+
+                let createTr = document.createElement('tr');
+                createTr.style.backgroundColor = '#e0fec0';
+                createTr.style.color = 'black';
+                createTr.innerHTML = strTd;
+                document.querySelector('[id="grid"] table thead').append(createTr);
+            }
+        },
         /**조회 */
         search: function(callback) {
             let vThis = this;
@@ -246,7 +295,7 @@ let app = new Vue({
             .setMethodId('DelvItemListQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
-                    let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0};
+                    let summaryList = {sumPrice: 0, sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumDomPrice: 0, sumDomAmt: 0, sumDomVAT: 0, sumTotDomAmt: 0};
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
@@ -297,7 +346,7 @@ let app = new Vue({
                     vThis.rows.Query = [];
                     vThis.rows.QuerySummary = {};
                     alert('저장 성공');
-                    vThis.search();
+                    vThis.search(vThis.addSummary);
                 }, function (data) {
                 }]);
             } else {
