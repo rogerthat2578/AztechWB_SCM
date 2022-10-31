@@ -305,9 +305,10 @@ let app = new Vue({
 
                             Object.keys(summaryList).map((k) => {
                                 if(data[i][k.replace('sum', '')]) {
-                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')])))
+                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')]))) {
                                         summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
-                                    else
+                                        data[i][k.replace('sum', '')] = GX._METHODS_.nvl(data[i][k.replace('sum', '')]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                                    } else
                                         summaryList[k] += 0;
                                 }
                             });
