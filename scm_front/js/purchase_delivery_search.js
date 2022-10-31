@@ -246,23 +246,13 @@ let app = new Vue({
             .setMethodId('DelvItemListQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
-                    // data for loop
-                    // let noDataIndex = [];
                     let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0};
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
-                            // data[i].RowEdit = false;
                             data[i].DelvInDate = data[i].DelvInDate.length == 8 ? (data[i].DelvInDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvInDate;
                             data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
                             data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                            
-                            // if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
-                            //     data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
-                            // } else {
-                            //     data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                            //     noDataIndex.push(i);
-                            // }
 
                             Object.keys(summaryList).map((k) => {
                                 if (!isNaN(data[i][k.replace('sum', '')]))
@@ -274,19 +264,6 @@ let app = new Vue({
                     // bind data, bind summary data
                     vThis.rows.Query = data;
                     vThis.rows.QuerySummary = summaryList;
-
-                    /**DOM에 아직 그리드(table tags)가 다 그려지지 않아서 바로 DOM에 접근하면 Element를 못찾음... setTimeout 그냥 쓸까..? */
-                    // element for loop
-                    // if (noDataIndex.length > 0) {
-                    //     setTimeout(() => {
-                    //         for (let i in noDataIndex) {
-                    //             if (noDataIndex.hasOwnProperty(i)) {
-                    //                 document.getElementsByName('DelvPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
-                    //                 vThis.rows.Query[noDataIndex[i]].RowEdit = true;
-                    //             }
-                    //         }
-                    //     }, 20);
-                    // }
                 } else {
                     vThis.rows.Query = [];
                     vThis.rows.QuerySummary = {};
