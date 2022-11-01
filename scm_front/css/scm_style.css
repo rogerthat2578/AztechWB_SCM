@@ -1211,8 +1211,11 @@ main {
 }
 
 @media only screen and (min-width: 420px) and (max-width: 1900px) {
-  body {
-    min-width: 1900px;
+  body{
+     min-width: 1900px;
+  }
+  .list-bg{
+     position: absolute;
   }
 }
 @media (max-width: 420px) {
