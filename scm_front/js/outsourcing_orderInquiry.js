@@ -226,8 +226,10 @@ let app = new Vue({
                     let tempObj = {}, jumpData = [];
                     tempObj.WorkOrderSeq = vThis.rows.Query[idx].WorkOrderSeq;
                     tempObj.WorkOrderSerl = vThis.rows.Query[idx].WorkOrderSerl;
+                    tempObj.SizeName = vThis.rows.Query[idx].SizeName;
+                    tempObj.DivSerl = vThis.rows.Query[idx].DivSerl;
+                    tempObj.BizUnit = vThis.rows.Query[idx].BizUnit;
                     jumpData.push(tempObj);
-                    console.log(jumpData)
                     if (jumpData.length > 0 && !isNaN(tempObj.WorkOrderSeq) && !isNaN(tempObj.WorkOrderSerl)) {
                         GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
                         GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
@@ -374,8 +376,6 @@ let app = new Vue({
                     saveArrData.splice(i, 1);
                 }
             }
-
-            //console.log(saveArrData);
 
             if(saveArrData.length > 0){
                 GX._METHODS_

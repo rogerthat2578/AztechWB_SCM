@@ -75,6 +75,7 @@ let app = new Vue({
             vThis.rows.Query = [];
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
+            DelvDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
             vThis.queryForm.BizUnit = '1';
         },
         selectAll: function(){
@@ -89,18 +90,15 @@ let app = new Vue({
             this.isCheckList = isCheckList;
         },
         selectedAllIsEnd: function(){
+            let checked = event.target.checked;
             let obj = document.querySelectorAll('[name="IsEnd"]');
-            console.log(obj);
+
             for(let i in obj){
                 if(obj.hasOwnProperty(i)){
-                    obj[i].checked = event.target.checked;
-                    if(event.target.checked)
-                        this.rows.Query[i].IsEnd = 1;
-                    else
-                        this.rows.Query[i].IsEnd = 0;
+                    obj[i].checked = checked;
+                    this.rows.Query[i].IsEnd = checked ? 1 : 0;
                 }
             }
-            console.log(this.rows.Query);
         },
         initSelected: function(){
             this.isCheckList = [];
@@ -119,9 +117,12 @@ let app = new Vue({
             else if(idx != -1) this.isCheckList.splice(idx, 1);
         },
         selectedMarkIsEnd: function(index){
-            if(event.target.checked) this.rows.Query[index].IsEnd = 1;
-            else this.rows.Query[index].IsEnd = 0;
-            console.log(this.rows.Query);
+            if(event.target.checked){
+                this.rows.Query[index].IsEnd = 1;
+            }
+            else {
+                this.rows.Query[index].IsEnd = 0;
+            }
         },
         applyAll: function(name, idx){
             event.target.setAttribute('gx-datepicker', idx);
@@ -188,6 +189,7 @@ let app = new Vue({
                             if (data.hasOwnProperty(i)) {
                                 data[i].ROWNUM = parseInt(i) + 1
                                 data[i].RowEdit = true;
+                                data[i].IsEnd = data[i].IsEnd == 1 ? data[i].IsEnd : null;
                                 data[i].OrderQty = data[i].OrderQty.toString().replace(regex, '$1,');
                                 data[i].ProgressQty = data[i].ProgressQty.toString().replace(regex, '$1,');
                                 data[i].ProdQty = data[i].ProdQty != null ? data[i].ProdQty.toString().replace(regex, '$1,') : 0;
@@ -239,8 +241,6 @@ let app = new Vue({
             let vThis = this;
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
-            console.log(vThis.rows.Query);
-
             for(let i = saveArrData.length - 1; i >= 0; i--){
                 if(saveArrData[i].RowEdit){
                     saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
@@ -268,7 +268,8 @@ let app = new Vue({
                     else if(vThis.jumpSetMethodId == 'OSPWorkOrderJump'){
                         saveArrData[i].WorkingTag = 'A';
                     }
-                    saveArrData[i].DelvDate = saveArrData[i].DelvDate.indexOf('-') > -1 ? saveArrData[i].DelvDate.replace(/\-/g, "") : saveArrData[i].DelvDate;
+
+                    saveArrData[i].DelvDate = this.queryForm.DelvDate.indexOf('-') > -1 ? this.queryForm.DelvDate.replace(/\-/g, "") : this.queryForm.DelvDate;
                 } else{
                     saveArrData.splice(i, 1);
                 }
@@ -328,6 +329,13 @@ let app = new Vue({
                                     alert('삭제 실패\n' + data[0].Result);
                                 } else{
                                     alert('삭제 성공');
+                                    for(let i=vThis.rows.Query.length - 1; i >=0; i--){
+                                        if(vThis.rows.Query.hasOwnProperty(i)){
+                                            vThis.rows.Query.splice(i, 1);
+                                        }
+                                    }
+                                    vThis.initSelected();
+                                    vThis.calSum();
                                 }
                             }]);
                         } else{
@@ -375,6 +383,13 @@ let app = new Vue({
                             alert('삭제 실패\n' + data[0].Result);
                         } else {
                             alert('삭제 성공');
+                            for(let i=vThis.rows.Query.length - 1; i >=0; i--){
+                                if(vThis.rows.Query.hasOwnProperty(i)){
+                                    vThis.rows.Query.splice(i, 1);
+                                }
+                            }
+                            vThis.initSelected();
+                            vThis.calSum();
                         }
                     }]);
                 }
@@ -399,13 +414,18 @@ let app = new Vue({
                     }
 
                     GX._METHODS_
-                    .setMethodId('PUDelvSave')
+                    .setMethodId('PDWorkReportSave')
                     .ajax(delArrData, [function (data) {
                         if (data[0].Status && data[0].Status != 0) {
                             // 뭔가 문제가 발생했을 때 리턴
                             alert('삭제 실패\n' + data[0].Result);
                         } else {
                             alert('삭제 성공');
+                            for(let i=vThis.rows.Query.length - 1; i >=0; i--){
+                                vThis.rows.Query.splice(i, 1);
+                            }
+                            vThis.initSelected();
+                            vThis.calSum();
                         }
                     }]);
                 }
@@ -453,7 +473,7 @@ let app = new Vue({
                 .item('InWHName').head('입고창고', '').body(null, 'text-l')
                 .item('Remark').head('특이사항', '')
                     .body('<div><input type="text" name="Remark" attr-condition="" :value="row.Remark" @input="updateRowData(index)" style="border: 0px solid; text-align: left; background: transparent;" /></div>')
-                .item('IsEnd').head('완료여부<div class="chkBox"><input type="checkbox" @click="selectedAllIsEnd();" /></div>', '')
+                .item('IsEnd').head('완료여부<div class="chkBox"><input type="checkbox" name="IsEndAll" @click="selectedAllIsEnd();" /></div>', '')
                     .body('<div class="chkBox"><input type="checkbox" name="IsEnd" attr-condition="" :value="row.IsEnd" :checked="row.IsEnd" @input="selectedMarkIsEnd(index);" /></div>', '')
                 .item('OSPPrice').head('단가', '').body(null, 'text-r')
                 .item('IsVAT').head('부가세포함', '')
