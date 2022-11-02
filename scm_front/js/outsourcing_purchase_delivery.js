@@ -17,7 +17,7 @@ let app = new Vue({
             CompanySeq: '',
             BizUnit: '',
             BizUnitName: '',
-            DelvDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            DelvDate: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             CustSeq: '',
         },
 
@@ -75,7 +75,7 @@ let app = new Vue({
             vThis.rows.Query = [];
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
-            DelvDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
         },
         selectAll: function(){

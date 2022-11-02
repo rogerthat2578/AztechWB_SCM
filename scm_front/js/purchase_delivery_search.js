@@ -21,8 +21,8 @@ let app = new Vue({
             CompanySeq: '',
             BizUnit: '',
             BizUnitName: '',
-            DelvDateFr: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
-            DelvDateTo: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            DelvDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            DelvDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             SMCurrStatus: 0,
             SMCurrStatusName: '전체',
             PONo: '',
@@ -156,8 +156,8 @@ let app = new Vue({
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
-            vThis.queryForm.DelvDateFr = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
-            vThis.queryForm.DelvDateTo = new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-");
+            vThis.queryForm.DelvDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            vThis.queryForm.DelvDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.SMCurrStatus = 0;
             vThis.queryForm.SMCurrStatusName = '전체';
             vThis.queryForm.PONo = '';

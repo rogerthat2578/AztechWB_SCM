@@ -22,7 +22,7 @@ let app = new Vue({
             CompanySeq: '',
             BizUnit: '',
             BizUnitName: '',
-            DelvDate: new Date().toLocaleDateString().replace(/\./g, "").replace(/\ /g, "-"),
+            DelvDate: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             DelvNo: '',
             RemarkM: '',
             SMImpType: 8008001,
