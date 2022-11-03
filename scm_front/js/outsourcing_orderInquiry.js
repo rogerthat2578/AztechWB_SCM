@@ -433,14 +433,19 @@ let app = new Vue({
             document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
-            // 사업단위가 여러개일 수 있기에 아래와 같이 set/get함
-            let objBizUnitList = JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType'));
-            Object.keys(objBizUnitList).map((k) => {
-                vThis.BizUnitList.push(objBizUnitList[k]);
-            });
+            /**
+			 * Default data setting
+			 * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+			 * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+             * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+			 */
+			vThis.deptName = GX.Cookie.get('DeptName');
+			vThis.userName = GX.Cookie.get('UserName');
+			vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
             vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
             GX.VueGrid
             .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')

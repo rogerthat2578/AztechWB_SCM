@@ -442,13 +442,20 @@ let app = new Vue({
 
             document.addEventListener('click', vThis.eventCheck, false);
 
-            vThis.deptName = GX.Cookie.get('DeptName');
-            vThis.userName = GX.Cookie.get('UserName');
-            vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
+            /**
+			 * Default data setting
+			 * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+			 * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+             * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+			 */
+			vThis.deptName = GX.Cookie.get('DeptName');
+			vThis.userName = GX.Cookie.get('UserName');
+			vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
             vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
-            vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+            
 
             GX.VueGrid
                 .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
