@@ -1307,9 +1307,9 @@ GX = {
 			//template += '<button onclick="GX.Calendar.close();">닫기</button>';
 			template += '</div>';
 			template += '<div class="' + this.config.classes.navigate + '">';
-			template += '<button onclick="GX.Calendar.before();">▲</button>';
+			template += '<button onclick="GX.Calendar.before();">▼</button>';
 			template += '<span id="' + calendarName + '-viewtype" class="now" onclick="GX.Calendar.changeViewType(false);"></span>';
-			template += '<button onclick="GX.Calendar.next();">▼</button>';
+			template += '<button onclick="GX.Calendar.next();">▲</button>';
 			template += '</div>';
 			template += '<div id="' + calendarName + '-view" class="' + this.config.classes.viewWrap[this.viewType] + '"></div>';
 			template += '<div id="' + calendarName + '-control" style="display:none;">';
