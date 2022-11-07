@@ -232,6 +232,8 @@ let app = new Vue({
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
                 document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+
+                console.log(this.rows.Query[idx])
             }
         },
         updateRowRemark: function (idx = null) {
@@ -464,7 +466,7 @@ let app = new Vue({
                         } else {
                             alert('삭제 성공');
                             vThis.initSelected();
-                            vThis.calSum();
+                            vThis.search(vThis.calSum);
                         }
                     }]);
                 }
@@ -541,8 +543,8 @@ let app = new Vue({
             .item('ItemName').head('품명', '').body(null, 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
-            .item('Qty').head('납품수량', '')
-                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" /></div>', '')
+            .item('Qty', { styleSyntax: 'style="width: 110px;"' }).head('납품수량', '')
+                .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" /></div>')
             .item('Price').head('단가', '').body(null, 'text-r')
             .item('CurAmt').head('금액', '').body(null, 'text-r')
             .item('IsVAT').head('부가세여부', '')
@@ -555,7 +557,7 @@ let app = new Vue({
             .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
             .item('WHName').head('창고', '')
             .item('Remark').head('비고', '')
-                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent;" name="Remark" :value="row.Remark" @input="updateRowRemark(index)" /></div>', '')
+                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: left;" name="Remark" :value="row.Remark" @input="updateRowRemark(index)" /></div>', '')
             .item('ColorNo').head('색상', '')
             .loadTemplate('#grid', 'rows.Query');
         }

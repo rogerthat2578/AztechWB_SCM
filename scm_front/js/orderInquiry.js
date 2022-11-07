@@ -444,8 +444,8 @@ let app = new Vue({
             .item('PODate').head('발주일', '')
             .item('PONo').head('발주번호', '')
             .item('DelvDate').head('납기일', '')
-            .item('DelvPlanDate').head('납품예정일', '')
-                .body('<div><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+            .item('DelvPlanDate', { styleSyntax: 'style="width: 92px;"' }).head('납품예정일', '')
+                .body('<div style="width: 90px;"><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent; width: 100%;" /></div>')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
             .item('ItemName').head('품명', '').body(null, 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
@@ -460,9 +460,13 @@ let app = new Vue({
             .item('DelvCurAmt').head('납품금액', '').body(null, 'text-r')
             .item('WHName').head('입고창고', '')
             .item('Remark1').head('비고', '')
+            .item('OrderItemName').head('Order품명', '')
+            .item('OrderItemNo').head('Order품번', '')
+            .item('OrderSpec').head('Order규격', '')
+            .item('BuyerNo').head('Buyer No.', '')
             .item('SizeName').head('사이즈', '')
-            .item('ColorNo').head('색상', '')
-            .item('UseSelect').head('사용부위', '')
+            .item('ColorNo').head('색상', '').body(null, 'text-l')
+            .item('UseSelect').head('사용부위', '').body(null, 'text-l')
             .loadTemplate('#grid', 'rows.Query');
         }
     },

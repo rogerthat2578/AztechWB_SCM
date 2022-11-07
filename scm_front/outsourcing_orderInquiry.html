@@ -114,6 +114,15 @@
 								<input type="text" name="GoodItemSpec" v-model="queryForm.GoodItemSpec">
 							</li>
 						</ul>
+						<ul class="input-wrap">
+							<li class="name">
+								<label>공정</label>
+							</li>
+							<li class="txt">
+								<input type="hidden" name="ProcessSeq" v-model="queryForm.ProcessSeq" gx-init="queryForm" gx-default="0">
+                                <input type="text" name="ProcessName" id="ProcessName" v-model="queryForm.ProcessName" value="" gx-init="queryForm" gx-default="" @click="openCodeHelp();" @change="inputSearchCodeHelp();">
+							</li>
+						</ul>
 					</div>
 				</div>
 				<button class="btn-hide mo" onclick="hide();"></button>
@@ -139,82 +148,42 @@
 				</div>
 
 				<div class="data-table" id="grid"></div>
-				<!--
-				<div class="data-table">
-					<table>
-						<thead>
-							<tr>
-								<td>No.</td>
-								<td><input type="checkbox"></td>
-								<td>작업지시일</td>
-								<td>작업예정일</td>
-								<td>납품예정일</td>
-								<td>작업지시번호</td>
-								<td>진행상태</td>
-								<td>공정</td>
-								<td>품번</td>
-								<td>품명</td>
-								<td>규격</td>
-								<td>사이즈</td>
-								<td>지시수량</td>
-								<td>실적진행수량</td>
-								<td>미진행수량</td>
-								<td>생산수량</td>
-								<td>양품수량</td>
-								<td>불량수량</td>
-								<td>특이사항</td>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>1</td>
-								<td><input type="checkbox"></td>
-								<td>2022-06-01</td>
-								<td>2022-06-01</td>
-								<td class="no-data"></td>
-								<td>0123456789</td>
-								<td>진행중</td>
-								<td class="text-l">공정01</td>
-								<td class="text-l">2260132</td>
-								<td class="text-l">W/100 1/6</td>
-								<td class="text-l">YB106W</td>
-								<td class="text-l">사이즈</td>
-								<td class="text-r">100</td>
-								<td class="text-r">100</td>
-								<td class="text-r">100</td>
-								<td class="text-r">50</td>
-								<td class="text-r">50</td>
-								<td class="text-r">50</td>
-								<td></td>
-							</tr>
-							<tr class="click">
-								<td>2</td>
-								<td><input type="checkbox"></td>
-								<td>2022-06-01</td>
-								<td>2022-06-01</td>
-								<td class="no-data"></td>
-								<td>0123456789</td>
-								<td>진행중</td>
-								<td class="text-l">공정01</td>
-								<td class="text-l">2260132</td>
-								<td class="text-l">W/100 1/6</td>
-								<td class="text-l">YB106W</td>
-								<td class="text-l">사이즈</td>
-								<td class="text-r">100</td>
-								<td class="text-r">100</td>
-								<td class="text-r">100</td>
-								<td class="text-r">50</td>
-								<td class="text-r">50</td>
-								<td class="text-r">50</td>
-								<td></td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				-->
 			</div>
 		</main>
 	</div>
+
+	<div class="bg-wrap" code-help="ProcessName" gx-layer="">
+		<div class="code-help-con">
+			<div class="code-help-top">
+				<span>공정 선택</span>
+			</div>
+			<div class="code-help-main">
+				<div class="input-row">
+					<ul class="input">
+						<li class="name lb-wid-95">
+							<label>공정</label>
+						</li>
+						<li class="input-data lb-wid-95">
+							<input type="text" class="num" name="ProcessName" v-model="codeHelp.ProcessName" @click="focusCodeHelp('ProcessName');" @change="focusCodeHelp('ProcessName');">
+						</li>
+					</ul>
+				</div>
+				<div class="code-help-button-row">
+					<button @click="searchCodeHelp('ProcessName');"> <img src="img/ic_04.png" alt=""> 조회하기</button>
+				</div>
+	
+				<div class="table-row">
+					<div id="grid-processname" class="table">
+					</div>
+				</div>
+				<div class="btn-row">
+					<button class="left" @click="closeCodeHelp('ProcessName');">닫기</button>
+					<button class="right" @click="selectedApplyCodeHelp('ProcessName');">선택하기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script src="js/common/app.js?v=1665537373142"></script>
 </body>
 </html>
