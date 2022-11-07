@@ -121,7 +121,7 @@
 										</ul>
 										<ul class="bottom">
 											<li class="box">
-												<div class="name">납기준수율</div>
+												<div class="name">납품율</div>
 												<div class="sub">
 													<p class="num">{{rows.PODelvQuery.PODelvRate}}<span class="per">%</span></p>
 												</div>
@@ -163,7 +163,7 @@
 								</div>
 								<div class="current-wrap">
 									<div class="current-01">
-										<span class="title">월별 불량율(%) / 준수율(%)</span>
+										<span class="title">월별 납품율(%) / 불량율(%)</span>
 										<canvas id="PODelvChart2" style="width: 100%; height: 100%;"></canvas>
 									</div>
 								</div>
@@ -220,7 +220,7 @@
 												</div>
 											</li>
 											<li class="box">
-												<div class="name">작업준수율</div>
+												<div class="name">작업납품율</div>
 												<div class="sub">
 													<p class="num">{{rows.OrdRptQuery.OrdOkRate}}<span class="per">%</span></p>
 												</div>
@@ -288,6 +288,7 @@
 												<li v-for="item in YearList" @click="openCloseDropBox(search)">{{item}}</li>
 											</ul>
 										</div>
+										<span class="year">년</span>
 									</div>
 									<div><span class="unit">(금액단위:천원)</span></div>
 								</div>
@@ -303,7 +304,7 @@
 								</div>
 								<div class="current-wrap">
 									<div class="current-01">
-										<span class="title">월별 불량율(%) / 준수율(%)</span>
+										<span class="title">월별 납품율(%) / 불량율(%)</span>
 										<canvas id="OrdRptChart2" style="width: 100%; height: 100%;"></canvas>
 									</div>
 								</div>

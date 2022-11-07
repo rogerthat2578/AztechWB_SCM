@@ -126,7 +126,7 @@ let app = new Vue({
 					}
 
 					if (vThis.poDelvChartObj2 == null)
-						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '준수율(%)', '불량율(%)', vThis.OkRateValuePODelv, vThis.BadRateValuePODelv, 'line');
+						vThis.poDelvChartObj2 = vThis.newChart(vThis.poDelvCtx2, '납품율(%)', '불량율(%)', vThis.OkRateValuePODelv, vThis.BadRateValuePODelv, 'line');
 					else {
 						vThis.poDelvChartObj2.data.datasets[0].data = vThis.BadRateValuePODelv;
 						vThis.poDelvChartObj2.data.datasets[1].data = vThis.OkRateValuePODelv;
@@ -140,7 +140,7 @@ let app = new Vue({
 					}
 
 					if (vThis.ordRptChartObj2 == null)
-						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '준수율(%)', '불량율(%)', vThis.OkRateValueOrdRpt, vThis.BadRateValueOrdRpt, 'line');
+						vThis.ordRptChartObj2 = vThis.newChart(vThis.ordRptCtx2, '납품율(%)', '불량율(%)', vThis.OkRateValueOrdRpt, vThis.BadRateValueOrdRpt, 'line');
 					else {
 						vThis.ordRptChartObj2.data.datasets[0].data = vThis.BadRateValueOrdRpt;
 						vThis.ordRptChartObj2.data.datasets[1].data = vThis.OkRateValueOrdRpt;
@@ -207,7 +207,7 @@ let app = new Vue({
 				}
 			}, function (data) {
 				// console.log('callback2', data)
-				// 구매. 발주/납품 이월/당월/누계/잔량/납기준수율
+				// 구매. 발주/납품 이월/당월/누계/잔량/납품율
 				if (data.length > 0) {
 					Object.keys(vThis.rows.PODelvQuery).map(k => {
 						vThis.rows.PODelvQuery[k] = data[0][k] ? Math.round(data[0][k]).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : 0;
@@ -215,7 +215,7 @@ let app = new Vue({
 				}
 			}, function (data) {
 				// console.log('callback3', data)
-				// 외주. 발주/납품 이월/당월/누계/잔량/납기준수율
+				// 외주. 발주/납품 이월/당월/누계/잔량/납품율
 				if (data.length > 0) {
 					Object.keys(vThis.rows.OrdRptQuery).map(k => {
 						vThis.rows.OrdRptQuery[k] = data[0][k] ? Math.round(data[0][k]).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : 0;
@@ -231,6 +231,22 @@ let app = new Vue({
 							data[i].PODate = GX._METHODS_.nvl(data[i].PODate).length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
 							data[i].DelvDate = GX._METHODS_.nvl(data[i].DelvDate).length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
 							data[i].DelvPlanDate = GX._METHODS_.nvl(data[i].DelvPlanDate).length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
+							data[i].POQty = GX._METHODS_.nvl(data[i].POQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+							data[i].LessQty = GX._METHODS_.nvl(data[i].LessQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+							// 글자 생략
+							let defEllipsis = 12;
+							if (data[i].ItemNo.length > defEllipsis) {
+								data[i].ellipsisItemNo = data[i].ItemNo;
+								data[i].ItemNo = data[i].ItemNo.substr(0, defEllipsis) + '...';
+							}
+							if (data[i].ItemName.length > defEllipsis) {
+								data[i].ellipsisItemName = data[i].ItemName;
+								data[i].ItemName = data[i].ItemName.substr(0, defEllipsis) + '...';
+							}
+							if (data[i].Spec.length > defEllipsis) {
+								data[i].ellipsisSpec = data[i].Spec;
+								data[i].Spec = data[i].Spec.substr(0, defEllipsis) + '...';
+							}
 						}
 					}
 					vThis.rows.POItemQuery = data;
@@ -245,6 +261,22 @@ let app = new Vue({
 							data[i].WorkOrderDate = GX._METHODS_.nvl(data[i].WorkOrderDate).length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
 							data[i].WorkDate = GX._METHODS_.nvl(data[i].WorkDate).length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
 							data[i].WorkPlanDate = GX._METHODS_.nvl(data[i].WorkPlanDate).length == 8 ? (data[i].WorkPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkPlanDate;
+							data[i].POQty = GX._METHODS_.nvl(data[i].POQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+							data[i].LessQty = GX._METHODS_.nvl(data[i].LessQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+							// 글자 생략
+							let defEllipsis = 12;
+							if (data[i].ItemNo.length > defEllipsis) {
+								data[i].ellipsisItemNo = data[i].ItemNo;
+								data[i].ItemNo = data[i].ItemNo.substr(0, defEllipsis) + '...';
+							}
+							if (data[i].ItemName.length > defEllipsis) {
+								data[i].ellipsisItemName = data[i].ItemName;
+								data[i].ItemName = data[i].ItemName.substr(0, defEllipsis) + '...';
+							}
+							if (data[i].Spec.length > defEllipsis) {
+								data[i].ellipsisSpec = data[i].Spec;
+								data[i].Spec = data[i].Spec.substr(0, defEllipsis) + '...';
+							}
 						}
 					}
 					vThis.rows.OrdItemQuery = data;
@@ -260,9 +292,9 @@ let app = new Vue({
 							let SumAvgAmt = 0;
 							Object.keys(data[i]).map(k => {
 								if (k.indexOf('DomAmt') > -1) {
-									if (i < 2) SumAvgAmt += data[i][k];
-									else SumAvgAmt += data[i][k];
-									obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+									SumAvgAmt += data[i][k];
+									if (data[i][k].toString().indexOf('.') > -1) obj[k] = data[i][k].toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+									else obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
 								} else {
 									obj[k] = data[i][k];
 								}
@@ -300,15 +332,15 @@ let app = new Vue({
 							let SumAvgAmt = 0;
 							Object.keys(data[i]).map(k => {
 								if (k.indexOf('DomAmt') > -1) {
-									if (i < 2) SumAvgAmt += data[i][k];
-									else SumAvgAmt += data[i][k];
-									obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+									SumAvgAmt += data[i][k];
+									if (data[i][k].toString().indexOf('.') > -1) obj[k] = data[i][k].toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+									else obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
 								} else {
 									obj[k] = data[i][k];
 								}
 							})
 							if (i < 2) obj.SumDomAmt = SumAvgAmt.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
-							else obj.SumDomAmt = (SumAvgAmt / 12).toFixed(1);
+							else obj.SumDomAmt = (SumAvgAmt / 12).toFixed(2);
 
 							vThis.rows.OrdRptMonthQuery.push(obj);
 						}
@@ -448,12 +480,12 @@ let app = new Vue({
             .item('PODate').head('발주일', '')
             .item('DelvDate').head('납기일', '')
 			.item('DelvPlanDate').head('납기예정일', '')
-			.item('ItemNo').head('품번', '')
-			.item('ItemName').head('품명', '')
-			.item('Spec').head('규격', '')
+			.item('ItemNo').head('품번', '').body(null, 'text-l')
+			.item('ItemName').head('품명', '').body(null, 'text-l')
+			.item('Spec').head('규격', '').body(null, 'text-l')
 			.item('UnitName').head('단위', '')
-			.item('POQty').head('발주수량', '')
-			.item('LessQty').head('잔량', '')
+			.item('POQty').head('발주수량', '').body(null, 'text-r')
+			.item('LessQty').head('잔량', '').body(null, 'text-r')
             .loadTemplate('#poItemGrid', 'rows.POItemQuery');
 
 			GX.VueGrid
@@ -462,13 +494,13 @@ let app = new Vue({
             .item('WorkOrderDate').head('작업지시일', '')
             .item('WorkDate').head('작업일', '')
 			.item('WorkPlanDate').head('작업예정일', '')
-			.item('ItemNo').head('품번', '')
-			.item('ItemName').head('품명', '')
-			.item('Spec').head('규격', '')
+			.item('ItemNo').head('품번', '').body(null, 'text-l')
+			.item('ItemName').head('품명', '').body(null, 'text-l')
+			.item('Spec').head('규격', '').body(null, 'text-l')
 			.item('SizeText').head('사이즈', '')
 			.item('UnitName').head('단위', '')
-			.item('POQty').head('발주수량', '')
-			.item('LessQty').head('잔량', '')
+			.item('POQty').head('발주수량', '').body(null, 'text-r')
+			.item('LessQty').head('잔량', '').body(null, 'text-r')
             .loadTemplate('#ordItemGrid', 'rows.OrdItemQuery');
 
 			GX.VueGrid

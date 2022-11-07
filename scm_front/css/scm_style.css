@@ -1080,6 +1080,12 @@ main {
   height: 260px;
   overflow-y: auto;
 }
+.order-list .order-table table .text-l {
+  text-align: left;
+}
+.order-list .order-table table .text-r {
+  text-align: right;
+}
 
 .container {
   background-color: white;
@@ -1197,7 +1203,7 @@ main {
 .fake-dialog-wrap .fake-dialog-container {
   position: relative;
   top: 30%;
-  width: 90vw;
+  width: 60vw;
   height: 50vh;
   padding-bottom: 10px;
   border-radius: 10px;
