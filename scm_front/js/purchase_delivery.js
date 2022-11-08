@@ -227,19 +227,52 @@ let app = new Vue({
         },
         updateRowQty: function (idx = null) {
             let evtTarget = event.target;
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
-                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
-                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
-                this.rows.Query[idx].RowEdit = true;
+
+            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
+                let queryIdx = this.rows.Query[idx]; // 해당 행 obj
+                queryIdx[evtTarget.name] = evtTarget.value;
+                queryIdx.RowEdit = true;
                 document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
 
-                console.log(this.rows.Query[idx])
+                // 납품수량
+                let rowDelvQty = this.rows.Query[idx][evtTarget.name];
+
+                // 부가세 여부에 따라 변경 값
+                let mulVal = [];
+                if (queryIdx.IsVAT == '0') mulVal = [1.0, 0.1, 1.1]; // 부가세 별도
+                else mulVal = [0.9, 0.1, 1.0]; // 부가세 포함
+
+                /**해당 행 금액들 수정 */
+                // 금액 = 납품수량 * 단가 * 환율
+                queryIdx.CurAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                // 부가세 = 납품수량 * 단가 * 환율 * 0.1
+                queryIdx.CurVAT = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                // 금액계 = 납품수량 * 단가 * 환율 * 1.1
+                queryIdx.TotCurAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                // 통화가 KRW인 경우
+                // 원화금액 = 납품수량 * 원화단가
+                queryIdx.DomAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                // 원화부가세 = 납품수량 * 원화단가 * 0.1
+                queryIdx.DomVAT = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                // 원화금액계 = 납품수량 * 원화단가 * 1.1
+                queryIdx.TotDomAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+
+                // 합계 수정
+                for (let i in this.rows.Query) {
+                    if (this.rows.Query.hasOwnProperty(i)) {
+                        if (i == 0) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = 0);
+                        this.summaryArea.SumCurAmt = parseFloat(this.summaryArea.SumCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].CurAmt.toString().replace(/\,/g, ''));
+                        this.summaryArea.SumCurVAT = parseFloat(this.summaryArea.SumCurVAT.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].CurVAT.toString().replace(/\,/g, ''));
+                        this.summaryArea.SumTotCurAmt = parseFloat(this.summaryArea.SumTotCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].TotCurAmt.toString().replace(/\,/g, ''));
+                        if (i == this.rows.Query.length - 1) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = this.summaryArea[k].toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,'));
+                    }
+                }
             }
         },
         updateRowRemark: function (idx = null) {
             let evtTarget = event.target;
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
-                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
+
+            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
                 document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
@@ -269,6 +302,7 @@ let app = new Vue({
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
                             data[i].RowEdit = true;
+                            data[i].boolIsVAT = data[i].IsVAT != '0' ? true : false;
 
                             Object.keys(vThis.keyMapping).map((k) => {
                                 data[i][k] = GX._METHODS_.nvl(data[i][k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
@@ -310,6 +344,7 @@ let app = new Vue({
             let params1 = [], params2 = [];
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
+            // 수량, 금액 컬럼의 ,(쉼표) 제거
             for (let i in saveArrData) {
                 Object.keys(vThis.keyMapping).map((k) => {
                     saveArrData[i][k] = GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '').length > 0 ? parseFloat(GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '')) : 0;
@@ -547,8 +582,8 @@ let app = new Vue({
                 .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" /></div>')
             .item('Price').head('단가', '').body(null, 'text-r')
             .item('CurAmt').head('금액', '').body(null, 'text-r')
-            .item('IsVAT').head('부가세여부', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" disabled="true" /></div>', '')
+            .item('IsVAT').head('부가세포함여부', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" v-model="row.boolIsVAT" :value="row.IsVAT" disabled="true" /></div>', '')
             .item('CurVAT').head('부가세', '').body(null, 'text-r')
             .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
             .item('DomPrice').head('원화단가', '').body(null, 'text-r')
