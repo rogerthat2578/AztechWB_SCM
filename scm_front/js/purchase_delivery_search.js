@@ -92,6 +92,9 @@ let app = new Vue({
 				GX.Cookie.set('CompanySeq', '', 0);
 				GX.Cookie.set('BizUnit', '', 0);
 				GX.Cookie.set('BizUnitName', '', 0);
+                GX.Cookie.set('BizUnit_JsonFormatStringType', '', 0);
+                GX.Cookie.set('CustSeq', '', 0); // 거래처코드
+				GX.Cookie.set('CustKind', '', 0); // 거래처타입
 				location.href = 'login.html';
 			}
 		},

@@ -41,8 +41,16 @@ let app = new Vue({
             { key: 3, val: '확정' },
         ],
 
-         // 공정 리스트
+        // 공정 리스트
         ProcessNameList: [
+            { key: 0, val: '전체' },
+            { key: 1, val: '공정1' },
+            { key: 2, val: '공정2' },
+            { key: 3, val: '공정3' },
+            { key: 4, val: '공정4' },
+        ],
+        // 공정 리스트
+        KeepProcessNameList: [
             { key: 0, val: '전체' },
             { key: 1, val: '공정1' },
             { key: 2, val: '공정2' },
@@ -72,6 +80,12 @@ let app = new Vue({
                 if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
                     document.getElementsByClassName('drop-box')[1].style.display = 'none';
+                    // 공정 Select Box 초기화
+                    if ((vThis.ProcessNameList.length == 1 && (vThis.ProcessNameList[0].val == '전체' || vThis.ProcessNameList[0].val == '')) || vThis.queryForm.ProcessName.replace(/\ /g, '') == '') {
+                        vThis.ProcessNameList = vThis.KeepProcessNameList;
+                        vThis.queryForm.Process = vThis.KeepProcessNameList[0].key;
+                        vThis.queryForm.ProcessName = vThis.KeepProcessNameList[0].val;
+                    }
                 }
             }
 
@@ -109,6 +123,9 @@ let app = new Vue({
                 GX.Cookie.set('CompanySeq', '', 0);
                 GX.Cookie.set('BizUnit', '', 0);
                 GX.Cookie.set('BizUnitName', '', 0);
+                GX.Cookie.set('BizUnit_JsonFormatStringType', '', 0);
+                GX.Cookie.set('CustSeq', '', 0); // 거래처코드
+				GX.Cookie.set('CustKind', '', 0); // 거래처타입
                 location.href = 'login.html';
             }
         },
@@ -132,7 +149,23 @@ let app = new Vue({
 
         // 공정 input에 입력 시 리스트 변경
         likeSelect2: function() {
-            console.log('12312')
+            let e = event;
+            let vThis = this;
+
+            let likeIndex = [];
+            if (GX._METHODS_.nvl(e.target.value).length > 0) {
+                vThis.KeepProcessNameList.forEach((v, i) => {
+                    if (v.val.indexOf(e.target.value) > -1) likeIndex.push(i);
+                });
+            }
+
+            if (likeIndex.length > 0) {
+                let arrTemp = [];
+                likeIndex.forEach(v => {
+                    arrTemp.push(vThis.KeepProcessNameList[v]);
+                });
+                vThis.ProcessNameList = arrTemp;
+            }
         },
 
         // DateBox 업데이트

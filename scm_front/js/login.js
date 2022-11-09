@@ -53,7 +53,7 @@ let app = new Vue({
                 if (vThis.rows.IDCheck.length > 0) {
                     vThis.companySeq = data[0].CompanySeq;
                     GX.Storage.set('gx_anotherDsn', data[0].Dsn);
-                    if (vThis.isSaveId[0] === '1')
+                    if (vThis.isSaveId[0] == '1')
                         GX.Storage.set('gx_saveId', vThis.userId);
                 } else {
                     vThis.companySeq = "";
