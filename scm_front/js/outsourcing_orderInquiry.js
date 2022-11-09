@@ -327,7 +327,10 @@ let app = new Vue({
             GX._METHODS_
             .setMethodId('OSPWorkOrderQuery')
             .ajax([params], [function (data){
-                if(data.length > 0){
+                if (data.length > 0) {
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    
                     let noDataIndex = [];
                     let summaryList = {sumOrderQty: 0, sumProgressQty: 0, sumNonProgressQty: 0, sumProdQty: 0, sumOKQty: 0, sumBadQty: 0};
 

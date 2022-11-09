@@ -246,16 +246,16 @@ let app = new Vue({
                 // 금액 = 납품수량 * 단가 * 환율
                 queryIdx.CurAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 // 부가세 = 납품수량 * 단가 * 환율 * 0.1
-                queryIdx.CurVAT = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                queryIdx.CurVAT = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[1])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 // 금액계 = 납품수량 * 단가 * 환율 * 1.1
-                queryIdx.TotCurAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                queryIdx.TotCurAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[2])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 // 통화가 KRW인 경우
                 // 원화금액 = 납품수량 * 원화단가
                 queryIdx.DomAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 // 원화부가세 = 납품수량 * 원화단가 * 0.1
-                queryIdx.DomVAT = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                queryIdx.DomVAT = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[1])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 // 원화금액계 = 납품수량 * 원화단가 * 1.1
-                queryIdx.TotDomAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                queryIdx.TotDomAmt = (parseFloat(rowDelvQty) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[2])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
 
                 // 합계 수정
                 for (let i in this.rows.Query) {

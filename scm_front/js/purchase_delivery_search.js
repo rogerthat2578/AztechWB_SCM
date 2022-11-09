@@ -295,6 +295,9 @@ let app = new Vue({
             .setMethodId('DelvItemListQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    
                     let summaryList = {sumPrice: 0, sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumDomPrice: 0, sumDomAmt: 0, sumDomVAT: 0, sumTotDomAmt: 0};
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {

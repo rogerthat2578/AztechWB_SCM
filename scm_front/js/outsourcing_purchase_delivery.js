@@ -61,11 +61,48 @@ let app = new Vue({
 
         updateRowData: function(idx = null){
             let evtTarget = event.target;
-            if(idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
-                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != ''){
+            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
                 document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+
+                if (evtTarget.name == 'ProdQty') {
+                    let queryIdx = this.rows.Query[idx];
+
+                    if (parseFloat(queryIdx.OSPPrice) > 0) {
+                        // 생산수량
+                        let rowProdQty = queryIdx.ProdQty;
+                        // 부가세 여부에 따라 변경 값
+                        let mulVal = [];
+                        if (queryIdx.IsVAT == '0') mulVal = [1.0, 0.1, 1.1]; // 부가세 별도
+                        else mulVal = [0.9, 0.1, 1.0]; // 부가세 포함
+
+                        /**해당 행 금액들 수정 */
+                        // 금액 = 생산수량 * 단가 * 환율
+                        queryIdx.OSPCurAmt = (parseFloat(rowProdQty) * parseFloat(queryIdx.OSPPrice.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                        // 부가세 = 생산수량 * 단가 * 환율 * 0.1
+                        queryIdx.OSPCurVAT = (parseFloat(rowProdQty) * parseFloat(queryIdx.OSPPrice.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[1])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                        // 금액계 = 생산수량 * 단가 * 환율 * 1.1
+                        queryIdx.OSPTotCurAmt = (parseFloat(rowProdQty) * parseFloat(queryIdx.OSPPrice.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[2])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                        // 통화가 KRW인 경우
+                        // 원화금액 = 생산수량 * 원화단가
+                        queryIdx.OSPDomAmt = (parseFloat(rowProdQty) * parseFloat(queryIdx.OSPDomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                        // 원화부가세 = 생산수량 * 원화단가 * 0.1
+                        queryIdx.OSPDomVAT = (parseFloat(rowProdQty) * parseFloat(queryIdx.OSPDomPrice.replace(/\,/g, '')) * parseFloat(mulVal[1])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                        // 원화금액계 = 생산수량 * 원화단가 * 1.1
+                        queryIdx.OSPTotDomAmt = (parseFloat(rowProdQty) * parseFloat(queryIdx.OSPDomPrice.replace(/\,/g, '')) * parseFloat(mulVal[2])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                    }
+                    // 합계 수정
+                    for (let i in this.rows.Query) {
+                        if (this.rows.Query.hasOwnProperty(i)) {
+                            if (i == 0) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = 0);
+                            this.summaryArea.SumOSPCurAmt = parseFloat(this.summaryArea.SumOSPCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].OSPCurAmt.toString().replace(/\,/g, ''));
+                            this.summaryArea.SumOSPCurVAT = parseFloat(this.summaryArea.SumOSPCurVAT.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].OSPCurVAT.toString().replace(/\,/g, ''));
+                            this.summaryArea.SumOSPTotCurAmt = parseFloat(this.summaryArea.SumOSPTotCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].OSPTotCurAmt.toString().replace(/\,/g, ''));
+                            if (i == this.rows.Query.length - 1) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = this.summaryArea[k].toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,'));
+                        }
+                    }
+                }
             }
         },
 
@@ -183,7 +220,6 @@ let app = new Vue({
                     if(data[0].Status && data[0].Status != 0){
                         alert(data[0].Result);
                         history.back(-1);
-
                     } else if(data.length > 0) {
                         for (let i in data) {
                             if (data.hasOwnProperty(i)) {
@@ -192,9 +228,10 @@ let app = new Vue({
                                 data[i].IsEnd = data[i].IsEnd == 1 ? data[i].IsEnd : null;
                                 data[i].OrderQty = data[i].OrderQty.toString().replace(regex, '$1,');
                                 data[i].ProgressQty = data[i].ProgressQty.toString().replace(regex, '$1,');
-                                data[i].ProdQty = data[i].ProdQty != null ? data[i].ProdQty.toString().replace(regex, '$1,') : 0;
-                                data[i].OKQty = data[i].OKQty != null ? data[i].OKQty.toString().replace(regex, '$1,') : 0;
-                                data[i].BadQty = data[i].BadQty != null ? data[i].BadQty.toString().replace(regex, '$1,') : 0;
+                                // data[i].ProdQty = data[i].ProdQty != null ? data[i].ProdQty.toString().replace(regex, '$1,') : 0;
+                                data[i].ProdQty = data[i].NonProgressQty != null ? data[i].NonProgressQty.toString().replace(regex, '$1,') : 0;
+                                // data[i].OKQty = data[i].OKQty != null ? data[i].OKQty.toString().replace(regex, '$1,') : 0;
+                                // data[i].BadQty = data[i].BadQty != null ? data[i].BadQty.toString().replace(regex, '$1,') : 0;
                                 data[i].OSPPrice = data[i].OSPPrice != null ? data[i].OSPPrice.toString().replace(regex, '$1,') : 0;
                                 data[i].OSPCurAmt = data[i].OSPCurAmt != null ? data[i].OSPCurAmt.toString().replace(regex, '$1,') : 0;
                                 data[i].OSPCurVAT = data[i].OSPCurVAT != null ? data[i].OSPCurVAT.toString().replace(regex, '$1,') : 0;
@@ -203,6 +240,8 @@ let app = new Vue({
                                 data[i].OSPDomVAT = data[i].OSPDomVAT != null ? data[i].OSPDomVAT.toString().replace(regex, '$1,') : 0;
                                 data[i].OSPDomAmt = data[i].OSPDomAmt != null ? data[i].OSPDomAmt.toString().replace(regex, '$1,') : 0;
                                 data[i].OSPTotDomAmt = data[i].OSPTotDomAmt != null ? data[i].OSPTotDomAmt.toString().replace(regex, '$1,') : 0;
+
+                                data[i].boolIsVAT = data[i].IsVAT != '0' ? true : false;
                             }
                         }
                         vThis.rows.Query = data;
@@ -247,10 +286,9 @@ let app = new Vue({
                     saveArrData[i].WorkDate = this.queryForm.DelvDate.indexOf('-') > -1 ? this.queryForm.DelvDate.replace(/\-/g, "") : this.queryForm.DelvDate;
                     saveArrData[i].OrderQty = parseFloat(saveArrData[i].OrderQty.toString().replace(/\,/g, ''));
                     saveArrData[i].ProgressQty = parseFloat(saveArrData[i].ProgressQty.toString().replace(/\,/g, ''));
-                    saveArrData[i].ProgressQty = parseFloat(saveArrData[i].ProgressQty.toString().replace(/\,/g, ''));
                     saveArrData[i].ProdQty = parseFloat(saveArrData[i].ProdQty.toString().replace(/\,/g, ''));
-                    saveArrData[i].OKQty = parseFloat(saveArrData[i].OKQty.toString().replace(/\,/g, ''));
-                    saveArrData[i].BadQty = parseFloat(saveArrData[i].BadQty.toString().replace(/\,/g, ''));
+                    // saveArrData[i].OKQty = parseFloat(saveArrData[i].OKQty.toString().replace(/\,/g, ''));
+                    // saveArrData[i].BadQty = parseFloat(saveArrData[i].BadQty.toString().replace(/\,/g, ''));
                     saveArrData[i].OSPPrice = parseFloat(saveArrData[i].OSPPrice.toString().replace(/\,/g, ''));
                     saveArrData[i].OSPCurAmt = parseFloat(saveArrData[i].OSPCurAmt.toString().replace(/\,/g, ''));
                     saveArrData[i].OSPCurVAT = parseFloat(saveArrData[i].OSPCurVAT.toString().replace(/\,/g, ''));
@@ -458,47 +496,47 @@ let app = new Vue({
             
 
             GX.VueGrid
-                .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
-                .item('ROWNUM').head('No.', '')
-                .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
-                .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
-                .item('GoodItemNo').head('품번', '').body(null, 'text-l')
-                .item('GoodItemName').head('품명', '').body(null, 'text-l')
-                .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
-                .item('ProcName').head('공정', '').body(null, 'text-l')
-                .item('SizeName').head('사이즈', '')
-                .item('ProdUnitName').head('단위', '')
-                .item('OrderQty').head('작업지시수량', '').body(null, 'text-r')
-                .item('ProgressQty').head('기생산수량', '').body(null, 'text-r')
-                .item('ProdQty').head('생산수량', '')
-                    .body('<div><input type="number" name="ProdQty" attr-condition="" :value="row.ProdQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
-                .item('OKQty').head('양품수량', '')
-                    .body('<div><input type="number" name="OKQty" attr-condition="" :value="row.OKQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
-                .item('BadQty').head('불량수량', '').body(null, 'text-r')
-                    .body('<div><input type="number" name="BadQty" attr-condition="" :value="row.BadQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
-                .item('InWHName').head('입고창고', '').body(null, 'text-l')
-                .item('Remark').head('특이사항', '')
-                    .body('<div><input type="text" name="Remark" attr-condition="" :value="row.Remark" @input="updateRowData(index)" style="border: 0px solid; text-align: left; background: transparent;" /></div>')
-                .item('IsEnd').head('완료여부<div class="chkBox"><input type="checkbox" name="IsEndAll" @click="selectedAllIsEnd();" /></div>', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsEnd" attr-condition="" :value="row.IsEnd" :checked="row.IsEnd" @input="selectedMarkIsEnd(index);" /></div>', '')
-                .item('OSPPrice').head('단가', '').body(null, 'text-r')
-                .item('IsVAT').head('부가세포함', '')
-                    .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" :checked="row.IsVAT" disabled/></div>')
-                .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
-                .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
-                .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
-                .item('CurrName').head('통화', '')
-                .item('ExRate').head('환율', '')
-                .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
-                .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
-                .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
-                .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
-                .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
-                .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
-                .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
-                .item('ProdPlanNo').head('생산계획번호', '').body(null, 'text-l')
-                .loadTemplate('#grid', 'rows.Query');
+            .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
+            .item('ROWNUM').head('No.', '')
+            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
+                .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
+            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
+            .item('GoodItemNo').head('품번', '').body(null, 'text-l')
+            .item('GoodItemName').head('품명', '').body(null, 'text-l')
+            .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
+            .item('ProcName').head('공정', '').body(null, 'text-l')
+            .item('SizeName').head('사이즈', '')
+            .item('ProdUnitName').head('단위', '')
+            .item('OrderQty').head('작업지시수량', '').body(null, 'text-r')
+            .item('ProgressQty').head('기생산수량', '').body(null, 'text-r')
+            .item('ProdQty', { styleSyntax: 'style="width: 90px;"' }).head('생산수량', '')
+                .body('<div style="width: 84px;"><input type="number" name="ProdQty" attr-condition="" :value="row.ProdQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
+            // .item('OKQty', { styleSyntax: 'style="width: 90px;"' }).head('양품수량', '')
+            //     .body('<div style="width: 84px;"><input type="number" name="OKQty" attr-condition="" :value="row.OKQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
+            // .item('BadQty', { styleSyntax: 'style="width: 90px;"' }).head('불량수량', '')
+            //     .body('<div style="width: 84px;"><input type="number" name="BadQty" attr-condition="" :value="row.BadQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
+            .item('InWHName').head('입고창고', '')
+            .item('Remark').head('특이사항', '')
+                .body('<div><input type="text" name="Remark" attr-condition="" :value="row.Remark" @input="updateRowData(index)" style="border: 0px solid; text-align: left; background: transparent;" /></div>')
+            .item('IsEnd').head('완료여부<div class="chkBox"><input type="checkbox" name="IsEndAll" @click="selectedAllIsEnd();" /></div>', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsEnd" attr-condition="" :value="row.IsEnd" :checked="row.IsEnd" @input="selectedMarkIsEnd(index);" /></div>', '')
+            .item('OSPPrice').head('단가', '').body(null, 'text-r')
+            .item('IsVAT').head('부가세포함', '')
+                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" v-model="row.boolIsVAT" disabled="true" /></div>')
+            .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
+            .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
+            .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
+            .item('CurrName').head('통화', '')
+            .item('ExRate').head('환율', '')
+            .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
+            .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
+            .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
+            .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
+            .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
+            .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
+            .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
+            .item('ProdPlanNo').head('생산계획번호', '').body(null, 'text-l')
+            .loadTemplate('#grid', 'rows.Query');
         }
     },
 

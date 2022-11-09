@@ -323,6 +323,9 @@ let app = new Vue({
             .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    
                     // data for loop
                     let noDataIndex = [];
                     let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0, Price: 0 /**Price: 화면에 표시X */};

@@ -282,7 +282,7 @@ table td {
   padding: 0px 4px;
   padding-top: 1px;
   /* user-select: none; -> 텍스트 못 긁게 막는 css */
-  user-select: none;
+  /* user-select: none; */
 }
 table td:last-child {
   border-right: none;

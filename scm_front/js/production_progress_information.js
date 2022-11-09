@@ -106,8 +106,7 @@ let app = new Vue({
 
         updateRowData: function(idx = null){
             let evtTarget = event.target;
-            if(idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
-                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != ''){
+            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
                 document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
@@ -142,8 +141,64 @@ let app = new Vue({
             GX.Calendar.openInRow(name, { useYN: true, idx: idx });
         },
 
+        /**그리드 일자 비교
+         * 재단최초투입일 <= 봉제최초투입일 <= 완성투입일
+         */
+        compareDate: function (idx = null, stdName = '') {
+            let vThis = this;
+            let queryIdx = vThis.rows.Query[idx];
+            const cutDate = +new Date(GX._METHODS_.nvl(queryIdx.CutInPutDate).split('-')[0], GX._METHODS_.nvl(queryIdx.CutInPutDate).split('-')[1], GX._METHODS_.nvl(queryIdx.CutInPutDate).split('-')[2]);
+            const sewDate = +new Date(GX._METHODS_.nvl(queryIdx.SewInPutDate).split('-')[0], GX._METHODS_.nvl(queryIdx.SewInPutDate).split('-')[1], GX._METHODS_.nvl(queryIdx.SewInPutDate).split('-')[2]);
+            const finDate = +new Date(GX._METHODS_.nvl(queryIdx.FinishInPutDate).split('-')[0], GX._METHODS_.nvl(queryIdx.FinishInPutDate).split('-')[1], GX._METHODS_.nvl(queryIdx.FinishInPutDate).split('-')[2]);
+            if (stdName == 'CutInPutDate' || stdName == 'SewInPutDate' || stdName == 'FinishInPutDate') {
+                let chk = false;
+                if (!isNaN(cutDate) && !isNaN(sewDate) && cutDate > sewDate) {
+                    // alert('"재단최초투입일" ≦ "봉제최초투입일"');
+                    alert('"재단최초투입일" <= "봉제최초투입일"');
+                    chk = true;
+                } else if (!isNaN(cutDate) && !isNaN(finDate) && cutDate > finDate) {
+                    // alert('"재단최초투입일" ≦ "완성투입일"');
+                    alert('"재단최초투입일" <= "완성투입일"');
+                    chk = true;
+                } else if (!isNaN(sewDate) && !isNaN(finDate) && sewDate > finDate) {
+                    // alert('"봉제최초투입일" ≦ "완성투입일"');
+                    alert('"봉제최초투입일" <= "완성투입일"');
+                    chk = true;
+                }
+                if (chk) queryIdx[stdName] = '';
+            }
+        },
+
+        /**그리드 수량 비교
+         * 재단량 >= 봉제량 >= 완성량
+         */
+        compareQty: function (idx = null, stdName = '') {
+            let vThis = this;
+            let queryIdx = vThis.rows.Query[idx];
+            const cutQty = parseFloat(GX._METHODS_.nvl(queryIdx.CutQty).toString().replace(/\,/g, ''));
+            const sewQty = parseFloat(GX._METHODS_.nvl(queryIdx.SewQty).toString().replace(/\,/g, ''));
+            const finQty = parseFloat(GX._METHODS_.nvl(queryIdx.FinishQty).toString().replace(/\,/g, ''));
+            if (idx != null && (stdName == 'CutQty' || stdName == 'SewQty' || stdName == 'FinishQty')) {
+                let chk = false;
+                if (!isNaN(cutQty) && !isNaN(sewQty) && cutQty < sewQty) {
+                    // alert('"재단량" ≧ "봉제량"');
+                    alert('"재단량" >= "봉제량"');
+                    chk = true;
+                } else if (!isNaN(cutQty) && !isNaN(finQty) && cutQty < finQty) {
+                    // alert('"재단량" ≧ "완성량"');
+                    alert('"재단량" >= "완성량"');
+                    chk = true;
+                } else if (!isNaN(sewQty) && !isNaN(finQty) && sewQty < finQty) {
+                    // alert('"봉제량" ≧ "완성량"');
+                    alert('"봉제량" >= "완성량"');
+                    chk = true;
+                }
+                if (chk) queryIdx[stdName] = '';
+            }
+        },
+
         /** 조회 **/
-        search: function(){
+        search: function() {
             let vThis = this;
 
             let params = GX.deepCopy(vThis.queryForm);
@@ -157,8 +212,8 @@ let app = new Vue({
             GX._METHODS_
                 .setMethodId('ProdProgressInfoQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
-                    if(data.length > 0){
-
+                    if (data.length > 0) {
+                        vThis.rows.Query = [];
                         // 조회 결과를 가져와서 그리드에 출력한다.
                         for(let i in data){
                             if(data.hasOwnProperty(i)){
@@ -205,22 +260,20 @@ let app = new Vue({
                 }
             }
 
-            console.log(saveArrData);
-
             if(saveArrData.length > 0){
                 GX._METHODS_
-                    .setMethodId('ProdProGressInfoSave')
-                    .ajax(saveArrData, [], [function(data){
-                        vThis.initKeyCombi();
-                        vThis.rows.Query = [];
-                        alert('저장 성공');
-                        vThis.search();
-                    }]);
+                .setMethodId('ProdProGressInfoSave')
+                .ajax(saveArrData, [], [function(data){
+                    vThis.initKeyCombi();
+                    vThis.rows.Query = [];
+                    alert('저장 성공');
+                    vThis.search();
+                }]);
 
             } else{
                 alert('파라메터 세팅 중<br>예외사항 발생.');
             }
-        }
+        },
     },
 
     created(){
@@ -249,27 +302,29 @@ let app = new Vue({
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
             GX.VueGrid
-                //.bodyRow(':class="{\'check\':isChecked(index)}"')
-                .item('ROWNUM').head('No.', '')
-                .item('WorkOrderDate').head('작업지시일', '')
-                .item('WorkDate').head('작업예정일', '')
-                .item('WorkOrderNo').head('작업지시번호', '')
-                .item('ItemName').head('품명', '').body(null, 'text-l')
-                .item('ItemNo').head('품번', '').body(null, 'text-l')
-                .item('Spec').head('규격', '').body(null, 'text-l')
-                .item('CutInPutDate').head('재단최초투입일', '')
-                    .body('<div><input type="text" class="datepicker" name="CutInPutDate" gx-datepicker="" attr-condition="" :value="row.CutInPutDate" @input="updateRowData(index)" @click="applyAll(\'CutInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
-                .item('CutQty').head('재단량', '')
-                    .body('<div><input type="number" name="CutQty" attr-condition="" :value="row.CutQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
-                .item('SewInPutDate').head('봉제최초투입일', '')
-                    .body('<div><input type="text" class="datepicker" name="SewInPutDate" gx-datepicker="" attr-condition="" :value="row.SewInPutDate" @input="updateRowData(index)" @click="applyAll(\'SewInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
-                .item('SewQty').head('봉제량', '')
-                    .body('<div><input type="number" name="SewQty" attr-condition="" :value="row.SewQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
-                .item('FinishInPutDate').head('완성투입일', '')
-                    .body('<div><input type="text" class="datepicker" name="FinishInPutDate" gx-datepicker="" attr-condition="" :value="row.FinishInPutDate" @input="updateRowData(index)" @click="applyAll(\'FinishInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
-                .item('FinishQty').head('완성량', '')
-                    .body('<div><input type="number" name="FinishQty" attr-condition="" :value="row.FinishQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
-                .loadTemplate('#grid', 'rows.Query');
+            //.bodyRow(':class="{\'check\':isChecked(index)}"')
+            .item('ROWNUM').head('No.', '')
+            .item('WorkOrderDate').head('작업지시일', '')
+            .item('WorkDate').head('작업예정일', '')
+            .item('WorkOrderNo').head('작업지시번호', '')
+            .item('ItemName').head('품명', '').body(null, 'text-l')
+            .item('ItemNo').head('품번', '').body(null, 'text-l')
+            .item('Spec').head('규격', '').body(null, 'text-l')
+            .item('OrderQty', { styleSyntax: 'style="width: 92px;"' }).head('지시수량', '')
+                .body('<div style="width: 90px;"><input type="number" name="OrderQty" attr-condition="" :value="row.OrderQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent; width: 100%;" /></div>')
+            .item('CutInPutDate').head('재단최초투입일', '')
+                .body('<div><input type="text" class="datepicker" name="CutInPutDate" gx-datepicker="" attr-condition="" :value="row.CutInPutDate" @input="updateRowData(index)" @click="applyAll(\'CutInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+            .item('CutQty').head('재단량', '')
+                .body('<div><input type="number" name="CutQty" attr-condition="" :value="row.CutQty" @input="updateRowData(index)" @blur="compareQty(index, \'CutQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+            .item('SewInPutDate').head('봉제최초투입일', '')
+                .body('<div><input type="text" class="datepicker" name="SewInPutDate" gx-datepicker="" attr-condition="" :value="row.SewInPutDate" @input="updateRowData(index)" @click="applyAll(\'SewInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+            .item('SewQty').head('봉제량', '')
+                .body('<div><input type="number" name="SewQty" attr-condition="" :value="row.SewQty" @input="updateRowData(index)" @blur="compareQty(index, \'SewQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+            .item('FinishInPutDate').head('완성투입일', '')
+                .body('<div><input type="text" class="datepicker" name="FinishInPutDate" gx-datepicker="" attr-condition="" :value="row.FinishInPutDate" @input="updateRowData(index)" @click="applyAll(\'FinishInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+            .item('FinishQty').head('완성량', '')
+                .body('<div><input type="number" name="FinishQty" attr-condition="" :value="row.FinishQty" @input="updateRowData(index)" @blur="compareQty(index, \'FinishQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+            .loadTemplate('#grid', 'rows.Query');
         }
     },
 
@@ -280,10 +335,12 @@ let app = new Vue({
             height: '400px',
             monthSelectWidth: '25%',
             callback: function(result, attribute){
-                if(!isNaN(attribute)){
+                if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                     vThis.rows.Query[attribute].RowEdit = true;
                     document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    // 그리드 날짜 비교
+                    vThis.compareDate(attribute, GX.Calendar.openerName);
                 } else{
                     const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
                     const info = GX.Calendar.dateFormatInfo(openerObj);

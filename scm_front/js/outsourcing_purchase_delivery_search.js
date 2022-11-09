@@ -231,6 +231,9 @@ let app = new Vue({
             .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
             .ajax([params], [function (data){
                 if(data.length > 0){
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    
                     let summaryList = {
                         sumProdQty: 0, sumBadQty: 0, sumOKQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
                         sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, sumOSPTotDomAmt: 0
