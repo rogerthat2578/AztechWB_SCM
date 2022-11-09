@@ -387,11 +387,13 @@ let app = new Vue({
 				vThis.search(vThis.searchInterval, rtyTime);
 			}, rtyTime * 1000)
 		},
-		openFakeDialog: function(idx = 0, callback) {
-            document.getElementsByClassName('fake-dialog-title')[0].innerText = this.rows.NoticeQuery[idx].Title;
-			document.getElementsByClassName('fake-dialog-content')[0].innerText = this.rows.NoticeQuery[idx].Contant;
-            document.getElementById('fakeDialog').style.display = 'block';
-            if (typeof callback === 'function') callback;
+		openFakeDialog: function(idx = null, callback) {
+			if (idx != null) {
+				document.getElementsByClassName('fake-dialog-title')[0].innerText = this.rows.NoticeQuery[idx].Title;
+				document.getElementsByClassName('fake-dialog-content')[0].innerText = this.rows.NoticeQuery[idx].Contant;
+				document.getElementById('fakeDialog').style.display = 'block';
+				if (typeof callback === 'function') callback;
+			}
         },
         closeFakeDialog: function(callback) {
 			document.getElementsByClassName('fake-dialog-title')[0].innerText = '';
@@ -462,15 +464,17 @@ let app = new Vue({
 
 			GX.VueGrid
 			.init()
+			.bodyRow('@click="openFakeDialog(index);"')
             .item('RowNum').head('No.', '')
-            .item('Title', { eventSyntax: '@click="openFakeDialog(index)"' }).head('제목', '')
+            .item('Title').head('제목', '').body()
             .item('BegDate').head('등록일', '')
             .loadTemplate('#noticeGrid1', 'rows.NoticeQuery');
 
 			GX.VueGrid
 			.init()
+			.bodyRow('@click="openFakeDialog(index);"')
             .item('RowNum').head('No.', '')
-            .item('Title', { eventSyntax: '@click="openFakeDialog(index)"' }).head('제목', '')
+            .item('Title').head('제목', '')
             .item('BegDate').head('등록일', '')
             .loadTemplate('#noticeGrid2', 'rows.NoticeQuery');
 
