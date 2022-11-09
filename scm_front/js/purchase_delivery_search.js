@@ -96,12 +96,13 @@ let app = new Vue({
 			}
 		},
         /**조회 조건의 진행상태 열기/닫기 */
-        openCloseDropBox: function() {
+        openCloseDropBox: function(inputEleName = '') {
             let e = event;
-
+            
             if (e.target.nodeName.toUpperCase() === 'LI') {
-                this.queryForm.SMCurrStatus = e.target.value;
-                this.queryForm.SMCurrStatusName = e.target.innerText;
+                if (inputEleName.length == 0) inputEleName = e.target.parentNode.previousElementSibling.name;
+                this.queryForm[inputEleName.replace('Name', '')] = e.target.value;
+                this.queryForm[inputEleName] = e.target.innerText;
                 e.target.parentNode.style.display = 'none';
             } else {
                 if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')

@@ -2,8 +2,8 @@ let app = new Vue({
     el: '#app',
     data:{
         leftMenu: GX._METHODS_.createLeftMenu(),
-        deptName: GX.Cookie.get('DeptName'),
-        userName: GX.Cookie.get('UserName'),
+        deptName: '',
+        userName: '',
         params: GX.getParameters(),
         BizUnitList: [], // 사업 단위 리스트
         isCheckList: [],
@@ -12,7 +12,6 @@ let app = new Vue({
         rows: {
             Query: [],
             QuerySummary: {},
-            ProcessNameListQuery: [], // 공정 리스트 담아둘 리스트
         },
 
         // 조회조건
@@ -23,18 +22,32 @@ let app = new Vue({
             WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             WorkOrderDateFr: '',
             WorkOrderDateTo: '',
-            ProcStatus: '전체',
             WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
             GoodItemSpec: '',
             CustSeq: '',
-            ProcessSeq: '',
-            ProcessName: '',
+            SMCurrStatus: 0,
+            SMCurrStatusName: '전체',
+            Process: 0,
+            ProcessName: '전체',
         },
 
-        procStatusList:[
-            '전체', '진행중', '작성', '확정'
+        // 진행상태
+        SMCurrStatusList: [
+            { key: 0, val: '전체' },
+            { key: 1, val: '진행중' },
+            { key: 2, val: '작성' },
+            { key: 3, val: '확정' },
+        ],
+
+         // 공정 리스트
+        ProcessNameList: [
+            { key: 0, val: '전체' },
+            { key: 1, val: '공정1' },
+            { key: 2, val: '공정2' },
+            { key: 3, val: '공정3' },
+            { key: 4, val: '공정4' },
         ],
 
         keyCombi: {
@@ -42,22 +55,6 @@ let app = new Vue({
             Control: false,
             Q: false,
         },
-
-        codeHelp: {
-            ProcessName: '',
-        },
-        codeHelpRequest: {},
-        codeHelpResponse: {
-            ProcessName: ['ProcessSeq', 'ProcessName'],
-        },
-        codeHelpDependencyKey: {
-            // ToolNo: 'ToolName'
-        },
-        codeHelpGroupKey: {
-            // ToolName: 'ToolNo'
-        },
-        codeHelpQryTypeMapKey: {},
-        nowOpenCodeHelp: '',
     },
 
     methods:{
@@ -72,8 +69,9 @@ let app = new Vue({
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
 
-                if(document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') !== 'drop-box-input'){
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[1].style.display = 'none';
                 }
             }
 
@@ -115,19 +113,26 @@ let app = new Vue({
             }
         },
 
-        // 콤보박스 (진행상태)
-        openCloseDropBox: function(){
+        // Select box (진행상태)
+        openCloseDropBox: function(inputEleName = '') {
             let e = event;
-
-            if(e.target.nodeName.toUpperCase() === 'LI'){
-                this.queryForm.ProcStatus = e.target.innerText;
+            
+            if (e.target.nodeName.toUpperCase() === 'LI') {
+                if (inputEleName.length == 0) inputEleName = e.target.parentNode.previousElementSibling.name;
+                this.queryForm[inputEleName.replace('Name', '')] = e.target.value;
+                this.queryForm[inputEleName] = e.target.innerText;
                 e.target.parentNode.style.display = 'none';
-            } else{
-                if(e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
+            } else {
+                if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
                     e.target.nextElementSibling.style.display = 'block';
                 else
                     e.target.nextElementSibling.style.display = 'none';
             }
+        },
+
+        // 공정 input에 입력 시 리스트 변경
+        likeSelect2: function() {
+            console.log('12312')
         },
 
         // DateBox 업데이트
@@ -183,7 +188,7 @@ let app = new Vue({
           vThis.queryForm.GoodItemNo = '';
           vThis.queryForm.GoodItemSpec = '';
           vThis.queryForm.CustSeq = '';
-          vThis.queryForm.ProcessSeq = '';
+          vThis.queryForm.Process = '';
           vThis.queryForm.ProcessName = '';
         },
 
@@ -443,178 +448,6 @@ let app = new Vue({
 
             } else{
                 alert("선택된 데이터가 없습니다.");
-            }
-        },
-
-        showCodeHelp: function (targetName) {
-            let obj = document.querySelector('[code-help="' + targetName + '"]');
-            if (obj != null) {
-                if (!GX.isShowElement(obj)) {
-                    document.body.style.overflow = 'hidden';
-                    obj.style.display = 'block';
-                }
-            }
-        },
-        openCodeHelp: function () {
-            let targetName = event.target.name;
-            let targetValue = event.target.value;
-
-            let vThis = this;
-            GX.doubleClickRun(event.target, function () {
-                vThis.nowOpenCodeHelp = targetName;
-                vThis.focusCodeHelp(targetName);
-                vThis.codeHelp[targetName] = targetValue;
-                vThis.searchCodeHelp(targetName, false);
-
-                if (vThis.codeHelpDependencyKey[targetName] != null) {
-                    targetName = vThis.codeHelpDependencyKey[targetName];
-                }
-
-                vThis.showCodeHelp(targetName);
-            });
-        },
-        closeCodeHelp: function (targetName) {
-            let obj = document.querySelector('[code-help="' + targetName + '"]');
-            if (obj != null) {
-                if (GX.isShowElement(obj)) {
-                    obj.style.display = 'none';
-                    document.body.style.overflow = 'unset';
-
-                    let keys = this.codeHelpResponse[targetName];
-
-                    for (let i in keys) {
-                        if (keys.hasOwnProperty(i)) {
-                            if (this.codeHelp[keys[i]] != null) this.codeHelp[keys[i]] = '';
-                            let comebackObj = document.querySelector('[check-double-click][name="' + keys[i] + '"]');
-                            if (comebackObj != null) comebackObj.focus();
-                        }
-                    }
-                }
-            }
-        },
-        focusCodeHelp: function (targetName) {
-            let tempTargetName = (this.codeHelpDependencyKey[targetName] != null) ? this.codeHelpDependencyKey[targetName] : targetName;
-            if (this.codeHelpGroupKey[tempTargetName] != null) this.codeHelpGroupKey[tempTargetName] = targetName;
-
-            if (event.type == 'click') {
-                if (tempTargetName != targetName && this.codeHelp[tempTargetName] != null) this.codeHelp[tempTargetName] = '';
-
-                for (let i in this.codeHelpDependencyKey) {
-                    if (this.codeHelpDependencyKey.hasOwnProperty(i) && this.codeHelpDependencyKey[i] == tempTargetName) {
-                        this.codeHelp[i] = '';
-                    }
-                }
-            }
-        },
-        inputSearchCodeHelp: function () {
-            this.focusCodeHelp(event.target.name);
-            this.codeHelp[event.target.name] = event.target.value;
-            this.searchCodeHelp(event.target.name, true);
-        },
-        searchCodeHelp: function (qryType, isOnePick) {
-            let keys = this.codeHelpResponse[qryType];
-            let tempQryType = (this.codeHelpDependencyKey[qryType] != null) ? this.codeHelpDependencyKey[qryType] : qryType;
-
-            //let targetName = (this.codeHelpDependencyKey[tempQryType] != null) ? this.codeHelpDependencyKey[event.target.name] : event.target.name;
-            if (this.codeHelpGroupKey[tempQryType] != null) qryType = this.codeHelpGroupKey[tempQryType];
-
-            let obj = document.querySelector('#grid-' + (tempQryType.toLowerCase()) + ' tbody tr.check-codehelp');
-            if (obj != null) obj.className = '';
-
-            let params = {};
-            //if(this.codeHelp[qryType] != null) params[qryType] = this.codeHelp[qryType];
-            if (this.codeHelpRequest[qryType] == null) this.codeHelpRequest[qryType] = [qryType];
-
-            let paramKeyParse = [];
-            let dataKey = '';
-            for (let i in this.codeHelpRequest[qryType]) {
-                if (this.codeHelpRequest[qryType].hasOwnProperty(i)) {
-                    paramKeyParse = this.codeHelpRequest[qryType][i].split('=');
-                    dataKey = (paramKeyParse.length == 2) ? paramKeyParse[1] : paramKeyParse[0];
-                    params[paramKeyParse[0]] = (this.codeHelp[dataKey] != null) ? this.codeHelp[dataKey] : this.queryForm[dataKey];
-                    params[paramKeyParse[0].replace('Out', '').replace('In', '')] = (this.codeHelp[dataKey] != null) ? this.codeHelp[dataKey] : this.queryForm[dataKey];
-                }
-            }
-
-            params.QryType = qryType;
-
-            if (qryType == 'InWHName' && this.queryForm.OutWHSeq.toString().replace(/\ /g, '').length != 0
-                && this.queryForm.OutWHName.replace(/\ /g, '').length != 0)
-                params.WHSeq = this.queryForm.OutWHSeq;
-            else if (qryType == 'OutWHName' && this.queryForm.InWHSeq.toString().replace(/\ /g, '').length != 0
-                && this.queryForm.InWHName.replace(/\ /g, '').length != 0)
-                params.WHSeq = this.queryForm.InWHSeq;
-            
-            params.BizUnit = this.queryForm.BizUnit;
-
-            let vThis = this;
-            GX._METHODS_
-            .setMethodId('WHCodeHelp')
-            .ajax([params], [function (data) {
-                for (let di in data) {
-                    if (data.hasOwnProperty(di)) {
-                        data[di].SerialNo = Number(di) + 1;
-                        data[di][qryType] = data[di].WHName;
-                        data[di][qryType.replace('Name', 'Seq')] = data[di].WHSeq; // Name -> Seq 바꾸기
-                    }
-                }
-
-                if (isOnePick) {
-                    if (data.length == 1) {
-                        for (let i in keys) {
-                            if (keys.hasOwnProperty(i)) vThis.queryForm[keys[i]] = data[0][keys[i]];
-                        }
-                    }
-                    else if (data.length > 1) vThis.showCodeHelp(tempQryType);
-                }
-                
-                vThis.rows[tempQryType.substring(0, 1).toUpperCase() + tempQryType.substring(1, tempQryType.length) + 'ListQuery'] = (data.length == 0 || (data[0].Status != null && String(data[0].Status).length > 0)) ? [] : data;
-            }]);
-            
-            if (event.type == 'click') event.target.blur();
-        },
-        selectCodeHelp: function (index) {
-            if (event.target.closest('tr') != null) {
-                event.target.selectedIndex = index;
-                let obj = event.target.closest('tbody').children;
-                for (let i in obj) {
-                    if (obj.hasOwnProperty(i)) {
-                        obj[i].selectedIndex = i;
-                        obj[i].className = (i == String(index)) ? 'check-codehelp' : '';
-                    }
-                }
-            }
-            else {
-                event.target.selectedIndex = index;
-                event.target.className = 'check-codehelp';
-            }
-
-            let vThis = this;
-            let nowOpenedCodehelp = vThis.nowOpenCodeHelp;
-            GX.doubleClickRun(event.target, function () {
-                vThis.selectedApplyCodeHelp(nowOpenedCodehelp);
-            });
-        },
-        selectedApplyCodeHelp: function (qryType) {
-            let vThis = this;
-            
-            if (qryType == 'InWHName' || qryType == 'OutWHName') {
-                // 창고 코드도움에서 선택 시
-                let keys = vThis.codeHelpResponse[qryType];
-                let obj = document.querySelector('#grid-' + (qryType.toLowerCase()) + ' tbody tr.check-codehelp');
-                
-                if (obj != null) {
-                    for (let i in keys) {
-                        if (keys.hasOwnProperty(i))
-                            vThis.queryForm[keys[i]] = vThis.rows[qryType.substring(0, 1).toUpperCase() + qryType.substring(1, qryType.length) + 'ListQuery'][obj.selectedIndex][keys[i]];
-                    }
-
-                    vThis.closeCodeHelp(qryType);
-                } else {
-                    vThis.openDummyAlert('시트에서 사용할 코드를<br>선택후 선택하기 버튼을<br>눌러주세요.');
-                }
-            } else {
-                vThis.openDummyAlert('코드도움 창을 닫고<br>다시 열어주세요');
             }
         },
     },

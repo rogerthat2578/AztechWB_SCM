@@ -61,9 +61,9 @@
 							</li>
 							<li>
 								<div class="select">
-									<input type="text" class="drop-box-input" v-model="queryForm.SMCurrStatusName" @click="openCloseDropBox" readonly>
+									<input type="text" class="drop-box-input" name="SMCurrStatusName" v-model="queryForm.SMCurrStatusName" @click="openCloseDropBox('SMCurrStatusName')" readonly>
 									<ul class="drop-box">
-										<li v-for="item in SMCurrStatusList" @click="openCloseDropBox" :value="item.key">{{item.val}}</li>
+										<li v-for="item in SMCurrStatusList" @click="openCloseDropBox('SMCurrStatusName')" :value="item.key">{{item.val}}</li>
 									</ul>
 								</div>
 							</li>
