@@ -34,8 +34,8 @@ GX._DATAS_ = {
 		}
 	},
 	pageUrls1:{
-		'1': { link: '', icon: '', pageName: '구매' },
-		'2': { link: '', icon: '', pageName: '외주가공' },
+		'1': { link: '', icon: '', pageName: '구매', pageSeq: 1004003 },
+		'2': { link: '', icon: '', pageName: '외주가공', pageSeq: 1004005 },
 	},
 	pageUrls2:{
 		'1': { bindPageUrls1: '1', class: 'menu-01', link: 'orderInquiry.html', icon: 'img/ic_menu_01.png', pageName: '구매발주품목조회' },
@@ -265,28 +265,44 @@ GX._METHODS_ = {
 		let pageUrls1List = GX._DATAS_.pageUrls1;
 		let pageUrls2List = GX._DATAS_.pageUrls2;
 		let menu = [];
+
+		let arrStrCustKind = [];
+		if (GX.Cookie.get('CustKind').split(',').length == 2) arrStrCustKind = [GX.Cookie.get('CustKind').split(',')[0], GX.Cookie.get('CustKind').split(',')[1]];
+		else {
+			if (GX.Cookie.get('CustKind') == '0') arrStrCustKind = [pageUrls1List[0].pageSeq.toString(), pageUrls1List[1].pageSeq.toString()]; // master 계정일때
+			else arrStrCustKind = [GX.Cookie.get('CustKind')];
+		}
+
 		menu.push('<div class="list-bg"></div>');
+
+		Object.keys(pageUrls1List).map((k, a) => {
+			
+		})
+
 		for (let a in pageUrls1List) {
 			if (pageUrls1List.hasOwnProperty(a)) {
-				menu.push('<div class="list-container">');
-				menu.push('<div class="menu-title">' + pageUrls1List[a].pageName + '</div>');
-				menu.push('<ul class="list-wrap">');
-				
-				for (let b in pageUrls2List) {
-					if (pageUrls2List.hasOwnProperty(b)) {
-						if (a == pageUrls2List[b].bindPageUrls1) {
-							menu.push('<li>');
-							menu.push('<a href="' + pageUrls2List[b].link + '">');
-							menu.push('<span class="list-img ' + pageUrls2List[b].class + '"></span>');
-							menu.push('<span>' + pageUrls2List[b].pageName + '</span>');
-							menu.push('</a>');
-							menu.push('</li>');
+				console.log(pageUrls1List.indexOf(a))
+				if (pageUrls1List[a].pageSeq.toString() == arrStrCustKind[a]) {
+					menu.push('<div class="list-container">');
+					menu.push('<div class="menu-title">' + pageUrls1List[a].pageName + '</div>');
+					menu.push('<ul class="list-wrap">');
+					
+					for (let b in pageUrls2List) {
+						if (pageUrls2List.hasOwnProperty(b)) {
+							if (a == pageUrls2List[b].bindPageUrls1) {
+								menu.push('<li>');
+								menu.push('<a href="' + pageUrls2List[b].link + '">');
+								menu.push('<span class="list-img ' + pageUrls2List[b].class + '"></span>');
+								menu.push('<span>' + pageUrls2List[b].pageName + '</span>');
+								menu.push('</a>');
+								menu.push('</li>');
+							}
 						}
 					}
-				}
 
-				menu.push('</ul>');
-				menu.push('</div>');
+					menu.push('</ul>');
+					menu.push('</div>');
+				}
 			}
 		}
 		return menu.join('');

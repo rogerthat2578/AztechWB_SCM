@@ -73,6 +73,17 @@ let app = new Vue({
                 .setMethodId('LoginTest')
                 .ajax([{ QryType: 'LoginCheck', CompansySeq: vThis.companySeq, UserId: vThis.userId, UserPwd: vThis.userPwd }], [function (data) {
                     if (data[0] != null && data[0].UserSeq != null) {
+                        /**CustKind 우선 세팅 */
+                        // master 계정은 CustKind1, CustKind2 둘다 없음.
+                        if (data[0].CustKind1 == null && data[0].CustKind2 == null && vThis.userId == 'master') GX.Cookie.set('CustKind', '0', 1); // 거래처타입
+                        else if (data[0].CustKind1 != null && data[0].CustKind2 == null) GX.Cookie.set('CustKind', data[0].CustKind1.toString(), 1); // 거래처타입
+                        else if (data[0].CustKind1 == null && data[0].CustKind2 != null) GX.Cookie.set('CustKind', data[0].CustKind2.toString(), 1); // 거래처타입
+                        else if (data[0].CustKind1 != null && data[0].CustKind2 != null) GX.Cookie.set('CustKind', data[0].CustKind1.toString() + ',' + data[0].CustKind2.toString(), 1); // 거래처타입
+                        else {
+                            alert('해당 계정은 (구매/외주)거래처 타입이 정상적이지 않습니다.');
+                            return false;
+                        }
+
                         GX.Cookie.set('UserId', vThis.userId, 1);
                         GX.Cookie.set('UserSeq', data[0].UserSeq, 1);
                         GX.Cookie.set('UserName', data[0].UserName, 1);
@@ -81,7 +92,6 @@ let app = new Vue({
                         GX.Cookie.set('DeptSeq', data[0].DeptSeq, 1);
                         GX.Cookie.set('CompanySeq', vThis.companySeq, 1); // 법인코드
                         GX.Cookie.set('CustSeq', data[0].CustSeq, 1); // 거래처코드
-				        GX.Cookie.set('CustKind', data[0].CustKind, 1); // 거래처타입
 
                         /* 사업단위 객체로 담기
                         ** 하나의 법인코드에 n개 존재할 수 있음
