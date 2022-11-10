@@ -353,7 +353,7 @@ GX = {
 					for (oIdx in objs) {
 						if (objs.hasOwnProperty(oIdx)) {
 							if (objs.length > 1 && result[names[nIdx]] == null) result[names[nIdx]] = [];
-							console.log(objs[oIdx].tagName, objs[oIdx].checked, objs[oIdx].type);
+							// console.log(objs[oIdx].tagName, objs[oIdx].checked, objs[oIdx].type);
 							if (objs[oIdx].tagName.toLowerCase() == 'input' && ['radio', 'checkbox'].indexOf(objs[oIdx].type.toLowerCase()) != -1) {
 								defaultValue = objs[oIdx].hasAttribute('gx-default') ? objs[oIdx].getAttribute('gx-default') : '';
 								if (objs.length > 1) result[names[nIdx]].push(objs[oIdx].checked ? objs[oIdx].value : defaultValue);
@@ -915,7 +915,7 @@ GX = {
 							//if(part[0].length <= 2) part[0] = '19' + part[0];
 							part[1] = GX.zeroFill(Number(part[1]), 1);
 							part[2] = GX.zeroFill(Number(part[2]), 1);
-							console.log(GX.formatDate(word, info.format))
+							// console.log(GX.formatDate(word, info.format))
 							if (GX.formatDate(word, info.format) == part.join(info.delimiter)) result = false;
 						}
 					}
@@ -1405,25 +1405,26 @@ GX = {
 		getLoadYearMonth: function () {
 			let temp;
 			if (this.objOpenInRow && this.objOpenInRow.useYN)
-			temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
+				temp = document.querySelectorAll('[name="' + this.openerName + '"]')[this.objOpenInRow.idx];
 			else
 				temp = document.querySelector('[name="' + this.openerName + '"]');
-				const openerObj = temp;
-				const inputDate = (openerObj != null) ? openerObj.value : '';
-				const matches = inputDate.match(/^(\d{4,})[^\d]*(\d{2,2})[^\d]*(\d{2,2})[^\d]*$/);
-				let result = {};
-				if (matches != null) {
-					result.y = Number(matches[1]);
-					result.m = Number(matches[2]);
-					
-				}
-				else if (this.endDateOfMonth.this != null) {
-					result.y = this.endDateOfMonth.this.year;
-					result.m = this.endDateOfMonth.this.month;
-				}
-				else {
-					console.log(this.endDateOfMonth.this)
-					let now = this.parseNowDate();
+			
+			const openerObj = temp;
+			const inputDate = (openerObj != null) ? openerObj.value : '';
+			const matches = inputDate.match(/^(\d{4,})[^\d]*(\d{2,2})[^\d]*(\d{2,2})[^\d]*$/);
+			let result = {};
+			if (matches != null) {
+				result.y = Number(matches[1]);
+				result.m = Number(matches[2]);
+				
+			}
+			else if (this.endDateOfMonth.this != null) {
+				result.y = this.endDateOfMonth.this.year;
+				result.m = this.endDateOfMonth.this.month;
+			}
+			else {
+				// console.log(this.endDateOfMonth.this)
+				let now = this.parseNowDate();
 				result.y = now.y;
 				result.m = now.m;
 			}
