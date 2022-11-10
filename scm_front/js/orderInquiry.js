@@ -382,8 +382,6 @@ let app = new Vue({
 
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
-            console.log()
-
             // DataBlock1에 공통으로 들어가야하는 파라메터 세팅
             for (let i = saveArrData.length - 1; i >= 0; i--) {
                 if (saveArrData[i].RowEdit) {
@@ -439,14 +437,14 @@ let app = new Vue({
             /**조회조건 Select box setting
             * 진행상태(구매): SMCurrStatusList
             */
-            const objSelBoxQueryForm = {'SMCurrStatusList': 'PUDelv'};
+            const objSelBoxQueryForm = {'SMCurrStatusList': 'PUOrd'};
             Object.keys(objSelBoxQueryForm).map(k => {
                 GX._METHODS_
                 .setMethodId('SCMCodeHelp')
                 .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
-                            vThis[k].push({ key: Object.keys(data[i])[0], val: data[i][Object.keys(data[i])[1]] })
+                            vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
                 }]);

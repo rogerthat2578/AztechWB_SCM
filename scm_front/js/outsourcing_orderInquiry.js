@@ -505,7 +505,7 @@ let app = new Vue({
                 .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
-                            vThis[k].push({ key: Object.keys(data[i])[0], val: data[i][Object.keys(data[i])[1]] })
+                            vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
                     // 공정 Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.

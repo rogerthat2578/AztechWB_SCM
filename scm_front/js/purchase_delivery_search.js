@@ -394,7 +394,7 @@ let app = new Vue({
                 .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
-                            vThis[k].push({ key: Object.keys(data[i])[0], val: data[i][Object.keys(data[i])[1]] })
+                            vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
                 }]);
