@@ -231,8 +231,7 @@ let app = new Vue({
                                 data[i].IsEnd = data[i].IsEnd == 1 ? data[i].IsEnd : null;
                                 data[i].OrderQty = data[i].OrderQty.toString().replace(regex, '$1,');
                                 data[i].ProgressQty = data[i].ProgressQty.toString().replace(regex, '$1,');
-                                // data[i].ProdQty = data[i].ProdQty != null ? data[i].ProdQty.toString().replace(regex, '$1,') : 0;
-                                data[i].ProdQty = data[i].NonProgressQty != null ? data[i].NonProgressQty.toString().replace(regex, '$1,') : 0;
+                                data[i].ProdQty = data[i].ProdQty != null ? data[i].ProdQty.toString().replace(regex, '$1,') : 0;
                                 // data[i].OKQty = data[i].OKQty != null ? data[i].OKQty.toString().replace(regex, '$1,') : 0;
                                 // data[i].BadQty = data[i].BadQty != null ? data[i].BadQty.toString().replace(regex, '$1,') : 0;
                                 data[i].OSPPrice = data[i].OSPPrice != null ? data[i].OSPPrice.toString().replace(regex, '$1,') : 0;
@@ -259,7 +258,7 @@ let app = new Vue({
                                     else
                                         t = GX._METHODS_.nvl(oneData[j]);
 
-                                    if(k == j && t.tagLength > 0){
+                                    if(k == j && t.length > 0){
                                         if(k === 'DelvDate')
                                             vThis.queryForm[k] = oneData[j].length == 8 ? oneData[j].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : oneData[j];
                                         else
@@ -268,6 +267,9 @@ let app = new Vue({
                                 });
                             }
                         });
+                        // 외주납품현황 화면에서 입력화면으로 넘어오면 외주작업일(납품일)=this.queryForm.DelvDate 에 작업일자=WorkDate 넣기
+                        if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') vThis.queryForm.DelvDate = oneData.WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+
                         vThis.initSelected();
                         vThis.calSum();
 
