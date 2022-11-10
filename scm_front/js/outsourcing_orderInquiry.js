@@ -34,29 +34,12 @@ let app = new Vue({
         },
 
         // 진행상태
-        SMCurrStatusList: [
-            { key: 0, val: '전체' },
-            { key: 1, val: '진행중' },
-            { key: 2, val: '작성' },
-            { key: 3, val: '확정' },
-        ],
+        SMCurrStatusList: [],
 
         // 공정 리스트
-        ProcessNameList: [
-            { key: 0, val: '전체' },
-            { key: 1, val: '공정1' },
-            { key: 2, val: '공정2' },
-            { key: 3, val: '공정3' },
-            { key: 4, val: '공정4' },
-        ],
+        ProcessNameList: [],
         // 공정 리스트
-        KeepProcessNameList: [
-            { key: 0, val: '전체' },
-            { key: 1, val: '공정1' },
-            { key: 2, val: '공정2' },
-            { key: 3, val: '공정3' },
-            { key: 4, val: '공정4' },
-        ],
+        KeepProcessNameList: [],
 
         keyCombi: {
             isKeyHold: false,
@@ -165,6 +148,8 @@ let app = new Vue({
                     arrTemp.push(vThis.KeepProcessNameList[v]);
                 });
                 vThis.ProcessNameList = arrTemp;
+            } else {
+                vThis.ProcessNameList = vThis.KeepProcessNameList;
             }
         },
 
@@ -442,15 +427,15 @@ let app = new Vue({
 
             if(saveArrData.length > 0){
                 GX._METHODS_
-                    .setMethodId('OSPWorkOrderSave')
-                    .ajax(saveArrData, [], [function(data){
-                        vThis.initSelected();
-                        vThis.initKeyCombi();
-                        vThis.rows.Query = [];
-                        vThis.rows.QuerySummary = {};
-                        alert('저장 성공');
-                        vThis.search(vThis.addSummary);
-                    }]);
+                .setMethodId('OSPWorkOrderSave')
+                .ajax(saveArrData, [], [function(data){
+                    vThis.initSelected();
+                    vThis.initKeyCombi();
+                    vThis.rows.Query = [];
+                    vThis.rows.QuerySummary = {};
+                    alert('저장 성공');
+                    vThis.search(vThis.addSummary);
+                }]);
 
             } else{
                 alert('파라메터 세팅 중<br>예외사항 발생.');
@@ -509,6 +494,24 @@ let app = new Vue({
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+
+            /**조회조건 Select box setting
+            * 진행상태(구매): SMCurrStatusList
+            */
+            const objSelBoxQueryForm = {'SMCurrStatusList': 'PDWorkOrder', 'ProcessNameList': 'PDProc'};
+            Object.keys(objSelBoxQueryForm).map(k => {
+                GX._METHODS_
+                .setMethodId('SCMCodeHelp')
+                .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
+                    for (let i in data) {
+                        if (data.hasOwnProperty(i)) {
+                            vThis[k].push({ key: Object.keys(data[i])[0], val: data[i][Object.keys(data[i])[1]] })
+                        }
+                    }
+                    // 공정 Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (k == 'ProcessNameList') vThis['Keep' + k] = vThis[k];
+                }]);
+            });
 
             GX.VueGrid
             .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')

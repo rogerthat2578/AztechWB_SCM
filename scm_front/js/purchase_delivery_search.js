@@ -31,13 +31,7 @@ let app = new Vue({
             ItemNo: '',
             Spec: '',
         },
-        SMCurrStatusList: [
-            { key: 0, val: '전체' },
-            { key: 1, val: '진행중' },
-            { key: 2, val: '작성' },
-            { key: 3, val: '확정' },
-            // '전체', '진행중', '작성', '확정'
-        ],
+        SMCurrStatusList: [],
         /**단축키로 기능 실행 (K-System 참고)
          * Control + Q = 조회
          */
@@ -389,6 +383,22 @@ let app = new Vue({
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+
+            /**조회조건 Select box setting
+            * 진행상태(구매): SMCurrStatusList
+            */
+            const objSelBoxQueryForm = {'SMCurrStatusList': 'PUDelv'};
+            Object.keys(objSelBoxQueryForm).map(k => {
+                GX._METHODS_
+                .setMethodId('SCMCodeHelp')
+                .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
+                    for (let i in data) {
+                        if (data.hasOwnProperty(i)) {
+                            vThis[k].push({ key: Object.keys(data[i])[0], val: data[i][Object.keys(data[i])[1]] })
+                        }
+                    }
+                }]);
+            });
 
             GX.VueGrid
             .bodyRow('@click="selectRow(index);"')
