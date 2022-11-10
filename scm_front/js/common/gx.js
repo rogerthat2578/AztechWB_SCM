@@ -1470,8 +1470,7 @@ GX = {
 					let temp = openerObj.getBoundingClientRect()
 					this.calendarObj.style.top = String(temp.top + temp.height) + 'px';
 					this.calendarObj.style.left = String(temp.left) + 'px';
-				}
-				else {
+				} else {
 					const openerObj = document.querySelector('[name="' + this.openerName + '"]');
 					let openerTop = parseFloat(openerObj.offsetTop);
 					let openerLeft = parseFloat(openerObj.offsetLeft);
@@ -1573,17 +1572,19 @@ GX = {
 				document.body.style.overflow = 'hidden';
 				this.display('block');
 				
-				// 날짜 입력 창이 화면 밖으로 벗어날 경우 위치 조정
-				if(window.outerHeight - window.pageYOffset < this.calendarObj.clientHeight + this.calendarObj.getBoundingClientRect().y){
-					this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y - (this.calendarObj.clientHeight + 36)) + 'px';
-				} else{
-					this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y) + 'px';
-				}
-				
-				if(window.outerWidth + window.pageXOffset < this.calendarObj.clientWidth + this.calendarObj.getBoundingClientRect().x){
-					this.calendarObj.style.left = (this.calendarObj.getBoundingClientRect().x + window.pageXOffset - (this.calendarObj.clientWidth)) + 'px';
-				} else{
-					this.calendarObj.style.left = (this.calendarObj.getBoundingClientRect().x + window.pageXOffset) + 'px';
+				if (parseFloat(document.body.offsetWidth) > 420) {
+					// 날짜 입력 창이 화면 밖으로 벗어날 경우 위치 조정
+					if(window.outerHeight - window.pageYOffset < this.calendarObj.clientHeight + this.calendarObj.getBoundingClientRect().y){
+						this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y - (this.calendarObj.clientHeight + 36)) + 'px';
+					} else{
+						this.calendarObj.style.top = (this.calendarObj.getBoundingClientRect().y) + 'px';
+					}
+					
+					if(window.outerWidth + window.pageXOffset < this.calendarObj.clientWidth + this.calendarObj.getBoundingClientRect().x){
+						this.calendarObj.style.left = (this.calendarObj.getBoundingClientRect().x + window.pageXOffset - (this.calendarObj.clientWidth)) + 'px';
+					} else{
+						this.calendarObj.style.left = (this.calendarObj.getBoundingClientRect().x + window.pageXOffset) + 'px';
+					}
 				}
 			}
 		},
