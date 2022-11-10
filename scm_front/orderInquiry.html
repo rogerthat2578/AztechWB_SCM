@@ -26,16 +26,16 @@
 				<span class="page-name" onclick="location.replace('main.html')">구매발주품목조회</span>
 			</div>
 			<div class="con">
-				<div class="cart">
+				<!-- <div class="cart">
 					<img src="img/ic_01.png" alt="알림이미지">
 					<span class="alarm">12</span>
-				</div>
-				<div class="user-info web" @click="userInfoClick()">
+				</div> -->
+				<div class="user-info" @click="userInfoClick()">
 					<div class="frame">
 						<img src="img/user.png" alt="유저이미지">
 					</div>
-					<p class="user-name" v-if="deptName !== ''">{{userName}}</p>
-					<p class="user-name" v-else>{{deptName}} {{userName}}</p>
+					<p class="user-name web" v-if="deptName !== ''">{{userName}}</p>
+					<p class="user-name web" v-else>{{deptName}} {{userName}}</p>
 				</div>
 			</div>
 		</header>

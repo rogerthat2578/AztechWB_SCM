@@ -305,7 +305,7 @@ GX._METHODS_ = {
 	},
 	/**hide 버튼(모바일에서만 사용) */
 	hide: function() {
-		if(document.getElementsByClassName('data-row-wrap')[0].style.display === 'block') {
+		if(document.getElementsByClassName('data-row-wrap')[0].style.display === 'block' || document.getElementsByClassName('data-row-wrap')[0].style.display == '') {
 			document.getElementsByClassName('data-row-wrap')[0].style.display = 'none';
 			document.getElementsByClassName('top-data-wrap')[0].style.paddingBottom = '5px';
 			document.getElementsByClassName('data-table')[0].style.height = '720px';
