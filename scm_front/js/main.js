@@ -463,6 +463,16 @@ let app = new Vue({
 			let vYear = new Date().getFullYear();
 			vThis.YearList.push(vYear.toString(), (vYear - 1).toString(), (vYear - 2).toString());
 
+			if (GX.Cookie.get('CustKind1') != '' && GX.Cookie.get('CustKind2') == '') {
+				document.querySelector('[data-tab="info-1"]').style.width = '100%';
+				document.querySelector('[data-tab="info-2"]').style.display = 'none';
+			} else if (GX.Cookie.get('CustKind1') == '' && GX.Cookie.get('CustKind2') != '') {
+				document.querySelector('[data-tab="info-1"]').classList.remove('click');
+				document.querySelector('[data-tab="info-2"]').classList.add('click');
+				document.querySelector('[data-tab="info-2"]').style.width = '100%';
+				document.querySelector('[data-tab="info-1"]').style.display = 'none';
+			}
+
 			GX.VueGrid
 			.init()
 			.bodyRow('@click="openFakeDialog(index);"')

@@ -75,11 +75,19 @@ let app = new Vue({
                     if (data[0] != null && data[0].UserSeq != null) {
                         /**CustKind 우선 세팅 */
                         // master 계정은 CustKind1, CustKind2 둘다 없음.
-                        if (data[0].CustKind1 == null && data[0].CustKind2 == null && vThis.userId == 'master') GX.Cookie.set('CustKind', '0', 1); // 거래처타입
-                        else if (data[0].CustKind1 != null && data[0].CustKind2 == null) GX.Cookie.set('CustKind', data[0].CustKind1.toString(), 1); // 거래처타입
-                        else if (data[0].CustKind1 == null && data[0].CustKind2 != null) GX.Cookie.set('CustKind', data[0].CustKind2.toString(), 1); // 거래처타입
-                        else if (data[0].CustKind1 != null && data[0].CustKind2 != null) GX.Cookie.set('CustKind', data[0].CustKind1.toString() + ',' + data[0].CustKind2.toString(), 1); // 거래처타입
-                        else {
+                        if (data[0].CustKind1 == null && data[0].CustKind2 == null && vThis.userId == 'master') {
+                            GX.Cookie.set('CustKind1', '0', 1); // 구매거래처타입
+                            GX.Cookie.set('CustKind2', '0', 1); // 외주거래처타입
+                        } else if (data[0].CustKind1 != null && data[0].CustKind2 != null) {
+                            GX.Cookie.set('CustKind1', data[0].CustKind1, 1); // 구매거래처타입
+                            GX.Cookie.set('CustKind2', data[0].CustKind2, 1); // 외주거래처타입
+                        } else if (data[0].CustKind1 != null && data[0].CustKind2 == null) {
+                            GX.Cookie.set('CustKind1', data[0].CustKind1, 1); // 구매거래처타입
+                            GX.Cookie.set('CustKind2', '', 1); // 외주거래처타입
+                        } else if (data[0].CustKind1 == null && data[0].CustKind2 != null) {
+                            GX.Cookie.set('CustKind1', '', 1); // 구매거래처타입
+                            GX.Cookie.set('CustKind2', data[0].CustKind2, 1); // 외주거래처타입
+                        } else {
                             alert('해당 계정은 (구매/외주)거래처 타입이 정상적이지 않습니다.');
                             return false;
                         }

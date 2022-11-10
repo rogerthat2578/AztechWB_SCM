@@ -266,45 +266,33 @@ GX._METHODS_ = {
 		let pageUrls2List = GX._DATAS_.pageUrls2;
 		let menu = [];
 
-		let arrStrCustKind = [];
-		if (GX.Cookie.get('CustKind').split(',').length == 2) arrStrCustKind = [GX.Cookie.get('CustKind').split(',')[0], GX.Cookie.get('CustKind').split(',')[1]];
-		else {
-			if (GX.Cookie.get('CustKind') == '0') arrStrCustKind = [pageUrls1List[0].pageSeq.toString(), pageUrls1List[1].pageSeq.toString()]; // master 계정일때
-			else arrStrCustKind = [GX.Cookie.get('CustKind')];
-		}
+		// '1': 구매거래처타입, '2': 외주거래처타입
+		let objCustKind = { '1': GX.Cookie.get('CustKind1'), '2': GX.Cookie.get('CustKind2') };
 
 		menu.push('<div class="list-bg"></div>');
 
-		Object.keys(pageUrls1List).map((k, a) => {
-			
-		})
-
-		for (let a in pageUrls1List) {
-			if (pageUrls1List.hasOwnProperty(a)) {
-				console.log(pageUrls1List.indexOf(a))
-				if (pageUrls1List[a].pageSeq.toString() == arrStrCustKind[a]) {
-					menu.push('<div class="list-container">');
-					menu.push('<div class="menu-title">' + pageUrls1List[a].pageName + '</div>');
-					menu.push('<ul class="list-wrap">');
-					
-					for (let b in pageUrls2List) {
-						if (pageUrls2List.hasOwnProperty(b)) {
-							if (a == pageUrls2List[b].bindPageUrls1) {
-								menu.push('<li>');
-								menu.push('<a href="' + pageUrls2List[b].link + '">');
-								menu.push('<span class="list-img ' + pageUrls2List[b].class + '"></span>');
-								menu.push('<span>' + pageUrls2List[b].pageName + '</span>');
-								menu.push('</a>');
-								menu.push('</li>');
-							}
-						}
+		for (let k in pageUrls1List) {
+			if (pageUrls1List[k].pageSeq.toString() == objCustKind[k] || objCustKind[k] == '0') {
+				menu.push('<div class="list-container">');
+				menu.push('<div class="menu-title">' + pageUrls1List[k].pageName + '</div>');
+				menu.push('<ul class="list-wrap">');
+				
+				for (let b in pageUrls2List) {
+					if (k == pageUrls2List[b].bindPageUrls1) {
+						menu.push('<li>');
+						menu.push('<a href="' + pageUrls2List[b].link + '">');
+						menu.push('<span class="list-img ' + pageUrls2List[b].class + '"></span>');
+						menu.push('<span>' + pageUrls2List[b].pageName + '</span>');
+						menu.push('</a>');
+						menu.push('</li>');
 					}
-
-					menu.push('</ul>');
-					menu.push('</div>');
 				}
+
+				menu.push('</ul>');
+				menu.push('</div>');
 			}
 		}
+		
 		return menu.join('');
 	},
 	/**
