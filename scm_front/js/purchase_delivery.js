@@ -552,7 +552,7 @@ let app = new Vue({
     created() {
         let vThis = this;
 
-		if (!GX._METHODS_.isLogin()) location.replace('login');
+		if (!GX._METHODS_.isLogin()) location.replace('login.html');
         else {
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			

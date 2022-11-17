@@ -27,15 +27,23 @@ let app = new Vue({
             DelvPlanDateTo: '',
             SMCurrStatus: 0,
             SMCurrStatusName: '전체',
-            PONo: '',
+            // PONo: '',
+            DeptSeq: 0,
+            DeptName: '전체',
             ItemName: '',
             ItemNo: '',
-            Spec: '',
+            // Spec: '',
+            OrderItemNo: '',
+            OrderItemName: '',
         },
         SMCurrStatusList: [],
         /**단축키로 기능 실행 (K-System 참고)
          * Control + Q = 조회
          */
+        // 부서 리스트
+        DeptNameList: [],
+        // 부서 리스트
+        KeepDeptNameList: [],
         keyCombi: {
             Control: false,
             Q: false,
@@ -109,6 +117,28 @@ let app = new Vue({
                     e.target.nextElementSibling.style.display = 'none';
             }
         },
+        // 발주부서 input에 입력 시 리스트 변경
+        likeSelect2: function() {
+            let e = event;
+            let vThis = this;
+
+            let likeIndex = [];
+            if (GX._METHODS_.nvl(e.target.value).length > 0) {
+                vThis.KeepProcessNameList.forEach((v, i) => {
+                    if (v.val.indexOf(e.target.value) > -1) likeIndex.push(i);
+                });
+            }
+
+            if (likeIndex.length > 0) {
+                let arrTemp = [];
+                likeIndex.forEach(v => {
+                    arrTemp.push(vThis.KeepProcessNameList[v]);
+                });
+                vThis.ProcessNameList = arrTemp;
+            } else {
+                vThis.ProcessNameList = vThis.KeepProcessNameList;
+            }
+        },
         /**날짜 번경 후처리
          * v: 날짜
          * o: 날짜 input 엘리먼트
@@ -161,10 +191,14 @@ let app = new Vue({
             vThis.queryForm.DelvPlanDateTo = '';
             vThis.queryForm.SMCurrStatus = 0;
             vThis.queryForm.SMCurrStatusName = '전체';
-            vThis.queryForm.PONo = '';
+            // vThis.queryForm.PONo = '';
+            vThis.queryForm.DeptSeq = 0;
+            vThis.queryForm.DeptName = '전체';
             vThis.queryForm.ItemName = '';
             vThis.queryForm.ItemNo = '';
-            vThis.queryForm.Spec = '';
+            // vThis.queryForm.Spec = '';
+            vThis.queryForm.OrderItemNo = '';
+            vThis.queryForm.OrderItemName = '';
         },
         initKeyCombi: function () {
             Object.keys(this.keyCombi).map(k => {
@@ -413,7 +447,7 @@ let app = new Vue({
     created() {
         let vThis = this;
 
-		if (!GX._METHODS_.isLogin()) location.replace('login');
+		if (!GX._METHODS_.isLogin()) location.replace('login.html');
         else {
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
@@ -437,11 +471,12 @@ let app = new Vue({
             /**조회조건 Select box setting
             * 진행상태(구매): SMCurrStatusList
             */
-            const objSelBoxQueryForm = {'SMCurrStatusList': 'PUOrd'};
+            const objSelBoxQueryForm = {'SMCurrStatusList': 'PUOrd', 'DeptNameList': 'PODept'};
             Object.keys(objSelBoxQueryForm).map(k => {
                 GX._METHODS_
                 .setMethodId('SCMCodeHelp')
                 .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
+                    console.log(data)
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })

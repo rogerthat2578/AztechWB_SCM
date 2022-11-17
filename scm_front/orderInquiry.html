@@ -80,12 +80,17 @@
 							</li>
 						</ul>
 		
-						<ul class="input-wrap">
+						<ul class="input-wrap wid-350">
 							<li class="name">
-								<label>발주번호</label>
+								<label>발주부서</label>
 							</li>
 							<li class="txt">
-								<input type="text" v-model="queryForm.PoNo">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2()">
+									<ul class="drop-box">
+										<li v-for="item in DeptNameList" @click="openCloseDropBox('DeptName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
 							</li>
 						</ul>
 					</div>
@@ -108,12 +113,20 @@
 						</ul>
 						<ul class="input-wrap">
 							<li class="name">
-								<label>규격</label>
+								<label>Order품명</label>
 							</li>
 							<li class="txt">
-								<input type="text" v-model="queryForm.Spec">
+								<input type="text" v-model="queryForm.OrderItemName">
 							</li>
-						</ul>				
+						</ul>
+						<ul class="input-wrap wid-350">
+							<li class="name">
+								<label>Order품번</label>
+							</li>
+							<li class="txt">
+								<input type="text" v-model="queryForm.OrderItemNo">
+							</li>
+						</ul>
 					</div>
 				</div>
 				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>
