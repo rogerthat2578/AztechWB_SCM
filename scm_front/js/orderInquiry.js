@@ -28,7 +28,7 @@ let app = new Vue({
             SMCurrStatus: 0,
             SMCurrStatusName: '전체',
             // PONo: '',
-            DeptSeq: 0,
+            Dept: 0,
             DeptName: '전체',
             ItemName: '',
             ItemNo: '',
@@ -56,13 +56,23 @@ let app = new Vue({
             let vThis = this;
             let e = event;
 
-			if (e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu') {
-				document.getElementsByClassName('left-menu')[0].style.display = 'none';
-			}
+			// Click Event
+            if(e.type === 'click'){
+                if(document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
+                    document.getElementsByClassName('left-menu')[0].style.display = 'none';
+                }
 
-            if (e.type === 'click' && document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') !== 'drop-box-input') {
-				document.getElementsByClassName('drop-box')[0].style.display = 'none';
-			}
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                    document.getElementsByClassName('drop-box')[0].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[1].style.display = 'none';
+                    // 부서 Select Box 초기화
+                    if ((vThis.DeptNameList.length == 1 && (vThis.DeptNameList[0].val == '전체' || vThis.DeptNameList[0].val == '')) || vThis.queryForm.DeptName.replace(/\ /g, '') == '') {
+                        vThis.DeptNameList = vThis.KeepDeptNameList;
+                        vThis.queryForm.Dept = vThis.KeepDeptNameList[0].key;
+                        vThis.queryForm.DeptName = vThis.KeepDeptNameList[0].val;
+                    }
+                }
+            }
 
             if (e.type === 'keyup') {
                 if (e.key.toLowerCase() === 'control') {
@@ -124,19 +134,19 @@ let app = new Vue({
 
             let likeIndex = [];
             if (GX._METHODS_.nvl(e.target.value).length > 0) {
-                vThis.KeepProcessNameList.forEach((v, i) => {
-                    if (v.val.indexOf(e.target.value) > -1) likeIndex.push(i);
+                vThis.KeepDeptNameList.forEach((v, i) => {
+                    if (v.val.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) likeIndex.push(i);
                 });
             }
 
             if (likeIndex.length > 0) {
                 let arrTemp = [];
                 likeIndex.forEach(v => {
-                    arrTemp.push(vThis.KeepProcessNameList[v]);
+                    arrTemp.push(vThis.KeepDeptNameList[v]);
                 });
-                vThis.ProcessNameList = arrTemp;
+                vThis.DeptNameList = arrTemp;
             } else {
-                vThis.ProcessNameList = vThis.KeepProcessNameList;
+                vThis.DeptNameList = vThis.KeepDeptNameList;
             }
         },
         /**날짜 번경 후처리
@@ -192,7 +202,7 @@ let app = new Vue({
             vThis.queryForm.SMCurrStatus = 0;
             vThis.queryForm.SMCurrStatusName = '전체';
             // vThis.queryForm.PONo = '';
-            vThis.queryForm.DeptSeq = 0;
+            vThis.queryForm.Dept = 0;
             vThis.queryForm.DeptName = '전체';
             vThis.queryForm.ItemName = '';
             vThis.queryForm.ItemNo = '';
@@ -351,6 +361,9 @@ let app = new Vue({
                 }
             });
 
+            // 부서코드 key 변경하여 넣기
+            params.DeptSeq = params.Dept;
+
             GX._METHODS_
             .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
@@ -476,12 +489,13 @@ let app = new Vue({
                 GX._METHODS_
                 .setMethodId('SCMCodeHelp')
                 .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
-                    console.log(data)
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
+                    // 부서 Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (k == 'DeptNameList') vThis['Keep' + k] = vThis[k];
                 }]);
             });
 
@@ -492,7 +506,8 @@ let app = new Vue({
                 .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
             .item('SMCurrStatusName').head('진행상태', '')
             .item('PODate').head('발주일', '')
-            .item('PONo').head('발주번호', '')
+            // .item('PONo').head('발주번호', '')
+            .item('DeptName').head('발주부서', '')
             .item('DelvDate').head('납기일', '')
             .item('DelvPlanDate', { styleSyntax: 'style="width: 92px;"' }).head('납품예정일', '')
                 .body('<div style="width: 90px;"><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent; width: 100%;" /></div>')

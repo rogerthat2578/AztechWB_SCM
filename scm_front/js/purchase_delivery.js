@@ -298,6 +298,7 @@ let app = new Vue({
             GX._METHODS_
             .setMethodId(vThis.jumpSetMethodId)
             .ajax(paramsList, [function (data) {
+                console.log(data)
                 if (data[0].Status && data[0].Status != 0) {
                     alert(data[0].Result);
                     history.back(-1);
@@ -583,7 +584,7 @@ let app = new Vue({
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
             .item('Qty', { styleSyntax: 'style="width: 110px;"' }).head('납품수량', '')
-                .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" /></div>')
+                .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" @blur="compareQty(index, \'Qty\')" /></div>')
             .item('Price').head('단가', '').body(null, 'text-r')
             .item('CurAmt').head('금액', '').body(null, 'text-r')
             .item('IsVAT').head('부가세포함여부', '')
@@ -594,7 +595,7 @@ let app = new Vue({
             .item('DomAmt').head('원화금액', '').body(null, 'text-r')
             .item('DomVAT').head('원화부가세', '').body(null, 'text-r')
             .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
-            .item('WHName').head('창고', '')
+            // .item('WHName').head('창고', '')
             .item('Remark').head('비고', '')
                 .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: left;" name="Remark" :value="row.Remark" @input="updateRowRemark(index)" /></div>', '')
             .item('ColorNo').head('색상', '')
