@@ -147,7 +147,12 @@ let app = new Vue({
                 && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('possible-input-data')) {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data')
+                } else {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                }
             }
         },
         init: function () {
@@ -236,7 +241,12 @@ let app = new Vue({
                 let queryIdx = this.rows.Query[idx]; // 해당 행 obj
                 queryIdx[evtTarget.name] = evtTarget.value;
                 queryIdx.RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('possible-input-data')) {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                } else {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data')
+                }
 
                 // 납품수량
                 let rowDelvQty = this.rows.Query[idx][evtTarget.name] == '' ? '0' : this.rows.Query[idx][evtTarget.name];
@@ -284,7 +294,12 @@ let app = new Vue({
             if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('no-data')) {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                } else {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                }
             }
         },
         /**그리드 수량 비교
@@ -320,6 +335,7 @@ let app = new Vue({
             GX._METHODS_
             .setMethodId(vThis.jumpSetMethodId)
             .ajax(paramsList, [function (data) {
+                console.log(data)
                 if (data[0].Status && data[0].Status != 0) {
                     alert(data[0].Result);
                     history.back(-1);
@@ -605,7 +621,7 @@ let app = new Vue({
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
             .item('Qty', { styleSyntax: 'style="width: 110px;"' }).head('납품수량', '')
-                .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" @blur="compareQty(index, \'Qty\')" /></div>')
+                .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" @blur="compareQty(index, \'Qty\')" /></div>', 'possible-input-data')
             .item('Price').head('단가', '').body(null, 'text-r')
             .item('CurAmt').head('금액', '').body(null, 'text-r')
             .item('IsVAT', { styleSyntax: 'style="width: 100px;"' }).head('부가세포함여부', '')
@@ -618,7 +634,7 @@ let app = new Vue({
             .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
             // .item('WHName').head('창고', '')
             .item('Remark').head('비고', '')
-                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: left;" name="Remark" :value="row.Remark" @input="updateRowRemark(index)" /></div>', '')
+                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: left;" name="Remark" :value="row.Remark" @input="updateRowRemark(index)" /></div>', 'possible-input-data')
             .item('ColorNo').head('색상', '')
             .loadTemplate('#grid', 'rows.Query');
         }
@@ -633,7 +649,12 @@ let app = new Vue({
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                     vThis.rows.Query[attribute].RowEdit = true;
-                    document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    if (document.getElementByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.remove('possible-input-data');
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    } else {
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    }
                 } else {
                     const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
                     const info = GX.Calendar.dateFormatInfo(openerObj);
