@@ -699,6 +699,9 @@ main {
 .data-table table .no-data {
   background-color: #FFECEC;
 }
+.data-table table .possible-input-data {
+  background-color: #fff7c173;
+}
 .data-table table .sum {
   background-color: #D0E2BA;
   color: black;
