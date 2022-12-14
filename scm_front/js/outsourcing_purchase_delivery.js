@@ -217,6 +217,8 @@ let app = new Vue({
 
             let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
 
+            vThis.rows.Query = [];
+
             GX._METHODS_
                 .setMethodId(vThis.jumpSetMethodId)
                 .ajax(paramsList, [function (data){

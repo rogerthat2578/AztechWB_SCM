@@ -211,12 +211,13 @@ let app = new Vue({
                         params[k] = params[k].replace(/\-/g, '');
                 }
             });
+            
+            vThis.rows.Query = [];
 
             GX._METHODS_
                 .setMethodId('ProdProgressInfoQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
                     if (data.length > 0) {
-                        vThis.rows.Query = [];
                         // 조회 결과를 가져와서 그리드에 출력한다.
                         for(let i in data){
                             if(data.hasOwnProperty(i)){
@@ -239,7 +240,6 @@ let app = new Vue({
                         vThis.rows.Query = data;
 
                     } else{
-                        vThis.rows.Query = [];
                         alert('조회 결과가 없습니다.');
                     }
                 }])

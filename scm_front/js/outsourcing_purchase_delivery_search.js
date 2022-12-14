@@ -230,13 +230,13 @@ let app = new Vue({
 
             let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
 
+            vThis.rows.Query = [];
+            vThis.rows.QuerySummary = {};
+            
             GX._METHODS_
             .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
             .ajax([params], [function (data){
                 if(data.length > 0){
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
-                    
                     let summaryList = {
                         sumProdQty: 0, sumBadQty: 0, sumOKQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
                         sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, sumOSPTotDomAmt: 0
@@ -281,8 +281,6 @@ let app = new Vue({
                     vThis.rows.Query = data;
                     vThis.rows.QuerySummary = summaryList;
                 } else{
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
                     alert('조회 결과가 없습니다.');
                 }
 

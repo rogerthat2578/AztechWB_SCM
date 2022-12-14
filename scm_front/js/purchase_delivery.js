@@ -332,10 +332,11 @@ let app = new Vue({
                 }
             }
 
+            vThis.rows.Query = [];
+
             GX._METHODS_
             .setMethodId(vThis.jumpSetMethodId)
             .ajax(paramsList, [function (data) {
-                console.log(data)
                 if (data[0].Status && data[0].Status != 0) {
                     alert(data[0].Result);
                     history.back(-1);
@@ -616,8 +617,10 @@ let app = new Vue({
             .item('ROWNUM').head('No.', '')
             .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
                 .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
+            .item('OrderItemNo').head('Order품번', '').body(null, 'text-l')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('ItemName').head('품명', '').body(null, 'text-l')
+            .item('BuyerNo').head('BuyerNo.', '').body(null, 'text-l')
+            .item('ItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '').body('<div style="width: 90px;">{{row.ItemName}}</div>', 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
             .item('Qty', { styleSyntax: 'style="width: 110px;"' }).head('납품수량', '')

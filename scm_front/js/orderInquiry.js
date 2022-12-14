@@ -41,15 +41,15 @@ let app = new Vue({
         /**단축키로 기능 실행 (K-System 참고)
          * Control + Q = 조회
          */
-        // 부서 리스트
-        DeptNameList: [],
-        // 부서 리스트
-        KeepDeptNameList: [],
         keyCombi: {
             Control: false,
             Q: false,
         },
         isCheckList: [],
+        // 부서 리스트
+        DeptNameList: [],
+        // 부서 리스트
+        KeepDeptNameList: [],
 	},
     methods: {
         /**이벤트 처리 */
@@ -129,13 +129,15 @@ let app = new Vue({
             }
         },
         // 발주부서 input에 입력 시 리스트 변경
-        likeSelect2: function() {
+        likeSelect2: function(str = "Dept") {
             let e = event;
             let vThis = this;
 
+            let strConcat = 'Keep' + str + 'NameList';
+
             let likeIndex = [];
             if (GX._METHODS_.nvl(e.target.value).length > 0) {
-                vThis.KeepDeptNameList.forEach((v, i) => {
+                vThis[strConcat].forEach((v, i) => {
                     if (v.val.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) likeIndex.push(i);
                 });
             }
@@ -143,11 +145,11 @@ let app = new Vue({
             if (likeIndex.length > 0) {
                 let arrTemp = [];
                 likeIndex.forEach(v => {
-                    arrTemp.push(vThis.KeepDeptNameList[v]);
+                    arrTemp.push(vThis[strConcat][v]);
                 });
                 vThis.DeptNameList = arrTemp;
             } else {
-                vThis.DeptNameList = vThis.KeepDeptNameList;
+                vThis.DeptNameList = vThis[strConcat];
             }
         },
         /**날짜 번경 후처리
@@ -365,13 +367,13 @@ let app = new Vue({
             // 부서코드 key 변경하여 넣기
             params.DeptSeq = params.Dept;
 
+            vThis.rows.Query = [];
+            vThis.rows.QuerySummary = {};
+            
             GX._METHODS_
             .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
                 if (data.length > 0) {
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
-                    
                     // data for loop
                     let noDataIndex = [];
                     let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0, Price: 0 /**Price: 화면에 표시X */};
@@ -418,8 +420,6 @@ let app = new Vue({
                         }, 20);
                     }
                 } else {
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
                     alert('조회 결과가 없습니다.');
                 }
                 if (typeof callback === 'function') callback();
@@ -495,8 +495,8 @@ let app = new Vue({
                             vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
-                    // 부서 Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
-                    if (k == 'DeptNameList') vThis['Keep' + k] = vThis[k];
+                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
                 }]);
             });
 
@@ -529,7 +529,7 @@ let app = new Vue({
             .item('OrderItemName').head('Order품명', '').body(null, 'text-l')
             .item('OrderItemNo').head('Order품번', '').body(null, 'text-l')
             // .item('OrderSpec').head('Order규격', '').body(null, 'text-l')
-            .item('BuyerNo').head('Buyer No.', '').body(null, 'text-l')
+            .item('BuyerNo').head('BuyerNo.', '').body(null, 'text-l')
             .item('SizeName').head('사이즈', '')
             .item('ColorNo').head('색상', '').body(null, 'text-l')
             .item('UseSelect').head('사용부위', '').body(null, 'text-l')

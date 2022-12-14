@@ -346,14 +346,14 @@ let app = new Vue({
                         params[k] = params[k].replace(/\-/g, '');
                 }
             });
+            
+            vThis.rows.Query = [];
+            vThis.rows.QuerySummary = {};
 
             GX._METHODS_
             .setMethodId('OSPWorkOrderQuery')
             .ajax([params], [function (data){
                 if (data.length > 0) {
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
-                    
                     let noDataIndex = [];
                     let summaryList = {sumOrderQty: 0, sumProgressQty: 0, sumNonProgressQty: 0, sumProdQty: 0, sumOKQty: 0, sumBadQty: 0};
 
@@ -399,8 +399,6 @@ let app = new Vue({
                         }, 20);
                     }
                 } else{
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
                     alert('조회 결과가 없습니다.');
                 }
 
@@ -509,7 +507,7 @@ let app = new Vue({
                         }
                     }
                     // 공정 Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
-                    if (k == 'ProcessNameList') vThis['Keep' + k] = vThis[k];
+                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
                 }]);
             });
 
@@ -519,7 +517,7 @@ let app = new Vue({
             .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll();" /></div>', '')
                 .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);"/></div>', '')
             .item('WorkOrderDate').head('작업지시일', '')
-            .item('WorkDate').head('작업예정일', '')
+            .item('WorkDate').head('납기일', '')
             .item('WorkPlanDate', { styleSyntax: 'style="width: 92px;"' }).head('납품예정일', '')
                 .body('<div style="width: 90px;"><input type="text" class="datepicker" name="WorkPlanDate" gx-datepicker="" attr-condition="" :value="row.WorkPlanDate" @input="updateRowWorkPlanDate(index)" @click="applyAll(\'WorkPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent; width: 100%;" /></div>')
             .item('WorkOrderNo').head('작업지시번호', '')

@@ -68,24 +68,48 @@
 								</div>
 							</li>
 						</ul>
-		
-						<ul class="input-wrap">
+
+						<ul class="input-wrap wid-350">
 							<li class="name">
-								<label>납품번호</label>
+								<label>발주부서</label>
 							</li>
 							<li class="txt">
-								<input type="text" v-model="queryForm.DelvNo">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2('Dept')">
+									<ul class="drop-box">
+										<li v-for="item in DeptNameList" @click="openCloseDropBox('DeptName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
 							</li>
 						</ul>
 
-						<ul class="input-wrap">
+						<ul class="input-wrap wid-350">
 							<li class="name">
-								<label>발주번호</label>
+								<label>발주담당</label>
 							</li>
 							<li class="txt">
-								<input type="text" v-model="queryForm.PONo">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="EmpName" v-model="queryForm.EmpName" @click="openCloseDropBox('EmpName')" @input="likeSelect2('Emp')">
+									<ul class="drop-box">
+										<li v-for="item in EmpNameList" @click="openCloseDropBox('EmpName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
 							</li>
 						</ul>
+
+						<!-- <ul class="input-wrap wid-350">
+							<li class="name">
+								<label>발주담당</label>
+							</li>
+							<li class="txt">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2()">
+									<ul class="drop-box">
+										<li v-for="item in DeptNameList" @click="openCloseDropBox('DeptName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul> -->
 					</div>
 					<div class="data-row">
 						<ul class="input-wrap">
@@ -104,14 +128,30 @@
 								<input type="text" v-model="queryForm.ItemNo">
 							</li>
 						</ul>
-						<ul class="input-wrap">
+						<ul class="input-wrap wid-350">
+							<li class="name">
+								<label>Order품번</label>
+							</li>
+							<li class="txt">
+								<input type="text" v-model="queryForm.OrderItemNo">
+							</li>
+						</ul>
+						<ul class="input-wrap wid-350">
+							<li class="name">
+								<label>Buyer No</label>
+							</li>
+							<li class="txt">
+								<input type="text" v-model="queryForm.BuyerNo">
+							</li>
+						</ul>
+						<!-- <ul class="input-wrap">
 							<li class="name">
 								<label>규격</label>
 							</li>
 							<li class="txt">
 								<input type="text" v-model="queryForm.Spec">
 							</li>
-						</ul>				
+						</ul> -->
 					</div>
 				</div>
 				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>

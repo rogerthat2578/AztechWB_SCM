@@ -86,7 +86,7 @@
 							</li>
 							<li class="txt">
 								<div class="select">
-									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2()">
+									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2('Dept')">
 									<ul class="drop-box">
 										<li v-for="item in DeptNameList" @click="openCloseDropBox('DeptName')" :value="item.key">{{item.val}}</li>
 									</ul>
