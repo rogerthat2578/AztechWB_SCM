@@ -44,7 +44,7 @@
 			<div class="top-data-wrap">
 				<div class="data-row-wrap">
 					<div class="data-row">
-						<ul class="input-wrap">
+						<!-- <ul class="input-wrap">
 							<li class="name essential">
 								<label>작업예정일</label>
 							</li>
@@ -53,10 +53,10 @@
 								<span>-</span>
 								<input type="text" name="WorkDateTo" class="datepicker" v-model.trim="queryForm.WorkDateTo" gx-datepicker="queryForm.WorkDateTo" @change="updateDate">
 							</li>
-						</ul>
+						</ul> -->
 
 						<ul class="input-wrap">
-							<li class="name">
+							<li class="name essential">
 								<label>작업지시일</label>
 							</li>
 							<li class="date">
@@ -82,12 +82,39 @@
 
 						<ul class="input-wrap wid-350">
 							<li class="name">
+								<label>의뢰부서</label>
+							</li>
+							<li class="txt">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2('Dept')">
+									<ul class="drop-box">
+										<li v-for="item in DeptNameList" @click="openCloseDropBox('DeptName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+
+						<ul class="input-wrap wid-350">
+							<li class="name">
+								<label>공정</label>
+							</li>
+							<li class="txt">
+								<div class="select">
+									<input type="text" class="drop-box-input" style="background-color: #80808047;" name="ProcessName" v-model="queryForm.ProcessName" @click="openCloseDropBox('ProcessName', 'N')" @input="likeSelect2('Process')" readonly>
+									<ul class="drop-box">
+										<li v-for="item in ProcessNameList" @click="openCloseDropBox('ProcessName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+						<!-- <ul class="input-wrap wid-350">
+							<li class="name">
 								<label>작업지시번호</label>
 							</li>
 							<li class="txt">
 								<input type="text" name="WorkOrderNo" v-model="queryForm.WorkOrderNo">
 							</li>
-						</ul>
+						</ul> -->
 					</div>
 					<div class="data-row">
 						<ul class="input-wrap">
@@ -106,25 +133,12 @@
 								<input type="text" name="GoodItemName" v-model="queryForm.GoodItemName">
 							</li>
 						</ul>
-						<ul class="input-wrap">
-							<li class="name">
-								<label>규격</label>
-							</li>
-							<li class="txt">
-								<input type="text" name="GoodItemSpec" v-model="queryForm.GoodItemSpec">
-							</li>
-						</ul>
 						<ul class="input-wrap wid-350">
 							<li class="name">
-								<label>공정</label>
+								<label>BuyerNo</label>
 							</li>
 							<li class="txt">
-								<div class="select">
-									<input type="text" class="drop-box-input" name="ProcessName" v-model="queryForm.ProcessName" @click="openCloseDropBox('ProcessName')" @input="likeSelect2()">
-									<ul class="drop-box">
-										<li v-for="item in ProcessNameList" @click="openCloseDropBox('ProcessName')" :value="item.key">{{item.val}}</li>
-									</ul>
-								</div>
+								<input type="text" name="BuyerNo" v-model="queryForm.BuyerNo">
 							</li>
 						</ul>
 					</div>

@@ -313,7 +313,7 @@ let app = new Vue({
                 // 합계란 만들기
                 for (let i in trList) {
                     if (trList.hasOwnProperty(i)) {
-                        if (i >= 12 && i <= 23 && i != 14 && i != 18 && i != 19) {
+                        if (i >= 13 && i <= 20 && i != 15 && i != 19 && i != 20) {
                             Object.keys(keyMapping).forEach(k => {
                                 if (trList[i].innerText == keyMapping[k])
                                     strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';

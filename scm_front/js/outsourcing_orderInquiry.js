@@ -18,19 +18,22 @@ let app = new Vue({
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
-            WorkDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            WorkOrderDateFr: '',
-            WorkOrderDateTo: '',
+            // WorkDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            // WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            WorkOrderDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            WorkOrderDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
-            GoodItemSpec: '',
+            BuyerNo: '',
+            // GoodItemSpec: '',
             CustSeq: '',
             SMCurrStatus: 0,
             SMCurrStatusName: '전체',
             Process: 0,
             ProcessName: '전체',
+            Dept: 0,
+            DeptName: '전체',
         },
 
         // 진행상태
@@ -40,6 +43,10 @@ let app = new Vue({
         ProcessNameList: [],
         // 공정 리스트
         KeepProcessNameList: [],
+        // 부서 리스트
+        DeptNameList: [],
+        // 부서 리스트
+        KeepDeptNameList: [],
 
         keyCombi: {
             isKeyHold: false,
@@ -60,7 +67,7 @@ let app = new Vue({
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
 
-                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block' || document.getElementsByClassName('drop-box')[2].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
                     document.getElementsByClassName('drop-box')[1].style.display = 'none';
                     // 공정 Select Box 초기화
@@ -68,6 +75,12 @@ let app = new Vue({
                         vThis.ProcessNameList = vThis.KeepProcessNameList;
                         vThis.queryForm.Process = vThis.KeepProcessNameList[0].key;
                         vThis.queryForm.ProcessName = vThis.KeepProcessNameList[0].val;
+                    }
+                    // 부서 Select Box 초기화
+                    if ((vThis.DeptNameList.length == 1 && (vThis.DeptNameList[0].val == '전체' || vThis.DeptNameList[0].val == '')) || vThis.queryForm.DeptName.replace(/\ /g, '') == '') {
+                        vThis.DeptNameList = vThis.KeepDeptNameList;
+                        vThis.queryForm.Dept = vThis.KeepDeptNameList[0].key;
+                        vThis.queryForm.DeptName = vThis.KeepDeptNameList[0].val;
                     }
                 }
             }
@@ -113,8 +126,10 @@ let app = new Vue({
             }
         },
 
-        // Select box (진행상태)
-        openCloseDropBox: function(inputEleName = '') {
+        // Select box
+        openCloseDropBox: function(inputEleName = '', useYN = '') {
+            if (useYN === 'N') return false;
+
             let e = event;
             
             if (e.target.nodeName.toUpperCase() === 'LI') {
@@ -130,26 +145,29 @@ let app = new Vue({
             }
         },
 
-        // 공정 input에 입력 시 리스트 변경
-        likeSelect2: function() {
+        // Select Box input에 입력 시 리스트 변경
+        likeSelect2: function(str = "Dept") {
             let e = event;
             let vThis = this;
 
+            let strKeepConcat = 'Keep' + str + 'NameList';
+            let strConcat = str + 'NameList';
+
             let likeIndex = [];
             if (GX._METHODS_.nvl(e.target.value).length > 0) {
-                vThis.KeepProcessNameList.forEach((v, i) => {
-                    if (v.val.indexOf(e.target.value) > -1) likeIndex.push(i);
+                vThis[strKeepConcat].forEach((v, i) => {
+                    if (v.val.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) likeIndex.push(i);
                 });
             }
 
             if (likeIndex.length > 0) {
                 let arrTemp = [];
                 likeIndex.forEach(v => {
-                    arrTemp.push(vThis.KeepProcessNameList[v]);
+                    arrTemp.push(vThis[strKeepConcat][v]);
                 });
-                vThis.ProcessNameList = arrTemp;
+                vThis[strConcat] = arrTemp;
             } else {
-                vThis.ProcessNameList = vThis.KeepProcessNameList;
+                vThis[strConcat] = vThis[strKeepConcat];
             }
         },
 
@@ -196,18 +214,18 @@ let app = new Vue({
           vThis.rows.QuerySummary = {};
           vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
           vThis.queryForm.BizUnit = '1';
-          vThis.queryForm.WorkDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-          vThis.queryForm.WorkDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-          vThis.queryForm.WorkOrderDateFr = '';
-          vThis.queryForm.WorkOrderDateTo = '';
-          vThis.queryForm.ProcStatus = '전체';
+        //   vThis.queryForm.WorkDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+        //   vThis.queryForm.WorkDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+          vThis.queryForm.WorkOrderDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+          vThis.queryForm.WorkOrderDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
           vThis.queryForm.WorkOrderNo = '';
           vThis.queryForm.GoodItemName = '';
           vThis.queryForm.GoodItemNo = '';
-          vThis.queryForm.GoodItemSpec = '';
+        //   vThis.queryForm.GoodItemSpec = '';
           vThis.queryForm.CustSeq = '';
           vThis.queryForm.Process = '';
           vThis.queryForm.ProcessName = '';
+          vThis.queryForm.BuyerNo = '';
         },
 
         initKeyCombi: function(){
@@ -313,7 +331,7 @@ let app = new Vue({
 
                 for (let i in trList) {
                     if (trList.hasOwnProperty(i)) {
-                        if (i >= 12 && i <= 17) {
+                        if (i >= 12 && i <= 14) {
                             Object.keys(keyMapping).forEach(k => {
                                 if (trList[i].innerText == keyMapping[k])
                                     strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
@@ -341,12 +359,15 @@ let app = new Vue({
 
             let params = GX.deepCopy(vThis.queryForm);
             Object.keys(params).map((k) => {
-                if(k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1){
+                if (k.indexOf('DateFr') > -1 || k.indexOf('DateTo') > -1) {
                     if(params[k].length > 0 && params[k].indexOf('-') > -1)
                         params[k] = params[k].replace(/\-/g, '');
                 }
+                else if (k == 'Process') params.ProcSeq = params[k];
+                else if (k == 'Dept') params.DeptSeq = params[k];
+                else if (k == 'SMCurrStatus') params.ProgStatus = params[k];
             });
-            
+
             vThis.rows.Query = [];
             vThis.rows.QuerySummary = {};
 
@@ -495,8 +516,10 @@ let app = new Vue({
 
             /**조회조건 Select box setting
             * 진행상태(구매): SMCurrStatusList
+            * 공정: ProcessNameList
+            * 부서: DeptNameList
             */
-            const objSelBoxQueryForm = {'SMCurrStatusList': 'PDWorkOrder', 'ProcessNameList': 'PDProc'};
+            const objSelBoxQueryForm = {'SMCurrStatusList': 'PDWorkOrder', 'ProcessNameList': 'PDProc', 'DeptNameList': 'PODept'};
             Object.keys(objSelBoxQueryForm).map(k => {
                 GX._METHODS_
                 .setMethodId('SCMCodeHelp')
@@ -506,8 +529,19 @@ let app = new Vue({
                             vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
-                    // 공정 Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
                     if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
+                    
+                    // 공정 기본 값 = 52:입고(의류)로 세팅
+                    if (k === 'ProcessNameList') {
+                        for (let i = 0; i < vThis.ProcessNameList.length; i++) {
+                            if (vThis.ProcessNameList[i].val.indexOf('입고') > -1 && vThis.ProcessNameList[i].val.indexOf('의류') > -1) {
+                                vThis.queryForm.Process = vThis.ProcessNameList[i].key;
+                                vThis.queryForm.ProcessName = vThis.ProcessNameList[i].val;
+                                break;
+                            }
+                        }
+                    }
                 }]);
             });
 
@@ -520,20 +554,22 @@ let app = new Vue({
             .item('WorkDate').head('납기일', '')
             .item('WorkPlanDate', { styleSyntax: 'style="width: 92px;"' }).head('납품예정일', '')
                 .body('<div style="width: 90px;"><input type="text" class="datepicker" name="WorkPlanDate" gx-datepicker="" attr-condition="" :value="row.WorkPlanDate" @input="updateRowWorkPlanDate(index)" @click="applyAll(\'WorkPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent; width: 100%;" /></div>')
-            .item('WorkOrderNo').head('작업지시번호', '')
+            .item('DeptName').head('의뢰부서', '')
             .item('ProgStatusName').head('진행상태', '')
             .item('ProcName').head('공정', '')
             .item('GoodItemName').head('제품명', '').body(null, 'text-l')
             .item('GoodItemNo').head('제품번호', '').body(null, 'text-l')
-            .item('GoodItemSpec').head('제품규격', '').body(null, 'text-l')
+            // .item('GoodItemSpec').head('제품규격', '').body(null, 'text-l')
+            .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
             .item('SizeName').head('사이즈', '')
             .item('OrderQty').head('지시수량', '').body(null, 'text-r')
-            .item('ProgressQty').head('실적진행수량', '').body(null, 'text-r')
-            .item('NonProgressQty').head('미진행수량', '').body(null, 'text-r')
+            // .item('ProgressQty').head('생산진행수량', '').body(null, 'text-r')
             .item('ProdQty').head('생산수량', '').body(null, 'text-r')
-            .item('OKQty').head('양품수량', '').body(null, 'text-r')
-            .item('BadQty').head('불량수량', '').body(null, 'text-r')
+            .item('NonProgressQty').head('미진행수량', '').body(null, 'text-r')
+            // .item('OKQty').head('양품수량', '').body(null, 'text-r')
+            // .item('BadQty').head('불량수량', '').body(null, 'text-r')
             .item('Remark').head('특이사항', '').body(null, 'text-l')
+            .item('WorkOrderNo').head('작업지시번호', '')
             .loadTemplate('#grid', 'rows.Query');
         }
     },
