@@ -253,6 +253,7 @@ let app = new Vue({
                 let trList = document.querySelectorAll('[id="grid"] table thead tr td');
                 let strTd = '';
                 const keyMapping = {
+                    sumOrderQty: '발주수량',
                     sumProdQty: '생산수량',
                     sumBadQty: '불량수량',
                     sumOKQty: '양품수량',
@@ -268,7 +269,7 @@ let app = new Vue({
 
                 for (let i in trList) {
                     if (trList.hasOwnProperty(i)) {
-                        if (i >= 8 && i <= 21 && i != 12 && i != 16 && i != 17) {
+                        if (i >= 6 && i <= 18 && i != 9 && i != 13 && i != 14) {
                             Object.keys(keyMapping).forEach(k => {
                                 if (trList[i].innerText == keyMapping[k])
                                     strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
@@ -299,6 +300,8 @@ let app = new Vue({
                     if(params[k].length > 0 && params[k].indexOf('-') > -1)
                         params[k] = params[k].replace(/\-/g, '');
                 }
+                else if (k == 'Process') params.ProcSeq = params[k];
+                else if (k == 'Dept') params.DeptSeq = params[k];
             });
 
             let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
@@ -312,7 +315,7 @@ let app = new Vue({
                 if(data.length > 0){
                     let summaryList = {
                         sumProdQty: 0, sumBadQty: 0, sumOKQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
-                        sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, sumOSPTotDomAmt: 0
+                        sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, sumOSPTotDomAmt: 0, sumOrderQty: 0
                     }
 
                     for(let i in data){
@@ -324,6 +327,7 @@ let app = new Vue({
                             data[i].IsMatInput = parseInt(data[i].IsMatInput);
                             data[i].IsGoodIn = parseInt(data[i].IsGoodIn);
                             data[i].IsAccident = parseInt(data[i].IsAccident);
+                            data[i].OrderQty = data[i].OrderQty.toString().replace(regex, '$1,');
                             data[i].ProdQty = data[i].ProdQty.toString().replace(regex, '$1,');
                             data[i].BadQty = data[i].BadQty.toString().replace(regex, '$1,');
                             data[i].OKQty = data[i].OKQty.toString().replace(regex, '$1,');
@@ -350,6 +354,14 @@ let app = new Vue({
                             });
                         }
                     }
+
+                    // 추가. 단가 = 금액합 / 수량합
+                    let valSumPrice = summaryList.sumPrice.toString().replace(/\,/g, '');
+                    let valSumProdQty = summaryList.sumProdQty.toString().replace(/\,/g, '');
+                    if (isNaN(valSumPrice)) valSumPrice = 0; // 분자
+                    if (isNaN(valSumProdQty)) valSumProdQty = 1; // 분모
+                    else { if (parseFloat(valSumProdQty) <= 0) valSumProdQty = 1 }
+                    summaryList.sumPrice = (parseFloat(valSumPrice) / parseFloat(valSumProdQty)).toFixed(2).toString().replace(regex, '$1,');
                     
                     vThis.rows.Query = data;
                     vThis.rows.QuerySummary = summaryList;
@@ -427,9 +439,10 @@ let app = new Vue({
             // .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
             // .item('ProcName').head('공정', '').body(null, 'text-l')
             .item('ProdUnitName').head('단위', '')
+            .item('OrderQty').head('발주수량', '').body(null, 'text-r')
             .item('ProdQty').head('생산수량', '').body(null, 'text-r')
-            .item('BadQty').head('불량수량', '').body(null, 'text-r')
-            .item('OKQty').head('양품수량', '').body(null, 'text-r')
+            // .item('BadQty').head('불량수량', '').body(null, 'text-r')
+            // .item('OKQty').head('양품수량', '').body(null, 'text-r')
             .item('Price').head('단가', '').body(null, 'text-r')
             .item('IsVAT').head('부가세포함', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" :checked="row.IsVAT" disabled/></div>')
@@ -442,22 +455,22 @@ let app = new Vue({
             .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
             .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
             .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
-            .item('SizeText').head('필번', '')
-            .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
-            .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
-            .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
+            .item('SizeText').head('Size', '')
+            // .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
+            // .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
+            // .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
             .item('IsLastProc').head('최종공정', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" :checked="row.IsLastProc" disabled/></div>')
             .item('IsMatInput').head('자재투입', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" :checked="row.IsMatInput" disabled/></div>')
             .item('IsGoodIn').head('입고', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" :checked="row.IsGoodIn" disabled/></div>')
-            .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
-            .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
-            .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
-            .item('Density').head('밀도', '').body(null, 'text-r')
-            .item('IsAccident').head('사고지', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
+            // .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
+            // .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
+            // .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
+            // .item('Density').head('밀도', '').body(null, 'text-r')
+            // .item('IsAccident').head('사고지', '')
+            //     .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
             .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
             .loadTemplate('#grid', 'rows.Query');
 
