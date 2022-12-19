@@ -222,6 +222,10 @@ let app = new Vue({
             GX._METHODS_
                 .setMethodId(vThis.jumpSetMethodId)
                 .ajax(paramsList, [function (data){
+                    if (data.length == 0) {
+                        alert('데이터가 없습니다.');
+                        return false;
+                    }
                     if(data[0].Status && data[0].Status != 0){
                         alert(data[0].Result);
                         history.back(-1);
@@ -289,6 +293,8 @@ let app = new Vue({
 
             for(let i = saveArrData.length - 1; i >= 0; i--){
                 if(saveArrData[i].RowEdit){
+                    // if (isNaN(saveArrData[i].InWHSeq))
+
                     saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
                     saveArrData[i].WorkDate = this.queryForm.DelvDate.indexOf('-') > -1 ? this.queryForm.DelvDate.replace(/\-/g, "") : this.queryForm.DelvDate;
                     saveArrData[i].OrderQty = parseFloat(saveArrData[i].OrderQty.toString().replace(/\,/g, ''));
@@ -321,21 +327,22 @@ let app = new Vue({
             }
 
             if(saveArrData.length > 0){
-                GX._METHODS_
-                .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
-                .ajax(saveArrData, [], [function (data) {
-                    if(data[0].Status && data[0].Status != 0){
-                        alert('저장 실패\n' + data[0].Result);
+                alert('저장성공!')
+                // GX._METHODS_
+                // .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
+                // .ajax(saveArrData, [], [function (data) {
+                //     if(data[0].Status && data[0].Status != 0){
+                //         alert('저장 실패\n' + data[0].Result);
 
-                    } else{
-                        vThis.initSelected();
-                        for(let i in vThis.rows.Query){
-                            if(vThis.rows.Query.hasOwnProperty(i))
-                                vThis.rows.Query[i].RowEdit = false;
-                        }
-                        alert('저장 성공');
-                    }
-                }]);
+                //     } else{
+                //         vThis.initSelected();
+                //         for(let i in vThis.rows.Query){
+                //             if(vThis.rows.Query.hasOwnProperty(i))
+                //                 vThis.rows.Query[i].RowEdit = false;
+                //         }
+                //         alert('저장 성공');
+                //     }
+                // }]);
 
             } else{
                 alert('저장할 데이터가 없습니다.');
@@ -507,11 +514,11 @@ let app = new Vue({
             .item('ROWNUM').head('No.', '')
             .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
                 .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
-            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
             .item('GoodItemNo').head('품번', '').body(null, 'text-l')
             .item('GoodItemName').head('품명', '').body(null, 'text-l')
-            .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
-            .item('ProcName').head('공정', '').body(null, 'text-l')
+            .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
+            // .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
+            // .item('ProcName').head('공정', '').body(null, 'text-l')
             .item('SizeName').head('사이즈', '')
             .item('ProdUnitName').head('단위', '')
             .item('OrderQty').head('작업지시수량', '').body(null, 'text-r')
@@ -522,7 +529,7 @@ let app = new Vue({
             //     .body('<div style="width: 84px;"><input type="number" name="OKQty" attr-condition="" :value="row.OKQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
             // .item('BadQty', { styleSyntax: 'style="width: 90px;"' }).head('불량수량', '')
             //     .body('<div style="width: 84px;"><input type="number" name="BadQty" attr-condition="" :value="row.BadQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
-            .item('InWHName').head('입고창고', '')
+            // .item('InWHName').head('입고창고', '')
             .item('Remark').head('특이사항', '')
                 .body('<div><input type="text" name="Remark" attr-condition="" :value="row.Remark" @input="updateRowData(index)" style="border: 0px solid; text-align: left; background: transparent;" /></div>')
             .item('IsEnd').head('완료여부<div class="chkBox"><input type="checkbox" name="IsEndAll" @click="selectedAllIsEnd();" /></div>', '')
@@ -539,10 +546,11 @@ let app = new Vue({
             .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
             .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
             .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
-            .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
-            .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
-            .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
-            .item('ProdPlanNo').head('생산계획번호', '').body(null, 'text-l')
+            // .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
+            // .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
+            // .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
+            // .item('ProdPlanNo').head('생산계획번호', '').body(null, 'text-l')
+            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
             .loadTemplate('#grid', 'rows.Query');
         }
     },
