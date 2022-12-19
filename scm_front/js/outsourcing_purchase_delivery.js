@@ -67,7 +67,12 @@ let app = new Vue({
             if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('possible-input-data')) {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                } else {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data')
+                }
 
                 if (evtTarget.name == 'ProdQty') {
                     let queryIdx = this.rows.Query[idx];
@@ -105,6 +110,21 @@ let app = new Vue({
                             if (i == this.rows.Query.length - 1) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = this.summaryArea[k].toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,'));
                         }
                     }
+                }
+            }
+        },
+        
+        updateRowRemark: function (idx = null) {
+            let evtTarget = event.target;
+
+            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
+                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
+                this.rows.Query[idx].RowEdit = true;
+                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('no-data')) {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                } else {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
                 }
             }
         },
@@ -293,7 +313,16 @@ let app = new Vue({
 
             for(let i = saveArrData.length - 1; i >= 0; i--){
                 if(saveArrData[i].RowEdit){
-                    // if (isNaN(saveArrData[i].InWHSeq))
+                    // 입고창고가 없거나 이상하면 저장 막기. 화면에는 안보이지만 체크
+                    if (!isNaN(saveArrData[i].InWHSeq) && saveArrData[i].InWHSeq != undefined) {
+                        if (saveArrData[i].InWHSeq <= 0) {
+                            alert((i + 1) + '행에 입고 창고 데이터가 이상하여 저장할 수 없습니다.');
+                            return false;
+                        }
+                    } else {
+                        alert((i + 1) + '행에 입고 창고 데이터가 없어 저장할 수 없습니다.');
+                        return false;
+                    }
 
                     saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
                     saveArrData[i].WorkDate = this.queryForm.DelvDate.indexOf('-') > -1 ? this.queryForm.DelvDate.replace(/\-/g, "") : this.queryForm.DelvDate;
@@ -517,6 +546,7 @@ let app = new Vue({
             .item('GoodItemNo').head('품번', '').body(null, 'text-l')
             .item('GoodItemName').head('품명', '').body(null, 'text-l')
             .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
+            .item('DeptName').head('의뢰부서', '')
             // .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
             // .item('ProcName').head('공정', '').body(null, 'text-l')
             .item('SizeName').head('사이즈', '')
@@ -524,14 +554,14 @@ let app = new Vue({
             .item('OrderQty').head('작업지시수량', '').body(null, 'text-r')
             .item('ProgressQty').head('기생산수량', '').body(null, 'text-r')
             .item('ProdQty', { styleSyntax: 'style="width: 90px;"' }).head('생산수량', '')
-                .body('<div style="width: 84px;"><input type="number" name="ProdQty" attr-condition="" :value="row.ProdQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
+                .body('<div style="width: 84px;"><input type="number" name="ProdQty" attr-condition="" :value="row.ProdQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>', 'possible-input-data')
             // .item('OKQty', { styleSyntax: 'style="width: 90px;"' }).head('양품수량', '')
             //     .body('<div style="width: 84px;"><input type="number" name="OKQty" attr-condition="" :value="row.OKQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
             // .item('BadQty', { styleSyntax: 'style="width: 90px;"' }).head('불량수량', '')
             //     .body('<div style="width: 84px;"><input type="number" name="BadQty" attr-condition="" :value="row.BadQty" @input="updateRowData(index)" style="border: 0px solid; width: 100%; text-align: right; background: transparent;" /></div>')
             // .item('InWHName').head('입고창고', '')
             .item('Remark').head('특이사항', '')
-                .body('<div><input type="text" name="Remark" attr-condition="" :value="row.Remark" @input="updateRowData(index)" style="border: 0px solid; text-align: left; background: transparent;" /></div>')
+                .body('<div><input type="text" name="Remark" attr-condition="" :value="row.Remark" @input="updateRowRemark(index)" style="border: 0px solid; text-align: left; background: transparent;" /></div>', 'possible-input-data')
             .item('IsEnd').head('완료여부<div class="chkBox"><input type="checkbox" name="IsEndAll" @click="selectedAllIsEnd();" /></div>', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsEnd" attr-condition="" :value="row.IsEnd" :checked="row.IsEnd" @input="selectedMarkIsEnd(index);" /></div>', '')
             .item('OSPPrice').head('단가', '').body(null, 'text-r')
@@ -565,7 +595,12 @@ let app = new Vue({
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                     vThis.rows.Query[attribute].RowEdit = true;
-                    document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    if (document.getElementByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.remove('possible-input-data');
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    } else {
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    }
                 } else {
                     const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
                     const info = GX.Calendar.dateFormatInfo(openerObj);

@@ -190,18 +190,6 @@ let app = new Vue({
                 }
             }
         },
-        /**
-         * 
-         */
-        updateRowDelvPlanDate: function (idx = null) {
-            let evtTarget = event.target;
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
-                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
-                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
-                this.rows.Query[idx].RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
-            }
-        },
         init: function () {
             let vThis = this;
             vThis.initKeyCombi();
