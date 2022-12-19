@@ -17,12 +17,23 @@ let app = new Vue({
             BizUnit: '1',
             WorkDate: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            WorkOrderNo: '',
             GoodItemName: '',
             GoodItemNo: '',
-            GoodItemSpec: '',
-            CustSeq: ''
+            BuyerNo: '',
+            Process: 0,
+            ProcessName: '전체',
+            Dept: 0,
+            DeptName: '전체',
         },
+
+        // 공정 리스트
+        ProcessNameList: [],
+        // 공정 리스트
+        KeepProcessNameList: [],
+        // 부서 리스트
+        DeptNameList: [],
+        // 부서 리스트
+        KeepDeptNameList: [],
 
         keyCombi: {
             isKeyHold: false,
@@ -41,6 +52,23 @@ let app = new Vue({
             if(e.type === 'click'){
                 if(document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
+                }
+
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                    document.getElementsByClassName('drop-box')[0].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[1].style.display = 'none';
+                    // 공정 Select Box 초기화
+                    if ((vThis.ProcessNameList.length == 1 && (vThis.ProcessNameList[0].val == '전체' || vThis.ProcessNameList[0].val == '')) || vThis.queryForm.ProcessName.replace(/\ /g, '') == '') {
+                        vThis.ProcessNameList = vThis.KeepProcessNameList;
+                        vThis.queryForm.Process = vThis.KeepProcessNameList[0].key;
+                        vThis.queryForm.ProcessName = vThis.KeepProcessNameList[0].val;
+                    }
+                    // 부서 Select Box 초기화
+                    if ((vThis.DeptNameList.length == 1 && (vThis.DeptNameList[0].val == '전체' || vThis.DeptNameList[0].val == '')) || vThis.queryForm.DeptName.replace(/\ /g, '') == '') {
+                        vThis.DeptNameList = vThis.KeepDeptNameList;
+                        vThis.queryForm.Dept = vThis.KeepDeptNameList[0].key;
+                        vThis.queryForm.DeptName = vThis.KeepDeptNameList[0].val;
+                    }
                 }
             }
 
@@ -82,6 +110,51 @@ let app = new Vue({
                 GX.Cookie.set('CustSeq', '', 0); // 거래처코드
 				GX.Cookie.set('CustKind', '', 0); // 거래처타입
                 location.href = 'login.html';
+            }
+        },
+
+        // Select box
+        openCloseDropBox: function(inputEleName = '', useYN = '') {
+            if (useYN === 'N') return false;
+
+            let e = event;
+            
+            if (e.target.nodeName.toUpperCase() === 'LI') {
+                if (inputEleName.length == 0) inputEleName = e.target.parentNode.previousElementSibling.name;
+                this.queryForm[inputEleName.replace('Name', '')] = e.target.value;
+                this.queryForm[inputEleName] = e.target.innerText;
+                e.target.parentNode.style.display = 'none';
+            } else {
+                if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
+                    e.target.nextElementSibling.style.display = 'block';
+                else
+                    e.target.nextElementSibling.style.display = 'none';
+            }
+        },
+
+        // Select Box input에 입력 시 리스트 변경
+        likeSelect2: function(str = "Dept") {
+            let e = event;
+            let vThis = this;
+
+            let strKeepConcat = 'Keep' + str + 'NameList';
+            let strConcat = str + 'NameList';
+
+            let likeIndex = [];
+            if (GX._METHODS_.nvl(e.target.value).length > 0) {
+                vThis[strKeepConcat].forEach((v, i) => {
+                    if (v.val.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) likeIndex.push(i);
+                });
+            }
+
+            if (likeIndex.length > 0) {
+                let arrTemp = [];
+                likeIndex.forEach(v => {
+                    arrTemp.push(vThis[strKeepConcat][v]);
+                });
+                vThis[strConcat] = arrTemp;
+            } else {
+                vThis[strConcat] = vThis[strKeepConcat];
             }
         },
 
@@ -314,15 +387,45 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
+            /**조회조건 Select box setting
+            * 공정: ProcessNameList
+            * 부서: DeptNameList
+            */
+            const objSelBoxQueryForm = {'ProcessNameList': 'PDProc', 'DeptNameList': 'PODept'};
+            Object.keys(objSelBoxQueryForm).map(k => {
+                GX._METHODS_
+                .setMethodId('SCMCodeHelp')
+                .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
+                    for (let i in data) {
+                        if (data.hasOwnProperty(i)) {
+                            vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
+                        }
+                    }
+                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
+                    
+                    // 공정 기본 값 = 52:입고(의류)로 세팅
+                    if (k === 'ProcessNameList') {
+                        for (let i = 0; i < vThis.ProcessNameList.length; i++) {
+                            if (vThis.ProcessNameList[i].val.indexOf('입고') > -1 && vThis.ProcessNameList[i].val.indexOf('의류') > -1) {
+                                vThis.queryForm.Process = vThis.ProcessNameList[i].key;
+                                vThis.queryForm.ProcessName = vThis.ProcessNameList[i].val;
+                                break;
+                            }
+                        }
+                    }
+                }]);
+            });
+
             GX.VueGrid
             .bodyRow('@click="selectRow(index);"')
             .item('ROWNUM').head('No.', '')
             .item('WorkDate').head('작업일', '')
-            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
             .item('GoodItemNo').head('품번', '').body(null, 'text-l')
             .item('GoodItemName').head('품명', '').body(null, 'text-l')
-            .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
-            .item('ProcName').head('공정', '').body(null, 'text-l')
+            .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
+            // .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
+            // .item('ProcName').head('공정', '').body(null, 'text-l')
             .item('ProdUnitName').head('단위', '')
             .item('ProdQty').head('생산수량', '').body(null, 'text-r')
             .item('BadQty').head('불량수량', '').body(null, 'text-r')
@@ -355,6 +458,7 @@ let app = new Vue({
             .item('Density').head('밀도', '').body(null, 'text-r')
             .item('IsAccident').head('사고지', '')
                 .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
+            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
             .loadTemplate('#grid', 'rows.Query');
 
             // 참고화면 : FrmWPDSFCWorkReport_03_KNIC
