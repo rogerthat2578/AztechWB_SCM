@@ -244,7 +244,7 @@ let app = new Vue({
                 .ajax(paramsList, [function (data){
                     if (data.length == 0) {
                         alert('데이터가 없습니다.');
-                        return false;
+                        history.back(-1);
                     }
                     if(data[0].Status && data[0].Status != 0){
                         alert(data[0].Result);
@@ -595,7 +595,7 @@ let app = new Vue({
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                     vThis.rows.Query[attribute].RowEdit = true;
-                    if (document.getElementByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
+                    if (document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
                         document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.remove('possible-input-data');
                         document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
                     } else {

@@ -43,7 +43,7 @@
 			<div class="top-data-wrap">
 				<div class="data-row-wrap">
 					<div class="data-row">
-						<ul class="input-wrap wid-350">
+						<!-- <ul class="input-wrap wid-350">
 							<li class="name essential">
 								<label>작업예정일</label>
 							</li>
@@ -52,16 +52,44 @@
 								<span>-</span>
 								<input type="text" name="WorkDateTo" class="datepicker" v-model.trim="queryForm.WorkDateTo" gx-datepicker="queryForm.WorkDateTo" @change="updateDate">
 							</li>
-						</ul>
+						</ul> -->
 
 						<ul class="input-wrap wid-350">
-							<li class="name">
+							<li class="name essential">
 								<label>작업지시일</label>
 							</li>
 							<li class="date">
 								<input type="text" name="WorkOrderDateFr" class="datepicker" v-model.trim="queryForm.WorkOrderDateFr" gx-datepicker="queryForm.WorkOrderDateFr" @change="updateDate">
 								<span>-</span>
 								<input type="text" name="WorkOrderDateTo" class="datepicker" v-model.trim="queryForm.WorkOrderDateTo" gx-datepicker="queryForm.WorkOrderDateTo" @change="updateDate">
+							</li>
+						</ul>
+
+						<ul class="input-wrap">
+							<li class="name">
+								<label>진행상태</label>
+							</li>
+							<li>
+								<div class="select">
+									<input type="text" class="drop-box-input" name="SMCurrStatusName" v-model="queryForm.SMCurrStatusName" @click="openCloseDropBox('SMCurrStatusName')" readonly>
+									<ul class="drop-box">
+										<li v-for="item in SMCurrStatusList" @click="openCloseDropBox('SMCurrStatusName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+
+						<ul class="input-wrap wid-360">
+							<li class="name">
+								<label>의뢰부서</label>
+							</li>
+							<li class="txt">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="DeptName" v-model="queryForm.DeptName" @click="openCloseDropBox('DeptName')" @input="likeSelect2('Dept')">
+									<ul class="drop-box">
+										<li v-for="item in DeptNameList" @click="openCloseDropBox('DeptName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
 							</li>
 						</ul>
 					</div>
@@ -74,7 +102,8 @@
 								<input type="text" name="ItemNo" v-model="queryForm.ItemNo">
 							</li>
 						</ul>
-						<ul class="input-wrap wid-350">
+
+						<ul class="input-wrap">
 							<li class="name">
 								<label>품명</label>
 							</li>
@@ -82,14 +111,24 @@
 								<input type="text" name="ItemName" v-model="queryForm.ItemName">
 							</li>
 						</ul>
-						<ul class="input-wrap">
+
+						<ul class="input-wrap wid-350">
+							<li class="name">
+								<label>Buyer No</label>
+							</li>
+							<li class="txt">
+								<input type="text" name="BuyerNo" v-model="queryForm.BuyerNo">
+							</li>
+						</ul>
+
+						<!-- <ul class="input-wrap">
 							<li class="name">
 								<label>규격</label>
 							</li>
 							<li class="txt">
 								<input type="text" name="Spec" v-model="queryForm.Spec">
 							</li>
-						</ul>
+						</ul> -->
 					</div>
 				</div>
 				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>
@@ -102,8 +141,8 @@
 							<span class="web">조회</span>
 						</button>
 						<button class="btn-stlye-04" @Click="ddddd">
-							<img src="img/ic_04.png" alt="조회버튼이미지">
-							<span class="web">엑셀다운테스트</span>
+							<img src="img/ic_05.png" alt="다운로드">
+							<span class="web">엑셀 다운로드</span>
 						</button>
 					</div>
 

@@ -14,15 +14,28 @@ let app = new Vue({
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
-            WorkDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            WorkOrderDateFr: '',
-            WorkOrderDateTo: '',
+            // WorkDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            // WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            WorkOrderDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            WorkOrderDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             ItemName: '',
             ItemNo: '',
             Spec: '',
-            CustSeq: ''
+            CustSeq: '',
+            BuyerNo: '',
+            SMCurrStatus: 0,
+            SMCurrStatusName: '전체',
+            Dept: 0,
+            DeptName: '전체',
         },
+
+        // 진행상태
+        SMCurrStatusList: [],
+        // 부서 리스트
+        DeptNameList: [],
+        // 부서 리스트
+        KeepDeptNameList: [],
+
         keyCombi: {
             isKeyHold: false,
             Control: false,
@@ -39,6 +52,17 @@ let app = new Vue({
             if(e.type === 'click'){
                 if(document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
+                }
+
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                    document.getElementsByClassName('drop-box')[0].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[1].style.display = 'none';
+                    // 부서 Select Box 초기화
+                    if ((vThis.DeptNameList.length == 1 && (vThis.DeptNameList[0].val == '전체' || vThis.DeptNameList[0].val == '')) || vThis.queryForm.DeptName.replace(/\ /g, '') == '') {
+                        vThis.DeptNameList = vThis.KeepDeptNameList;
+                        vThis.queryForm.Dept = vThis.KeepDeptNameList[0].key;
+                        vThis.queryForm.DeptName = vThis.KeepDeptNameList[0].val;
+                    }
                 }
             }
 
@@ -83,6 +107,51 @@ let app = new Vue({
             }
         },
 
+        // Select box
+        openCloseDropBox: function(inputEleName = '', useYN = '') {
+            if (useYN === 'N') return false;
+
+            let e = event;
+            
+            if (e.target.nodeName.toUpperCase() === 'LI') {
+                if (inputEleName.length == 0) inputEleName = e.target.parentNode.previousElementSibling.name;
+                this.queryForm[inputEleName.replace('Name', '')] = e.target.value;
+                this.queryForm[inputEleName] = e.target.innerText;
+                e.target.parentNode.style.display = 'none';
+            } else {
+                if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
+                    e.target.nextElementSibling.style.display = 'block';
+                else
+                    e.target.nextElementSibling.style.display = 'none';
+            }
+        },
+
+        // Select Box input에 입력 시 리스트 변경
+        likeSelect2: function(str = "Dept") {
+            let e = event;
+            let vThis = this;
+
+            let strKeepConcat = 'Keep' + str + 'NameList';
+            let strConcat = str + 'NameList';
+
+            let likeIndex = [];
+            if (GX._METHODS_.nvl(e.target.value).length > 0) {
+                vThis[strKeepConcat].forEach((v, i) => {
+                    if (v.val.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) likeIndex.push(i);
+                });
+            }
+
+            if (likeIndex.length > 0) {
+                let arrTemp = [];
+                likeIndex.forEach(v => {
+                    arrTemp.push(vThis[strKeepConcat][v]);
+                });
+                vThis[strConcat] = arrTemp;
+            } else {
+                vThis[strConcat] = vThis[strKeepConcat];
+            }
+        },
+
         // DateBox 업데이트
         updateDate: function(v = '', o = null) {
             if (v && o) {
@@ -112,7 +181,12 @@ let app = new Vue({
             if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
                 this.rows.Query[idx][evtTarget.name] = evtTarget.value;
                 this.rows.Query[idx].RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('possible-input-data')) {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
+                } else {
+                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data')
+                }
             }
         },
 
@@ -123,10 +197,10 @@ let app = new Vue({
             vThis.rows.Query = [];
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
-            vThis.queryForm.WorkDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            vThis.queryForm.WorkDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
-            vThis.queryForm.WorkOrderDateFr = '';
-            vThis.queryForm.WorkOrderDateTo = '';
+            // vThis.queryForm.WorkDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            // vThis.queryForm.WorkDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            vThis.queryForm.WorkOrderDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅;
+            vThis.queryForm.WorkOrderDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅;
             vThis.queryForm.ItemName = '';
             vThis.queryForm.ItemNo = '';
             vThis.queryForm.Spec = '';
@@ -210,6 +284,8 @@ let app = new Vue({
                     if(params[k].length > 0 && params[k].indexOf('-') > -1)
                         params[k] = params[k].replace(/\-/g, '');
                 }
+                else if (k == 'Dept') params.DeptSeq = params[k];
+                else if (k == 'SMCurrStatus') params.ProgStatus = params[k];
             });
             
             vThis.rows.Query = [];
@@ -354,29 +430,52 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
+            /**조회조건 Select box setting
+            * 진행상태(구매): SMCurrStatusList
+            * 부서: DeptNameList
+            */
+            const objSelBoxQueryForm = {'SMCurrStatusList': 'PDWorkOrder', 'DeptNameList': 'PODept'};
+            Object.keys(objSelBoxQueryForm).map(k => {
+                GX._METHODS_
+                .setMethodId('SCMCodeHelp')
+                .ajax([{ QryType: objSelBoxQueryForm[k] }], [function (data){
+                    for (let i in data) {
+                        if (data.hasOwnProperty(i)) {
+                            vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
+                        }
+                    }
+                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
+                }]);
+            });
+
             GX.VueGrid
             //.bodyRow(':class="{\'check\':isChecked(index)}"')
             .item('ROWNUM').head('No.', '')
             .item('WorkOrderDate').head('작업지시일', '')
-            .item('WorkDate').head('작업예정일', '')
-            .item('WorkOrderNo').head('작업지시번호', '')
-            .item('ItemName').head('품명', '').body(null, 'text-l')
+            .item('WorkDate').head('납기일', '') // 작업예정일
+            .item('WorkPlanDate').head('납품예정일', '') // 추가
+            .item('DeptName').head('의뢰부서', '').body(null, 'text-l')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('Spec').head('규격', '').body(null, 'text-l')
+            .item('ItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
+                .body('<div style="width: 90px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{row.ItemName}}</div>', 'text-l')
+            .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
+            // .item('Spec').head('규격', '').body(null, 'text-l')
             .item('OrderQty', { styleSyntax: 'style="width: 92px;"' }).head('지시수량', '')
-                .body('<div style="width: 90px;"><input type="number" name="OrderQty" attr-condition="" :value="row.OrderQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent; width: 100%;" /></div>')
+                .body('<div style="width: 90px;"><input type="number" name="OrderQty" attr-condition="" :value="row.OrderQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent; width: 100%;" /></div>', 'possible-input-data')
             .item('CutInPutDate').head('재단최초투입일', '')
-                .body('<div><input type="text" class="datepicker" name="CutInPutDate" gx-datepicker="" attr-condition="" :value="row.CutInPutDate" @input="updateRowData(index)" @click="applyAll(\'CutInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .body('<div><input type="text" class="datepicker" name="CutInPutDate" gx-datepicker="" attr-condition="" :value="row.CutInPutDate" @input="updateRowData(index)" @click="applyAll(\'CutInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>', 'possible-input-data')
             .item('CutQty').head('재단량', '')
-                .body('<div><input type="number" name="CutQty" attr-condition="" :value="row.CutQty" @input="updateRowData(index)" @blur="compareQty(index, \'CutQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+                .body('<div><input type="number" name="CutQty" attr-condition="" :value="row.CutQty" @input="updateRowData(index)" @blur="compareQty(index, \'CutQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>', 'possible-input-data')
             .item('SewInPutDate').head('봉제최초투입일', '')
-                .body('<div><input type="text" class="datepicker" name="SewInPutDate" gx-datepicker="" attr-condition="" :value="row.SewInPutDate" @input="updateRowData(index)" @click="applyAll(\'SewInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .body('<div><input type="text" class="datepicker" name="SewInPutDate" gx-datepicker="" attr-condition="" :value="row.SewInPutDate" @input="updateRowData(index)" @click="applyAll(\'SewInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>', 'possible-input-data')
             .item('SewQty').head('봉제량', '')
-                .body('<div><input type="number" name="SewQty" attr-condition="" :value="row.SewQty" @input="updateRowData(index)" @blur="compareQty(index, \'SewQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+                .body('<div><input type="number" name="SewQty" attr-condition="" :value="row.SewQty" @input="updateRowData(index)" @blur="compareQty(index, \'SewQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>', 'possible-input-data')
             .item('FinishInPutDate').head('완성투입일', '')
-                .body('<div><input type="text" class="datepicker" name="FinishInPutDate" gx-datepicker="" attr-condition="" :value="row.FinishInPutDate" @input="updateRowData(index)" @click="applyAll(\'FinishInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>')
+                .body('<div><input type="text" class="datepicker" name="FinishInPutDate" gx-datepicker="" attr-condition="" :value="row.FinishInPutDate" @input="updateRowData(index)" @click="applyAll(\'FinishInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>', 'possible-input-data')
             .item('FinishQty').head('완성량', '')
-                .body('<div><input type="number" name="FinishQty" attr-condition="" :value="row.FinishQty" @input="updateRowData(index)" @blur="compareQty(index, \'FinishQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>')
+                .body('<div><input type="number" name="FinishQty" attr-condition="" :value="row.FinishQty" @input="updateRowData(index)" @blur="compareQty(index, \'FinishQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>', 'possible-input-data')
+            .item('WorkOrderNo').head('작업지시번호', '')
             .loadTemplate('#grid', 'rows.Query');
         }
     },
@@ -391,7 +490,12 @@ let app = new Vue({
                 if (!isNaN(attribute)) {
                     vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
                     vThis.rows.Query[attribute].RowEdit = true;
-                    document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    if (document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.remove('possible-input-data');
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    } else {
+                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
+                    }
                     // 그리드 날짜 비교
                     vThis.compareDate(attribute, GX.Calendar.openerName);
                 } else{
