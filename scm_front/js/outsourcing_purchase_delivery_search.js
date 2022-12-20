@@ -15,7 +15,7 @@ let app = new Vue({
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
-            WorkDate: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            WorkDateFr: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             WorkDateTo: new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             GoodItemName: '',
             GoodItemNo: '',
@@ -190,7 +190,7 @@ let app = new Vue({
             vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
-            vThis.queryForm.WorkDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            vThis.queryForm.WorkDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.WorkDateTo = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.WorkOrderNo = '';
             vThis.queryForm.GoodItemName = '';
@@ -434,7 +434,8 @@ let app = new Vue({
             .item('ROWNUM').head('No.', '')
             .item('WorkDate').head('작업일', '')
             .item('GoodItemNo').head('품번', '').body(null, 'text-l')
-            .item('GoodItemName').head('품명', '').body(null, 'text-l')
+            .item('GoodItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
+                .body('<div style="width: 90px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{row.GoodItemName}}</div>', 'text-l')
             .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
             // .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
             // .item('ProcName').head('공정', '').body(null, 'text-l')
