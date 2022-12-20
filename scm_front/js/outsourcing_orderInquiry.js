@@ -487,6 +487,11 @@ let app = new Vue({
                 alert("선택된 데이터가 없습니다.");
             }
         },
+
+        /**엑셀 다운로드 xlxs */
+        excelDownload: function () {
+            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
+        },
     },
 
     created(){

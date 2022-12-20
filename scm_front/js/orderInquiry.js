@@ -457,6 +457,11 @@ let app = new Vue({
                 alert('파라메터 세팅 중<br>예외사항 발생.');
             }
         },
+
+        /**엑셀 다운로드 xlxs */
+        excelDownload: function () {
+            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
+        },
     },
     created() {
         let vThis = this;

@@ -324,4 +324,32 @@ GX._METHODS_ = {
 			str = defaultStr;
 		return str;
 	},
+	/**엑셀 다운로드 (확장자: xlsx)
+	 * 옵션 raw (boolean): 숫자도 문자 취급 (default: false 이지만 true로 고정)
+	 * @param table element
+	 * @param 파일명, 시트명 (default: document.title)
+	 */
+	excelDownload: function (eleTable) {
+		// 파라메터에 데이터 확인 - table > tbody > tr 있는지 확인
+		if (eleTable && typeof eleTable === 'object') {
+			if (eleTable.getElementsByTagName('tbody').length > 0) {
+				if (eleTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr').length) {
+					const strDateTime =  new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"}).replace(/[^0-9]/g, '');
+					let strName = document.title ? document.title + '_' + strDateTime : '' + strDateTime;
+
+					let wb = XLSX.utils.table_to_book(eleTable, {sheet: strName, raw: true});
+					XLSX.writeFile(wb, (strName + '.xlsx'));
+				} else {
+					alert('조회 결과가 있어야 엑셀 다운로드가 가능합니다.');
+					return false;
+				}
+			} else {
+				alert('테이블 비정상');
+				return false;
+			}
+		} else {
+			alert('엑셀 다운로드 실패');
+			return false;
+		}
+	},
 };

@@ -337,6 +337,8 @@ let app = new Vue({
                     params[k + 'Seq'] = params[k];
                 }
             });
+
+            let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
             
             vThis.rows.Query = [];
             vThis.rows.QuerySummary = {};
@@ -360,10 +362,21 @@ let app = new Vue({
                                         data[i][k.replace('sum', '')] = GX._METHODS_.nvl(data[i][k.replace('sum', '')]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                                     } else
                                         summaryList[k] += 0;
+
+                                    if (GX._METHODS_.nvl(summaryList[k].toString().split('.')[1]).length > 0)
+                                        summaryList[k] = parseFloat(summaryList[k].toFixed(2));
                                 }
                             });
                         }
                     }
+
+                    // 추가. 단가 = 금액합 / 수량합
+                    let valSumPrice = summaryList.sumPrice.toString().replace(/\,/g, '');
+                    let valSumQty = summaryList.sumQty.toString().replace(/\,/g, '');
+                    if (isNaN(valSumPrice)) valSumPrice = 0; // 분자
+                    if (isNaN(valSumQty)) valSumQty = 1; // 분모
+                    else { if (parseFloat(valSumQty) <= 0) valSumQty = 1 }
+                    summaryList.sumPrice = (parseFloat(valSumPrice) / parseFloat(valSumQty)).toFixed(2).toString().replace(regex, '$1,');
 
                     // bind data, bind summary data
                     vThis.rows.Query = data;
@@ -405,6 +418,11 @@ let app = new Vue({
             } else {
                 alert('파라메터 세팅 중<br>예외사항 발생.');
             }
+        },
+
+        /**엑셀 다운로드 xlxs */
+        excelDownload: function () {
+            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
         },
     },
     created() {

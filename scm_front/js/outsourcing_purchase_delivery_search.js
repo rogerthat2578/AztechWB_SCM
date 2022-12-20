@@ -355,7 +355,7 @@ let app = new Vue({
                         }
                     }
 
-                    // 추가. 단가 = 금액합 / 수량합
+                    // 추가. 단가 = 단가합 / 수량합
                     let valSumPrice = summaryList.sumPrice.toString().replace(/\,/g, '');
                     let valSumProdQty = summaryList.sumProdQty.toString().replace(/\,/g, '');
                     if (isNaN(valSumPrice)) valSumPrice = 0; // 분자
@@ -371,6 +371,11 @@ let app = new Vue({
 
                 if (typeof callback === 'function') callback();
             }]);
+        },
+
+        /**엑셀 다운로드 xlxs */
+        excelDownload: function () {
+            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
         },
     },
 
