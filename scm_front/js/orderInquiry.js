@@ -398,6 +398,9 @@ let app = new Vue({
                                         data[i][k.replace('sum', '')] = GX._METHODS_.nvl(data[i][k.replace('sum', '')]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                                     } else
                                         summaryList[k] += 0;
+
+                                    if (GX._METHODS_.nvl(summaryList[k].toString().split('.')[1]).length > 0)
+                                        summaryList[k] = parseFloat(summaryList[k].toFixed(2));
                                 }
                             });
                         }

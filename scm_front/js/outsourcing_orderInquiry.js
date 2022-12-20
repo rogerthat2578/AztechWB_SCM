@@ -400,6 +400,9 @@ let app = new Vue({
                                         summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
                                     else
                                         summaryList[k] += 0;
+                                    
+                                    if (GX._METHODS_.nvl(summaryList[k].toString().split('.')[1]).length > 0)
+                                        summaryList[k] = parseFloat(summaryList[k].toFixed(2));
                                 }
                             });
                         }
