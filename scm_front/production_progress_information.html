@@ -67,20 +67,6 @@
 
 						<ul class="input-wrap">
 							<li class="name">
-								<label>진행상태</label>
-							</li>
-							<li>
-								<div class="select">
-									<input type="text" class="drop-box-input" name="SMCurrStatusName" v-model="queryForm.SMCurrStatusName" @click="openCloseDropBox('SMCurrStatusName')" readonly>
-									<ul class="drop-box">
-										<li v-for="item in SMCurrStatusList" @click="openCloseDropBox('SMCurrStatusName')" :value="item.key">{{item.val}}</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-
-						<ul class="input-wrap wid-360">
-							<li class="name">
 								<label>의뢰부서</label>
 							</li>
 							<li class="txt">

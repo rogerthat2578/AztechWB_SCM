@@ -23,14 +23,10 @@ let app = new Vue({
             Spec: '',
             CustSeq: '',
             BuyerNo: '',
-            SMCurrStatus: 0,
-            SMCurrStatusName: '전체',
             Dept: 0,
             DeptName: '전체',
         },
 
-        // 진행상태
-        SMCurrStatusList: [],
         // 부서 리스트
         DeptNameList: [],
         // 부서 리스트
@@ -50,13 +46,12 @@ let app = new Vue({
 
             // Click Event
             if(e.type === 'click'){
-                if(document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
+                if (document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu') {
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
 
-                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                if (document.getElementsByClassName('drop-box')[0].style.display === 'block' && e.target.getAttribute('class') !== 'drop-box-input') {
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
-                    document.getElementsByClassName('drop-box')[1].style.display = 'none';
                     // 부서 Select Box 초기화
                     if ((vThis.DeptNameList.length == 1 && (vThis.DeptNameList[0].val == '전체' || vThis.DeptNameList[0].val == '')) || vThis.queryForm.DeptName.replace(/\ /g, '') == '') {
                         vThis.DeptNameList = vThis.KeepDeptNameList;
@@ -285,7 +280,6 @@ let app = new Vue({
                         params[k] = params[k].replace(/\-/g, '');
                 }
                 else if (k == 'Dept') params.DeptSeq = params[k];
-                else if (k == 'SMCurrStatus') params.ProgStatus = params[k];
             });
             
             vThis.rows.Query = [];
@@ -387,10 +381,9 @@ let app = new Vue({
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
             /**조회조건 Select box setting
-            * 진행상태(구매): SMCurrStatusList
             * 부서: DeptNameList
             */
-            const objSelBoxQueryForm = {'SMCurrStatusList': 'PDWorkOrder', 'DeptNameList': 'PODept'};
+            const objSelBoxQueryForm = {'DeptNameList': 'PODept'};
             Object.keys(objSelBoxQueryForm).map(k => {
                 GX._METHODS_
                 .setMethodId('SCMCodeHelp')
