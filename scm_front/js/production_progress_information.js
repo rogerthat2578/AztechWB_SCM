@@ -301,6 +301,7 @@ let app = new Vue({
                                 data[i].RowEdit = false;
                                 data[i].WorkOrderDate = data[i].WorkOrderDate.length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
                                 data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
+                                data[i].WorkPlanDate = data[i].WorkPlanDate.length == 8 ? (data[i].WorkPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkPlanDate;
 
                                 if(data[i].CutInPutDate != null && data[i].CutInPutDate.replace(/\ /g, '') != '' && data[i].CutInPutDate != undefined){
                                     data[i].CutInPutDate = data[i].CutInPutDate.length == 8 ? (data[i].CutInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].CutInPutDate;
