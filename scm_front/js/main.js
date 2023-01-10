@@ -211,7 +211,7 @@ let app = new Vue({
 				// 구매. 발주/납품 이월/당월/누계/잔량/납품율
 				if (data.length > 0) {
 					Object.keys(vThis.rows.PODelvQuery).map(k => {
-						vThis.rows.PODelvQuery[k] = data[0][k] ? Math.round(data[0][k]).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : 0;
+						vThis.rows.PODelvQuery[k] = typeof data[0][k] === 'number' ? Math.round(data[0][k]).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : 0;
 					})
 				}
 			}, function (data) {
@@ -219,7 +219,7 @@ let app = new Vue({
 				// 외주. 발주/납품 이월/당월/누계/잔량/납품율
 				if (data.length > 0) {
 					Object.keys(vThis.rows.OrdRptQuery).map(k => {
-						vThis.rows.OrdRptQuery[k] = data[0][k] ? Math.round(data[0][k]).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : 0;
+						vThis.rows.OrdRptQuery[k] = data[0][k] === 'number' ? Math.round(data[0][k]).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : 0;
 					})
 				}
 			}, function (data) {
@@ -293,6 +293,7 @@ let app = new Vue({
 							let SumAvgAmt = 0;
 							Object.keys(data[i]).map(k => {
 								if (k.indexOf('DomAmt') > -1) {
+									data[i][k] = typeof data[i][k] === 'number' ? data[i][k] : 0;
 									SumAvgAmt += data[i][k];
 									if (data[i][k].toString().indexOf('.') > -1) obj[k] = data[i][k].toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
 									else obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
@@ -311,10 +312,10 @@ let app = new Vue({
 					let arrPOAmtValue = [], arrDelvAmtValue = [], arrBadRateValue = [], arrOkRateValue = [];
 					Object.keys(data[0]).map(k => {
 						if (k.indexOf('DomAmt') > -1) {
-							arrPOAmtValue.push(data[0][k].toString());
-							arrDelvAmtValue.push(data[1][k].toString());
-							arrOkRateValue.push(data[2][k].toString());
-							arrBadRateValue.push(data[3][k].toString());
+							arrPOAmtValue.push((typeof data[0][k] === 'number' ? data[0][k] : 0).toString());
+							arrDelvAmtValue.push((typeof data[1][k] === 'number' ? data[1][k] : 0).toString());
+							arrOkRateValue.push((typeof data[2][k] === 'number' ? data[2][k] : 0).toString());
+							arrBadRateValue.push((typeof data[3][k] === 'number' ? data[3][k] : 0).toString());
 						}
 					});
 					vThis.POAmtValue = arrPOAmtValue;
@@ -333,6 +334,7 @@ let app = new Vue({
 							let SumAvgAmt = 0;
 							Object.keys(data[i]).map(k => {
 								if (k.indexOf('DomAmt') > -1) {
+									data[i][k] = typeof data[i][k] === 'number' ? data[i][k] : 0;
 									SumAvgAmt += data[i][k];
 									if (data[i][k].toString().indexOf('.') > -1) obj[k] = data[i][k].toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
 									else obj[k] = data[i][k].toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
@@ -351,10 +353,10 @@ let app = new Vue({
 					let arrOrdAmtValue = [], arrRptAmtValue = [], arrBadRateValue = [], arrOkRateValue = [];
 					Object.keys(data[0]).map(k => {
 						if (k.indexOf('DomAmt') > -1) {
-							arrOrdAmtValue.push(data[0][k].toString());
-							arrRptAmtValue.push(data[1][k].toString());
-							arrOkRateValue.push(data[2][k].toString());
-							arrBadRateValue.push(data[3][k].toString());
+							arrOrdAmtValue.push((typeof data[0][k] === 'number' ? data[0][k] : 0).toString());
+							arrRptAmtValue.push((typeof data[1][k] === 'number' ? data[1][k] : 0).toString());
+							arrOkRateValue.push((typeof data[2][k] === 'number' ? data[2][k] : 0).toString());
+							arrBadRateValue.push((typeof data[3][k] === 'number' ? data[3][k] : 0).toString());
 						}
 					});
 					vThis.OrdAmtValue = arrOrdAmtValue;
