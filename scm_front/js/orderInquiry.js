@@ -465,6 +465,11 @@ let app = new Vue({
         excelDownload: function () {
             GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
         },
+
+        /**비고 클릭 시 alert 대신 Toast 띄우기 */
+        alertToast: function (text = '') {
+            toastr.info(text);
+        },
     },
     created() {
         let vThis = this;
@@ -522,7 +527,7 @@ let app = new Vue({
                 .body('<div style="width: 90px;"><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent; width: 100%;" /></div>')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
             .item('ItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
-            .body('<div style="width: 90px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{row.ItemName}}</div>', 'text-l')
+                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.ItemName)">{{row.ItemName}}</div>', 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
             .item('Qty').head('발주수량', '').body(null, 'text-r')
@@ -535,6 +540,7 @@ let app = new Vue({
             .item('DelvCurAmt').head('납품금액', '').body(null, 'text-r')
             .item('WHName').head('입고창고', '')
             .item('Remark1').head('비고', '')
+                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.Remark1)">{{row.Remark1}}</div>', 'text-l')
             .item('OrderItemName').head('Order품명', '').body(null, 'text-l')
             .item('OrderItemNo').head('Order품번', '').body(null, 'text-l')
             // .item('OrderSpec').head('Order규격', '').body(null, 'text-l')

@@ -7,4 +7,5 @@
 	'js/lib/jquery-3.6.0.js',
 	'js/lib/chart.min-3.9.1.js',
 	'js/lib/xlsx.mini.min.js',
+	'js/lib/toastr.js',
 ],'js/');

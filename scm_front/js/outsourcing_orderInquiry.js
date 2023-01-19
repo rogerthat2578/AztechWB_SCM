@@ -495,6 +495,11 @@ let app = new Vue({
         excelDownload: function () {
             GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
         },
+
+        /**비고 클릭 시 alert 대신 Toast 띄우기 */
+        alertToast: function (text = '') {
+            toastr.info(text);
+        },
     },
 
     created(){
@@ -576,7 +581,8 @@ let app = new Vue({
             .item('NonProgressQty').head('미진행수량', '').body(null, 'text-r')
             // .item('OKQty').head('양품수량', '').body(null, 'text-r')
             // .item('BadQty').head('불량수량', '').body(null, 'text-r')
-            .item('Remark').head('특이사항', '').body(null, 'text-l')
+            .item('Remark').head('특이사항', '')
+                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.Remark)">{{row.Remark}}</div>', 'text-l')
             .item('WorkOrderNo').head('작업지시번호', '')
             .loadTemplate('#grid', 'rows.Query');
         }

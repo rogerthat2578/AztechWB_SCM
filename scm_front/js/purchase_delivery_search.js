@@ -424,6 +424,11 @@ let app = new Vue({
         excelDownload: function () {
             GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
         },
+
+        /**비고 클릭 시 alert 대신 Toast 띄우기 */
+        alertToast: function (text = '') {
+            toastr.info(text);
+        },
     },
     created() {
         let vThis = this;
@@ -483,7 +488,8 @@ let app = new Vue({
             .item('OrderItemNo').head('Order품번', '').body(null, 'text-l')
             .item('BuyerNo').head('Buyer No.', '').body(null, 'text-l')
             .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('ItemName').head('품명', '').body(null, 'text-l')
+            .item('ItemName').head('품명', '')
+                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.ItemName)">{{row.ItemName}}</div>', 'text-l')
             .item('Spec').head('규격', '').body(null, 'text-l')
             .item('UnitName').head('단위', '')
             .item('Price').head('납품단가', '').body(null, 'text-r')
@@ -501,6 +507,7 @@ let app = new Vue({
             .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
             .item('WHName').head('창고', '')
             .item('Remark').head('비고', '')
+                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.Remark)">{{row.Remark}}</div>', 'text-l')
             .item('SizeName').head('사이즈', '')
             // .item('Purpose').head('용도', '')
             .item('ColorNo').head('색상', '')
