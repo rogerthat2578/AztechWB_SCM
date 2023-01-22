@@ -670,22 +670,28 @@ GX = {
 			
 			this.obj.className = containerClass || 'loading-spinner vertical-center';
 			this.obj.innerHTML = spinnerHtml;
-			/*
-			this.obj ==
-			<div class="loading-wrap">
-			<div class="container"><img src="img/loading.gif" alt=""><span>처리중입니다...</span></div>
-			</div>
-			*/
-			if (appendPosition == 'append')
-			document.body.append(this.obj);
-			else if (appendPosition == 'prepend')
-			document.body.prepend(this.obj);
+			
+			if (appendPosition == 'append') {
+				if (document.getElementsByTagName('main')[0] == null || document.getElementsByTagName('main')[0] == undefined) {
+					document.body.append(this.obj);
+				} else {
+					document.getElementsByTagName('main')[0].append(this.obj);
+				}
+			} else if (appendPosition == 'prepend') {
+				if (document.getElementsByTagName('main')[0] == null || document.getElementsByTagName('main')[0] == undefined) {
+					document.body.prepend(this.obj);
+				} else {
+					document.getElementsByTagName('main')[0].prepend(this.obj);
+				}
+			}
 		},
 		show: function () {
-			this.obj.style.display = "block";
+			document.getElementById('loading').style.display = 'block';
+			// this.obj.style.display = "block";
 		},
 		hide: function () {
-			this.obj.style.display = "none";
+			document.getElementById('loading').style.display = 'none';
+			// this.obj.style.display = "none";
 		}
 	},
 	zeroFill: function (num, len) {

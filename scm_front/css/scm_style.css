@@ -1580,3 +1580,16 @@ main {
   color: white;
   height: 3.4rem;
 }
+
+.akfvndtjs {
+  background-color: #ff0000;
+}
+.akfvndtjs:after {
+  content:"";
+  position: absolute;
+  top: -40px;
+  right: 100px;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 30px solid #ff0000;
+}
