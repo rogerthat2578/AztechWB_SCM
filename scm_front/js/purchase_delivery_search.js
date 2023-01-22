@@ -511,6 +511,7 @@ let app = new Vue({
             .item('SizeName').head('사이즈', '')
             // .item('Purpose').head('용도', '')
             .item('ColorNo').head('색상', '')
+                .body('<div style="width: 140px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.ColorNo)">{{row.ColorNo}}</div>', 'text-l')
             // .item('OrderItemName').head('Order품명', '').body(null, 'text-l')
             // .item('UseSelect').head('사용부위', '').body(null, 'text-l')
             // .item('BangJukTypeName').head('방적형태', '')

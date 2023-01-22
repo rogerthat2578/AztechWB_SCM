@@ -546,8 +546,10 @@ let app = new Vue({
             // .item('OrderSpec').head('Order규격', '').body(null, 'text-l')
             .item('BuyerNo').head('BuyerNo.', '').body(null, 'text-l')
             .item('SizeName').head('사이즈', '')
-            .item('ColorNo').head('색상', '').body(null, 'text-l')
-            .item('UseSelect').head('사용부위', '').body(null, 'text-l')
+            .item('ColorNo').head('색상', '')
+                .body('<div style="width: 140px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.ColorNo)">{{row.ColorNo}}</div>', 'text-l')
+            .item('UseSelect').head('사용부위', '')
+                .body('<div style="width: 140px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.UseSelect)">{{row.UseSelect}}</div>', 'text-l')
             .loadTemplate('#grid', 'rows.Query');
         }
     },
