@@ -352,4 +352,86 @@ GX._METHODS_ = {
 			return false;
 		}
 	},
+
+	/**
+	 * 비밀번호변경, 로그아웃 레이어 띄우기, 숨기기
+	 */
+	userLayerShowHide: function () {
+		if (document.getElementsByClassName('user-layer')[0].classList.length === 1) document.getElementsByClassName('user-layer')[0].classList.add('invisible');
+		else if (document.getElementsByClassName('user-layer')[0].classList.length === 2) document.getElementsByClassName('user-layer')[0].classList.remove('invisible');
+	},
+	/**
+	 * 로그아웃, 로그인 화면으로 이동
+	 */
+	logout: function () {
+		GX.Cookie.set('UserId', '', 0);
+		GX.Cookie.set('UserSeq', '', 0);
+		GX.Cookie.set('UserName', '', 0);
+		GX.Cookie.set('EmpSeq', '', 0);
+		GX.Cookie.set('DeptName', '', 0);
+		GX.Cookie.set('DeptSeq', '', 0);
+		GX.Cookie.set('CompanySeq', '', 0);
+		GX.Cookie.set('BizUnit', '', 0);
+		GX.Cookie.set('BizUnitName', '', 0);
+		GX.Cookie.set('BizUnit_JsonFormatStringType', '', 0);
+		GX.Cookie.set('CustSeq', '', 0); // 거래처코드
+		GX.Cookie.set('CustKind', '', 0); // 거래처타입
+		location.href = 'login.html';
+	},
+	/**
+	 * 비밀번호 변경 다이얼로그 띄우기
+	 */
+	changePwDialogShow: function () {
+		GX._METHODS_.userLayerShowHide();
+		document.getElementById('changePwDialog').style.display = 'block';
+	},
+	/**
+	 * 비밀번호 변경 다이얼로그 닫기
+	 */
+	changePwDialogHide: function () {
+		GX._METHODS_.pwChangePwInit();
+	},
+	/**
+	 * 변경 비밀번호 저장
+	 */
+	saveChangePw: function () {
+		alert('기능 개발중...');
+		// let valNowPw = document.getElementById('nowPw').value;
+		// let valNewPw = document.getElementById('newPw').value;
+		// let valNewPwChk = document.getElementById('newPwChk').value;
+		// let sameNewPw = document.getElementById('pNewPwChk').style.color == 'green' ? true : false;
+	},
+	/**
+	 * 비밀번호 변경 다이얼로그 내의 내용 초기화
+	 */
+	pwChangePwInit: function () {
+		if (document.getElementById('changePwDialog').style.display === 'block') document.getElementById('changePwDialog').style.display = 'none';
+		document.getElementById('nowPw').value = '';
+		document.getElementById('newPw').value = '';
+		document.getElementById('newPwChk').value = '';
+		document.getElementById('pNowPw').innerText = '-';
+		document.getElementById('pNewPwChk').innerText = '-';
+		document.getElementById('pNowPw').style.color = 'white';
+		document.getElementById('pNewPwChk').style.color = 'white';
+	},
+	/**
+	 * 비밀번호 변경 - 신규 비밀번호 / 비밀번호 확인 칸에 입력했을때 비밀번호가 같은지 비교
+	 */
+	pwChk: function () {
+		let e = event;
+		if (e.type == 'keyup' && (e.target.id == 'newPw' || e.target.id == 'newPwChk')) {
+			let valNewPw = document.getElementById('newPw').value;
+			let valNewPwChk = document.getElementById('newPwChk').value;
+			if (valNewPw != valNewPwChk) {
+				document.getElementById('pNewPwChk').style.color = 'red';
+				document.getElementById('pNewPwChk').innerText = '비밀번호가 다릅니다.';
+			} else if (valNewPw == valNewPwChk && valNewPw.length > 0 && valNewPwChk.length > 0) {
+				document.getElementById('pNewPwChk').style.color = 'green';
+				document.getElementById('pNewPwChk').innerText = '비밀번호가 동일합니다.';
+			} else if (valNewPw == valNewPwChk && valNewPw.length == 0 && valNewPwChk.length == 0) {
+				document.getElementById('pNewPwChk').innerText = '-';
+				document.getElementById('pNewPwChk').style.color = 'white';
+			}
+		}
+	},
 };
