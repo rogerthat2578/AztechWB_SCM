@@ -1593,13 +1593,11 @@ main {
   border-radius: 2rem;
   float: left;
   top: 100%;
-  left: 92%;
-  /* left: 62%; */
+  left: 90%;
 }
 .user-layer:after {
   bottom: 100%;
-  left: 10%;
-  /* left: 50% */
+  left: 50%;
   border: solid transparent;
   content: " ";
   height: 0;
@@ -1607,7 +1605,7 @@ main {
   position: absolute;
   pointer-events: none;
   border-color: rgba(136, 183, 213, 0);
-  border-bottom-color: #b5bfc8;
+  border-bottom-color: #b5bfc8d4;
   border-width: 10px;
   margin-left: 10px;
 }
