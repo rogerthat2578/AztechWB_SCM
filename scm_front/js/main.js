@@ -419,13 +419,6 @@ let app = new Vue({
 				}
 			});
 		},
-		fncTest1: function () {
-			GX._METHODS_.userLayerShowHide();
-			document.getElementById('changePwDialog').style.display = 'block';
-		},
-		fncTest2: function () {
-			document.getElementById('changePwDialog').style.display = 'none';
-		},
     },
     created() {
         let vThis = this;

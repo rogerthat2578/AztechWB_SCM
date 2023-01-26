@@ -30,12 +30,16 @@
 					<img src="img/ic_01.png" alt="알림이미지">
 					<span class="alarm">12</span>
 				</div> -->
-				<div class="user-info" @click="userInfoClick()">
-					<div class="frame">
+				<div class="user-info">
+					<div class="frame" onclick="GX._METHODS_.userLayerShowHide()">
 						<img src="img/user.png" alt="유저이미지">
 					</div>
 					<p class="user-name web" v-if="deptName !== ''">{{userName}}</p>
 					<p class="user-name web" v-else>{{deptName}} {{userName}}</p>
+					<div class="user-layer invisible">
+						<button onclick="GX._METHODS_.changePwDialogShow()">비밀번호 변경</button>
+						<button onclick="GX._METHODS_.logout()">로그아웃</button>
+					</div>
 				</div>
 			</div>
 		</header>
@@ -155,6 +159,35 @@
 					<button class="btn-stlye-06" @click="delRow">행 삭제하기</button>
 				</div>
 				<div class="data-table" id="grid"></div>
+			</div>
+
+			<div id="changePwDialog" class="change-pw-dialog-wrap" style="display: none;">
+				<div class="change-pw-dialog-container">
+					<div class="change-pw-dialog-title">비밀번호 변경</div>
+					<div class="change-pw-dialog-content">
+						<ul>
+							<li>
+								<label>기존 비밀번호</label>
+								<input type="text" id="nowPw" onkeyup="GX._METHODS_.pwChk()">
+								<p style="color: white;" id="pNowPw">-</p>
+							</li>
+							<li>
+								<label>신규 비밀번호</label>
+								<input type="password" id="newPw" onkeyup="GX._METHODS_.pwChk()">
+								<!-- <p style="color: white;" id="pNewPw">-</p> -->
+							</li>
+							<li>
+								<label>비밀번호 확인</label>
+								<input type="password" id="newPwChk" onkeyup="GX._METHODS_.pwChk()">
+								<p style="color: white;" id="pNewPwChk">-</p>
+							</li>
+						</ul>
+					</div>
+					<div class="change-pw-dialog-footer">
+						<button onclick="GX._METHODS_.saveChangePw()">저장</button>
+						<button onclick="GX._METHODS_.changePwDialogHide()">닫기</button>
+					</div>
+				</div>
 			</div>
 		</main>
 	</div>
