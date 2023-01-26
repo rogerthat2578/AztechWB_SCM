@@ -395,11 +395,40 @@ GX._METHODS_ = {
 	 * 변경 비밀번호 저장
 	 */
 	saveChangePw: function () {
-		alert('기능 개발중...');
-		// let valNowPw = document.getElementById('nowPw').value;
-		// let valNewPw = document.getElementById('newPw').value;
-		// let valNewPwChk = document.getElementById('newPwChk').value;
-		// let sameNewPw = document.getElementById('pNewPwChk').style.color == 'green' ? true : false;
+		let valNowPw = document.getElementById('nowPw').value;
+		let valNewPw = document.getElementById('newPw').value;
+		let valNewPwChk = document.getElementById('newPwChk').value;
+		let sameNewPw = document.getElementById('pNewPwChk').style.color == 'green' ? true : false;
+
+		// 비밀번호 확인: true, 비밀번호 칸들이 모두 채워져 있을 때
+		if (sameNewPw && valNowPw.length > 0 && valNewPw.length > 0 && valNewPwChk.length) {
+			// 기존 로그인 로직을 먼저 태우고 성공 시 update 로직 태우기
+			GX._METHODS_
+			.setMethodId('LoginTest')
+			.ajax([{ QryType: 'LoginCheck', CompansySeq: GX.Cookie.get('CompanySeq'), UserId: GX.Cookie.get('UserId'), UserPwd: valNowPw }], [function (data) {
+				if (data[0] != null && data[0].UserSeq != null) {
+					GX._METHODS_
+					.setMethodId('LoginTest')
+					.ajax([{ QryType: 'UpdatePw', CompansySeq: GX.Cookie.get('CompanySeq'), UserId: GX.Cookie.get('UserId'), UserPwd: valNewPw }], [function (data1) {
+						if (data1[0].Status == 0) { // 정상
+							GX._METHODS_.pwChangePwInit();
+							if (confirm('정상적으로 변경되었습니다. 다시 로그인하시겠습니까?')) {
+								GX._METHODS_.logout();
+							}
+						} else {
+							document.getElementById('nowPw').value = '';
+							document.getElementById('pNowPw').style.color = 'red';
+							document.getElementById('pNowPw').innerText = '비밀번호가 잘못되었습니다.';
+							alert(data1[0].Result);
+						}
+					}], true);
+				} else {
+					document.getElementById('nowPw').value = '';
+					document.getElementById('pNowPw').style.color = 'red';
+					document.getElementById('pNowPw').innerText = '비밀번호가 잘못되었습니다.';
+				}
+			}], true);
+		}
 	},
 	/**
 	 * 비밀번호 변경 다이얼로그 내의 내용 초기화
@@ -432,6 +461,9 @@ GX._METHODS_ = {
 				document.getElementById('pNewPwChk').innerText = '-';
 				document.getElementById('pNewPwChk').style.color = 'white';
 			}
+		} else if (e.type == 'keyup' && e.target.id == 'nowPw') {
+			document.getElementById('pNowPw').innerText = '-';
+			document.getElementById('pNowPw').style.color = 'white';
 		}
 	},
 };
