@@ -40,24 +40,6 @@ let app = new Vue({
             }
         },
 
-        userInfoClick: function() {
-            if (confirm('로그아웃 하시겠습니까?')) {
-                GX.Cookie.set('UserId', '', 0);
-                GX.Cookie.set('UserSeq', '', 0);
-                GX.Cookie.set('UserName', '', 0);
-                GX.Cookie.set('EmpSeq', '', 0);
-                GX.Cookie.set('DeptName', '', 0);
-                GX.Cookie.set('DeptSeq', '', 0);
-                GX.Cookie.set('CompanySeq', '', 0);
-                GX.Cookie.set('BizUnit', '', 0);
-                GX.Cookie.set('BizUnitName', '', 0);
-                GX.Cookie.set('BizUnit_JsonFormatStringType', '', 0);
-                GX.Cookie.set('CustSeq', '', 0); // 거래처코드
-				GX.Cookie.set('CustKind', '', 0); // 거래처타입
-                location.href = 'login.html';
-            }
-        },
-
         updateDate: function(v = '', o = null) {
             this.queryForm.DelvDate = v;
         },
