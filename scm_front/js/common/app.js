@@ -8,9 +8,4 @@
 	'js/lib/chart.min-3.9.1.js',
 	'js/lib/xlsx.mini.min.js',
 	'js/lib/toastr.js',
-	// slick grid test
-	'js/lib/slickGrid/lib/jquery-3.1.0.js',
-	'js/lib/slickGrid/lib/jquery.event.drag-2.3.0.js',
-	'js/lib/slickGrid/slick.core.js',
-	'js/lib/slickGrid/slick.grid.js',
 ],'js/');
