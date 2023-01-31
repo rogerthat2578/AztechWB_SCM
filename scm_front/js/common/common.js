@@ -43,6 +43,7 @@ GX._DATAS_ = {
 		'3': { bindPageUrls1: '2', class: 'menu-03', link: 'outsourcing_orderInquiry.html', icon: 'img/ic_menu_03.png', pageName: '외주발주품목조회' },
 		'4': { bindPageUrls1: '2', class: 'menu-04', link: 'outsourcing_purchase_delivery_search.html', icon: 'img/ic_menu_04.png', pageName: '외주납품품목조회' },
 		'5': { bindPageUrls1: '2', class: 'menu-05', link: 'production_progress_information.html', icon: 'img/ic_menu_05.png', pageName: '의류생산진행정보입력' },
+		'6': { bindPageUrls1: '2', class: 'menu-05', link: 'gridTest.html', icon: 'img/ic_menu_05.png', pageName: 'Grid test' },
 	},
 };
 
