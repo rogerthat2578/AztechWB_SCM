@@ -294,6 +294,16 @@ let app = new Vue({
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
             for(let i = saveArrData.length - 1; i >= 0; i--){
+                // 오늘 날짜
+                let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                if (saveArrData[i]?.InsDate) {
+                    if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && saveArrData[i].InsDate != today) {
+                        alert('품번: ' + saveArrData[i].ItemNo + '\n사이즈: ' + saveArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                        return false;
+                    }
+                }
+
                 if(saveArrData[i].RowEdit){
                     // 입고창고가 없거나 이상하면 저장 막기. 화면에는 안보이지만 체크
                     if (!isNaN(saveArrData[i].InWHSeq) && saveArrData[i].InWHSeq != undefined) {
@@ -379,6 +389,16 @@ let app = new Vue({
 
                         for(let i in delArrData){
                             if(delArrData.hasOwnProperty(i)){
+                                // 오늘 날짜
+                                let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                                // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                                if (delArrData[i]?.InsDate) {
+                                    if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && delArrData[i].InsDate != today) {
+                                        alert('품번: ' + delArrData[i].ItemNo + '\n사이즈: ' + delArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                                        return false;
+                                    }
+                                }
+
                                 delArrData[i].WorkingTag = 'D';
                             }
                         }
@@ -431,8 +451,19 @@ let app = new Vue({
                 // 행 삭제 (외주납품에서 넘어온 데이터인 경우)
                 else if(vThis.jumpSetMethodId == 'PDWorkReportJumpQuery'){
                     let delArrData = GX.deepCopy(vThis.rows.Query);
+
                     for(let i in delArrData){
                         if(delArrData.hasOwnProperty(i)){
+                            // 오늘 날짜
+                            let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                            // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                            if (delArrData[i]?.InsDate) {
+                                if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && delArrData[i].InsDate != today) {
+                                    alert('품번: ' + delArrData[i].ItemNo + '\n사이즈: ' + delArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                                    return false;
+                                }
+                            }
+
                             delArrData[i].WorkingTag = 'D';
                         }
                     }
@@ -471,7 +502,18 @@ let app = new Vue({
                 // 삭제 (외주납품에서 넘어온 데이터인 경우)
                 else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
                     let delArrData = GX.deepCopy(vThis.rows.Query);
-                    for(let i in delArrData){
+
+                    for (let i in delArrData) {
+                        // 오늘 날짜
+                        let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                        // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                        if (delArrData[i]?.InsDate) {
+                            if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && delArrData[i].InsDate != today) {
+                                alert('품번: ' + delArrData[i].ItemNo + '\n사이즈: ' + delArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                                return false;
+                            }
+                        }
+
                         delArrData[i].WorkingTag = 'D';
                     }
 

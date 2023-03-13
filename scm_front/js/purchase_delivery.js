@@ -352,13 +352,24 @@ let app = new Vue({
             let params1 = [], params2 = [];
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
+            // 오늘 날짜
+            let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+
             // 수량, 금액 컬럼의 ,(쉼표) 제거
             for (let i in saveArrData) {
+                // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                if (saveArrData[i]?.InsDate) {
+                    if (vThis.jumpSetMethodId == 'DelvItemListJump' && saveArrData[i].InsDate != today) {
+                        alert('Order품번: ' + saveArrData[i].OrderItemNo + '\n품번: ' + saveArrData[i].ItemNo + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                        return false;
+                    }
+                }
+                
                 Object.keys(vThis.keyMapping).map((k) => {
                     saveArrData[i][k] = GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '').length > 0 ? parseFloat(GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '')) : 0;
                 });
             }
-            
+
             // params2 공통으로 들어가야하는 파라메터 세팅
             for (let i = saveArrData.length - 1; i >= 0; i--) {
                 if (saveArrData[i].RowEdit) {
@@ -375,7 +386,7 @@ let app = new Vue({
                     saveArrData.splice(i, 1);
                 }
             }
-
+            
             // master
             params1 = [vThis.queryForm];
             params1[0].IDX_NO = saveArrData[0].ROWNUM;
@@ -419,6 +430,7 @@ let app = new Vue({
             if (vThis.rows.Query.length < 1 || vThis.isCheckList.length == 0) {
                 alert('삭제할 데이터가 없습니다. 삭제할 데이터를 선택 후 삭제해주세요.');
             } else if (vThis.rows.Query.length == vThis.isCheckList.length) {
+
                 // 전체 선택 시 전체 삭제
                 if (confirm('모든 데이터를 삭제하시겠습니까?')) {
                     
@@ -427,6 +439,18 @@ let app = new Vue({
                         history.back(-1);
                     } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
                         let delArrData = GX.deepCopy(vThis.rows.Query);
+
+                        // 오늘 날짜
+                        let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                        for (let i in delArrData) {
+                            // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                            if (delArrData[i]?.InsDate) {
+                                if (vThis.jumpSetMethodId == 'DelvItemListJump' && delArrData[i].InsDate != today) {
+                                    alert('Order품번: ' + delArrData[i].OrderItemNo + '\n품번: ' + delArrData[i].ItemNo + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                                    return false;
+                                }
+                            }
+                        }
 
                         let params1 = [], params2 = [];
                         for (let i in delArrData) {
@@ -438,7 +462,7 @@ let app = new Vue({
                                 params2.push(objParams);
                             }
                         }
-
+                        
                         params1.push(params2[0]);
         
                         if (params1.length > 0 && params2.length > 0) {
@@ -497,6 +521,18 @@ let app = new Vue({
                         }
                     }
 
+                    // 오늘 날짜
+                    let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                    for (let i in params2) {
+                        // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                        if (params2[i]?.InsDate) {
+                            if (vThis.jumpSetMethodId == 'DelvItemListJump' && params2[i].InsDate != today) {
+                                alert('Order품번: ' + params2[i].OrderItemNo + '\n품번: ' + params2[i].ItemNo + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                                return false;
+                            }
+                        }
+                    }
+
                     // params1.push(params2[0]);
                     
                     GX._METHODS_
@@ -525,6 +561,20 @@ let app = new Vue({
                 } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
                     // 구매납품조회
                     let delArrData = GX.deepCopy(vThis.rows.Query);
+
+                    // 오늘 날짜
+                    let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
+                    for (let i in delArrData) {
+                        console.log(delArrData[i]?.InsDate)
+                        // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                        if (delArrData[i]?.InsDate) {
+                            if (vThis.jumpSetMethodId == 'DelvItemListJump' && delArrData[i].InsDate != today) {
+                                alert('Order품번: ' + delArrData[i].OrderItemNo + '\n품번: ' + delArrData[i].ItemNo + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
+                                return false;
+                            }
+                        }
+                    }
+
                     let params1 = [], params2 = [];
                     for (let i in delArrData) {
                         let objParams = {};
@@ -535,7 +585,7 @@ let app = new Vue({
                             params2.push(objParams);
                         }
                     }
-
+                    
                     params1.push(params2[0]);
 
                     GX._METHODS_
