@@ -338,22 +338,21 @@ let app = new Vue({
             }
 
             if(saveArrData.length > 0){
-                alert('저장성공!')
-                // GX._METHODS_
-                // .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
-                // .ajax(saveArrData, [], [function (data) {
-                //     if(data[0].Status && data[0].Status != 0){
-                //         alert('저장 실패\n' + data[0].Result);
+                GX._METHODS_
+                .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
+                .ajax(saveArrData, [], [function (data) {
+                    if(data[0].Status && data[0].Status != 0){
+                        alert('저장 실패\n' + data[0].Result);
 
-                //     } else{
-                //         vThis.initSelected();
-                //         for(let i in vThis.rows.Query){
-                //             if(vThis.rows.Query.hasOwnProperty(i))
-                //                 vThis.rows.Query[i].RowEdit = false;
-                //         }
-                //         alert('저장 성공');
-                //     }
-                // }]);
+                    } else{
+                        vThis.initSelected();
+                        for(let i in vThis.rows.Query){
+                            if(vThis.rows.Query.hasOwnProperty(i))
+                                vThis.rows.Query[i].RowEdit = false;
+                        }
+                        alert('저장 성공');
+                    }
+                }]);
 
             } else{
                 alert('저장할 데이터가 없습니다.');
