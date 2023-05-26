@@ -333,10 +333,10 @@ let app = new Vue({
                     for (let i in data) {
                         if (data.hasOwnProperty(i)) {
                             data[i].ROWNUM = parseInt(i) + 1;
-                            data[i].DelvInDate = data[i].DelvInDate.length == 8 ? (data[i].DelvInDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvInDate;
-                            data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
-                            data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-
+                            data[i].DelvInDate = data[i].DelvInDate?.length == 8 ? (data[i].DelvInDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvInDate;
+                            data[i].PODate = data[i].PODate?.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
+                            data[i].DelvDate = data[i].DelvDate?.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
+                            
                             Object.keys(summaryList).map((k) => {
                                 if(data[i][k.replace('sum', '')]) {
                                     if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')]))) {
