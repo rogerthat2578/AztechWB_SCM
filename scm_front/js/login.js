@@ -75,7 +75,7 @@ let app = new Vue({
                     if (data[0] != null && data[0].UserSeq != null) {
                         /**CustKind 우선 세팅 */
                         // master 계정은 CustKind1, CustKind2 둘다 없음.
-                        if (vThis.userId == 'master') { // data[0].CustKind1 == null && data[0].CustKind2 == null && 
+                        if (vThis.userId == 'master' || data[0].EmpSeq > 0) { // data[0].CustKind1 == null && data[0].CustKind2 == null && 
                             GX.Cookie.set('CustKind1', '0', 1); // 구매거래처타입
                             GX.Cookie.set('CustKind2', '0', 1); // 외주거래처타입
                         } else if (data[0].CustKind1 != null && data[0].CustKind2 != null) {
