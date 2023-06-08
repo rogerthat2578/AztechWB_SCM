@@ -358,12 +358,14 @@ let app = new Vue({
             // 수량, 금액 컬럼의 ,(쉼표) 제거
             for (let i in saveArrData) {
                 // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
+                /*
                 if (saveArrData[i]?.InsDate) {
                     if (vThis.jumpSetMethodId == 'DelvItemListJump' && saveArrData[i].InsDate != today) {
                         alert('Order품번: ' + saveArrData[i].OrderItemNo + '\n품번: ' + saveArrData[i].ItemNo + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
                         return false;
                     }
                 }
+                */
                 
                 Object.keys(vThis.keyMapping).map((k) => {
                     saveArrData[i][k] = GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '').length > 0 ? parseFloat(GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '')) : 0;
@@ -440,6 +442,7 @@ let app = new Vue({
                     } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
                         let delArrData = GX.deepCopy(vThis.rows.Query);
 
+                        /*
                         // 오늘 날짜
                         let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                         for (let i in delArrData) {
@@ -451,6 +454,7 @@ let app = new Vue({
                                 }
                             }
                         }
+                        */
 
                         let params1 = [], params2 = [];
                         for (let i in delArrData) {
@@ -521,6 +525,7 @@ let app = new Vue({
                         }
                     }
 
+                    /*
                     // 오늘 날짜
                     let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                     for (let i in params2) {
@@ -532,6 +537,7 @@ let app = new Vue({
                             }
                         }
                     }
+                    */
 
                     // params1.push(params2[0]);
                     
@@ -562,6 +568,7 @@ let app = new Vue({
                     // 구매납품조회
                     let delArrData = GX.deepCopy(vThis.rows.Query);
 
+                    /*
                     // 오늘 날짜
                     let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                     for (let i in delArrData) {
@@ -574,6 +581,7 @@ let app = new Vue({
                             }
                         }
                     }
+                    */
 
                     let params1 = [], params2 = [];
                     for (let i in delArrData) {

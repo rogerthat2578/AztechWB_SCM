@@ -294,6 +294,7 @@ let app = new Vue({
             let saveArrData = GX.deepCopy(vThis.rows.Query);
 
             for(let i = saveArrData.length - 1; i >= 0; i--){
+                /*
                 // 오늘 날짜
                 let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                 // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
@@ -303,6 +304,7 @@ let app = new Vue({
                         return false;
                     }
                 }
+                */
 
                 if(saveArrData[i].RowEdit){
                     // 입고창고가 없거나 이상하면 저장 막기. 화면에는 안보이지만 체크
@@ -389,6 +391,7 @@ let app = new Vue({
 
                         for(let i in delArrData){
                             if(delArrData.hasOwnProperty(i)){
+                                /*
                                 // 오늘 날짜
                                 let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                                 // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
@@ -398,6 +401,7 @@ let app = new Vue({
                                         return false;
                                     }
                                 }
+                                */
 
                                 delArrData[i].WorkingTag = 'D';
                             }
@@ -454,6 +458,7 @@ let app = new Vue({
 
                     for(let i in delArrData){
                         if(delArrData.hasOwnProperty(i)){
+                            /*
                             // 오늘 날짜
                             let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                             // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
@@ -463,6 +468,7 @@ let app = new Vue({
                                     return false;
                                 }
                             }
+                            */
 
                             delArrData[i].WorkingTag = 'D';
                         }
@@ -504,6 +510,7 @@ let app = new Vue({
                     let delArrData = GX.deepCopy(vThis.rows.Query);
 
                     for (let i in delArrData) {
+                        /*
                         // 오늘 날짜
                         let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
                         // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
@@ -513,6 +520,7 @@ let app = new Vue({
                                 return false;
                             }
                         }
+                        */
 
                         delArrData[i].WorkingTag = 'D';
                     }
