@@ -544,7 +544,6 @@ let app = new Vue({
                     GX._METHODS_
                     .setMethodId('PUDelvSave')
                     .ajax(params1, params2, [function (data) {
-                    }, function (data) {
                         if (data[0].Status && data[0].Status != 0) {
                             // 뭔가 문제가 발생했을 때 리턴
                             alert('삭제 실패\n' + data[0].Result);
@@ -553,6 +552,7 @@ let app = new Vue({
                             vThis.initSelected();
                             vThis.search(vThis.calSum);
                         }
+                    }, function (data) {
                     }]);
                 }
             }
@@ -599,13 +599,14 @@ let app = new Vue({
                     GX._METHODS_
                     .setMethodId('PUDelvSave')
                     .ajax(params1, params2, [function (data) {
-                    }, function (data) {
                         if (data[0].Status && data[0].Status != 0) {
                             // 뭔가 문제가 발생했을 때 리턴
                             alert('삭제 실패\n' + data[0].Result);
                         } else {
                             alert('삭제 성공');
+                            location.reload()
                         }
+                    }, function (data) {
                     }]);
                 }
             }
