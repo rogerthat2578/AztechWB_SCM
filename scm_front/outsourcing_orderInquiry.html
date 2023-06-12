@@ -105,7 +105,7 @@
 							</li>
 							<li class="txt">
 								<div class="select">
-									<input type="text" class="drop-box-input" style="background-color: #80808047;" name="ProcessName" v-model="queryForm.ProcessName" @click="openCloseDropBox('ProcessName', 'N')" @input="likeSelect2('Process')" readonly>
+									<input type="text" class="drop-box-input" name="ProcessName" v-model="queryForm.ProcessName" @click="openCloseDropBox('ProcessName')" @input="likeSelect2('Process')">
 									<ul class="drop-box">
 										<li v-for="item in ProcessNameList" @click="openCloseDropBox('ProcessName')" :value="item.key">{{item.val}}</li>
 									</ul>

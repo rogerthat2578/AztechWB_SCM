@@ -70,6 +70,7 @@ let app = new Vue({
                 if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block' || document.getElementsByClassName('drop-box')[2].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
                     document.getElementsByClassName('drop-box')[1].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[2].style.display = 'none';
                     // 공정 Select Box 초기화
                     if ((vThis.ProcessNameList.length == 1 && (vThis.ProcessNameList[0].val == '전체' || vThis.ProcessNameList[0].val == '')) || vThis.queryForm.ProcessName.replace(/\ /g, '') == '') {
                         vThis.ProcessNameList = vThis.KeepProcessNameList;
@@ -523,18 +524,40 @@ let app = new Vue({
                             vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
-                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
-                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
                     
                     // 공정 기본 값 = 52:입고(의류)로 세팅
+                    // 20230612 req 박태근 이사님 - 공정 기본값 입고(의류), 생지정포, 전체만 나오게 수정. 기본 세팅 = 전체
                     if (k === 'ProcessNameList') {
+                        const tempList = vThis.ProcessNameList;
+                        vThis.ProcessNameList = [];
+                        for (let i = 0; i < tempList.length; i++) {
+                            if ((tempList[i].val.indexOf('입고') > -1 && tempList[i].val.indexOf('의류') > -1)
+                            || (tempList[i].val.indexOf('생지') > -1 && tempList[i].val.indexOf('정포') > -1)
+                            || (tempList[i].val.indexOf('전체') > -1)) {
+                                vThis.ProcessNameList.push(tempList[i]);
+                            }
+                            // 공정은 3개만 나오게함. 전체, 입고(의류), 생지정포
+                            if (vThis.ProcessNameList.length === 3) break;
+                        }
+                        /*
                         for (let i = 0; i < vThis.ProcessNameList.length; i++) {
-                            if (vThis.ProcessNameList[i].val.indexOf('입고') > -1 && vThis.ProcessNameList[i].val.indexOf('의류') > -1) {
+                            if ((vThis.ProcessNameList[i].val.indexOf('입고') > -1 && vThis.ProcessNameList[i].val.indexOf('의류') > -1)
+                                || (vThis.ProcessNameList[i].val.indexOf('생지') > -1 && vThis.ProcessNameList[i].val.indexOf('정포') > -1)
+                                || vThis.ProcessNameList[i].val.indexOf('전체') > -1) {
                                 vThis.queryForm.Process = vThis.ProcessNameList[i].key;
                                 vThis.queryForm.ProcessName = vThis.ProcessNameList[i].val;
-                                break;
+                                // break;
                             }
                         }
+                        */
+                    }
+
+                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (k == 'ProcessNameList') {
+                        // 공정은 3개만 나오게함. 전체, 입고(의류), 생지정포
+                        vThis['Keep' + k] = vThis.ProcessNameList;
+                    } else {
+                        if (typeof vThis['Keep' + k] === 'object') vThis['Keep' + k] = vThis[k];
                     }
                 }]);
             });
