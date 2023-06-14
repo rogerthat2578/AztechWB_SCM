@@ -6293,7 +6293,7 @@ module.exports = function(context) {
     '  </tbody>' +
     '</table>' +
     '<div style="margin: 2px 0px;">' + 
-    '  <button class="direct-key-in" style="padding: 0px 1px; font-size: 12px;">직접입력</button>' +
+    // '  <button class="direct-key-in" style="padding: 0px 1px; font-size: 12px;">직접입력</button>' +
     '</div>';
 
   return template(source, context);

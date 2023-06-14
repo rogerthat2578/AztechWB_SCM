@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>외주납품품목조회</title>
+	<title>toastUiGridTest</title>
 	<link rel="stylesheet" href="css/setup.css">
 	<link rel="stylesheet" href="css/scm_style.css">
 	<link rel="stylesheet" href="css/date_picker.css">
@@ -13,12 +13,11 @@
 	<link rel="stylesheet" href="css/tui-date-picker.css">
 	<link rel="stylesheet" href="css/tui-grid.css">
 	<style>
-		[v-cloak] {
-			display: none;
-		}
-	</style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
 </head>
-
 <body>
 	<div v-cloak id="app">
 		<header>
@@ -27,13 +26,9 @@
 				<a href="javascript:void(0)" onclick="location.replace('main.html')" class="web">
 					<img src="img/logo.png" alt="로고이미지">
 				</a>
-				<span class="page-name" onclick="location.replace('main.html')">외주납품품목조회</span>
+				<span class="page-name" onclick="location.replace('main.html')">Toast UI Grid Test</span>
 			</div>
 			<div class="con">
-				<!-- <div class="cart">
-					<img src="img/ic_01.png" alt="알림이미지">
-					<span class="alarm">12</span>
-				</div> -->
 				<div class="user-info">
 					<div class="frame" onclick="GX._METHODS_.userLayerShowHide()">
 						<img src="img/user.png" alt="유저이미지">
@@ -54,23 +49,57 @@
 					<div class="data-row">
 						<ul class="input-wrap">
 							<li class="name essential">
-								<label>납품일</label>
+								<label>발주일</label>
 							</li>
 							<li class="date">
 								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
-									<input type="text" id="WorkDateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
-									<div class="tui-datepicker-mo-container-position" id="WorkDateFr-startpicker-container" style="margin-left: -1px;"></div>
+									<input type="text" id="PODateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
+									<span class="icon-x web">X</span>
+									<div id="PODateFr-startpicker-container" style="margin-left: -1px;"></div>
 								</div>
 								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
-									<input id="WorkDateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
-									<div class="tui-datepicker-mo-container-position" id="WorkDateTo-endpicker-container" style="margin-left: -1px;"></div>
+									<input id="PODateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
+									<span class="icon-x web">X</span>
+									<div id="PODateTo-endpicker-container" style="margin-left: -1px;"></div>
 								</div>
 							</li>
 						</ul>
 
-						<ul class="input-wrap wid-360">
+                        <ul class="input-wrap">
 							<li class="name">
-								<label>의뢰부서</label>
+								<label>납품예정일</label>
+							</li>
+							<li class="date">
+                                <div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input type="text" id="DelvPlanDateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
+									<span class="icon-x web">X</span>
+									<div id="DelvPlanDateFr-startpicker-container" style="margin-left: -1px;"></div>
+								</div>
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input id="DelvPlanDateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
+									<span class="icon-x web">X</span>
+									<div id="DelvPlanDateTo-endpicker-container" style="margin-left: -1px;"></div>
+								</div>
+							</li>
+						</ul>
+
+                        <ul class="input-wrap">
+							<li class="name">
+								<label>진행상태</label>
+							</li>
+							<li>
+								<div class="select">
+									<input type="text" class="drop-box-input" name="SMCurrStatusName" v-model="queryForm.SMCurrStatusName" @click="openCloseDropBox('SMCurrStatusName')" readonly>
+									<ul class="drop-box">
+										<li v-for="item in SMCurrStatusList" @click="openCloseDropBox('SMCurrStatusName')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+
+                        <ul class="input-wrap wid-350">
+							<li class="name">
+								<label>발주부서</label>
 							</li>
 							<li class="txt">
 								<div class="select">
@@ -81,66 +110,70 @@
 								</div>
 							</li>
 						</ul>
-
-						<ul class="input-wrap wid-350">
-							<li class="name">
-								<label>공정</label>
-							</li>
-							<li class="txt">
-								<div class="select">
-									<input type="text" class="drop-box-input" name="ProcessName" v-model="queryForm.ProcessName" @click="openCloseDropBox('ProcessName')" @input="likeSelect2('Process')">
-									<ul class="drop-box">
-										<li v-for="item in ProcessNameList" @click="openCloseDropBox('ProcessName')" :value="item.key">{{item.val}}</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
 					</div>
-					<div class="data-row">
-						<ul class="input-wrap">
+                    <div class="data-row">
+                        <ul class="input-wrap">
 							<li class="name">
 								<label>품명</label>
 							</li>
 							<li class="txt">
-								<input type="text" name="GoodItemName" v-model="queryForm.GoodItemName">
+								<input type="text" v-model="queryForm.ItemName">
 							</li>
 						</ul>
-						<ul class="input-wrap wid-360">
+
+                        <ul class="input-wrap">
 							<li class="name">
 								<label>품번</label>
 							</li>
 							<li class="txt">
-								<input type="text" name="GoodItemNo" v-model="queryForm.GoodItemNo">
+								<input type="text" v-model="queryForm.ItemNo">
 							</li>
 						</ul>
+
+						<ul class="input-wrap">
+							<li class="name">
+								<label>Order품번</label>
+							</li>
+							<li class="txt">
+								<input type="text" v-model="queryForm.OrderItemNo">
+							</li>
+						</ul>
+
 						<ul class="input-wrap wid-350">
 							<li class="name">
 								<label>Buyer No</label>
 							</li>
 							<li class="txt">
-								<input type="text" name="BuyerNo" v-model="queryForm.BuyerNo">
+								<input type="text" v-model="queryForm.BuyerNo">
 							</li>
 						</ul>
-					</div>
+                    </div>
 				</div>
 				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>
 			</div>
 			<div class="main-data-wrap">
 				<div class="btn-row">
 					<div>
-						<button class="btn-stlye-01" @Click="search()">
+						<button class="btn-stlye-01" @click="search">
 							<img src="img/ic_04.png" alt="조회버튼이미지">
 							<span class="web">조회</span>
 						</button>
-						<button class="btn-stlye-04 web" @Click="excelDownload">
+                        <button class="btn-stlye-02" @click="" style="margin-right: 10px;">
+							<img src="img/ic_05.png" alt="납품등록버튼이미지">
+							<span>납품등록</span>
+						</button>
+						<button class="btn-stlye-04 web" @click="">
 							<img src="img/ic_05.png" alt="다운로드">
-							<span class="web">엑셀 다운로드</span>
+							<span>엑셀 다운로드</span>
 						</button>
 					</div>
+					<button class="btn-stlye-03" @click="save">
+						<img src="img/ic_06.png" alt="저장버튼이미지">
+						<span>저장</span>
+					</button>
 				</div>
 				<div class="data-table" id="grid"></div>
 			</div>
-
 			<div id="changePwDialog" class="change-pw-dialog-wrap" style="display: none;">
 				<div class="change-pw-dialog-container">
 					<div class="change-pw-dialog-title">비밀번호 변경</div>
@@ -171,6 +204,6 @@
 			</div>
 		</main>
 	</div>
-	<script src="js/common/app.js?v=1665537373142"></script>
+	<script src="js/common/app.js?v=1686630494589"></script>
 </body>
 </html>

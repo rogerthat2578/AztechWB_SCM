@@ -6,12 +6,10 @@ let app = new Vue({
         userName: GX.Cookie.get('UserName'),
         params: GX.getParameters(),
         BizUnitList: [], // 사업 단위 리스트
-
+        locationPath: location.pathname.replace(/\//g, '').replace('.html', ''),
         rows: {
             Query: [],
-            QuerySummary: {}
         },
-
         queryForm:{
             CompanySeq: GX.Cookie.get('CompanySeq'),
             BizUnit: '1',
@@ -25,7 +23,6 @@ let app = new Vue({
             Dept: 0,
             DeptName: '전체',
         },
-
         // 공정 리스트
         ProcessNameList: [],
         // 공정 리스트
@@ -34,15 +31,66 @@ let app = new Vue({
         DeptNameList: [],
         // 부서 리스트
         KeepDeptNameList: [],
-
+        /**단축키로 기능 실행 (K-System 참고)
+         * Control + Q = 조회
+         */
         keyCombi: {
             isKeyHold: false,
             Control: false,
             Q: false,
         },
+        // 변경 감시
+        watch: {
+            'rows.Query': 'saveHistory',
+        },
     },
 
     methods:{
+        /**
+         * 조회조건 SessionStorage에 담기
+         */
+        saveHistory: function () {
+            try {
+                GX.SessionStorage.set(this.locationPath + '-queryForm', JSON.stringify(this.queryForm));
+            } catch (e) {
+                toastr.warning('화면 이력을 저장하지 못하였습니다.');
+            }
+        },
+        /**
+         * SessionStorage에 담겨있는 조회조건 가져와서 세팅
+         */
+        loadHistory: function () {
+            try {
+                const vThis = this;
+                const queryForm = GX._METHODS_.nvl(GX.SessionStorage.get(vThis.locationPath + '-queryForm')) == '' ? {} : JSON.parse(GX.SessionStorage.get(vThis.locationPath + '-queryForm'));
+
+                if (Object.keys(queryForm).length > 0) {
+                    vThis.queryForm = queryForm;
+                /**
+                    * Default data setting
+                    * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+                    * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+                    * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+                    */
+                    vThis.deptName = GX.Cookie.get('DeptName');
+                    vThis.userName = GX.Cookie.get('UserName');
+                    vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
+                    vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
+                    vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
+                    vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+                    vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+                    
+                    // tui-datepicker에서 날짜를 바인딩 시킬때 Date 형식으로 바인딩해야함 
+                    vThis.rangePickerWorkDate.setStartDate(new Date(parseInt(vThis.queryForm.WorkDateFr.substring(0, 4)), parseInt(vThis.queryForm.WorkDateFr.substring(4, 6)) - 1, parseInt(vThis.queryForm.WorkDateFr.substring(6))));
+                    vThis.rangePickerWorkDate.setEndDate(new Date(parseInt(vThis.queryForm.WorkDateTo.substring(0, 4)), parseInt(vThis.queryForm.WorkDateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.WorkDateTo.substring(6))));
+
+                    // 조회 조건 로드 후 조회 실행
+                    vThis.search();
+                }
+            } catch (e) {
+                toastr.warning('화면 이력을 가져오는 중 문제가 발생하여 정상적으로 가져오지 못하였습니다.');
+            }
+        },
         // 이벤트
         eventCheck: function(){
             let vThis = this;
@@ -89,7 +137,7 @@ let app = new Vue({
 
                 if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
                     vThis.keyCombi.isKeyHold = true;
-                    vThis.search(vThis.addSummary);
+                    vThis.search();
                 }
             }
         },
@@ -139,36 +187,11 @@ let app = new Vue({
             }
         },
 
-        // DateBox 업데이트
-        updateDate: function(v = '', o = null) {
-            if (v && o) {
-                let vThis = this;
-
-                let selEle = o;
-                let selVal = v;
-                let selEleName = selEle.getAttribute('name');
-                if (selEleName.indexOf('Fr') > -1) { // 선택한 날짜가 from일 때 to와 비교.
-                    if (new Date(selVal) > new Date(vThis.queryForm[selEleName.replace('Fr', 'To')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('Fr', 'To')];
-                    }
-                } else if (selEleName.indexOf('To') > -1) { // 선택한 날짜가 to일 때 from과 비교.
-                    if (new Date(selVal) < new Date(vThis.queryForm[selEleName.replace('To', 'Fr')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('To', 'Fr')];
-                    }
-                }
-            }
-        },
-
         // 초기화
         init: function(){
             let vThis = this;
             vThis.initKeyCombi();
             vThis.rows.Query = [];
-            vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
             vThis.queryForm.WorkDateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
@@ -211,62 +234,9 @@ let app = new Vue({
                         GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
                         location.href = 'outsourcing_purchase_delivery.html';
                     } else 
-                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                        toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
                 }
             });
-        },
-
-        /**
-         * 소계 행 추가
-         */
-         addSummary: function () {
-            let vThis = this;
-
-            if (document.querySelectorAll('[id="grid"] table thead tr').length > 1) {
-                for (let i in document.querySelectorAll('[id="grid"] table thead tr')) {
-                    if (document.querySelectorAll('[id="grid"] table thead tr').hasOwnProperty(i) && i > 0)
-                        document.querySelectorAll('[id="grid"] table thead tr')[i].remove();
-                }
-            }
-
-            if (vThis.rows.Query.length > 0) {
-                let objQeury = GX.deepCopy(vThis.rows.QuerySummary);
-                let trList = document.querySelectorAll('[id="grid"] table thead tr td');
-                let strTd = '';
-                const keyMapping = {
-                    sumOrderQty: '발주수량',
-                    sumProdQty: '생산수량',
-                    sumBadQty: '불량수량',
-                    sumOKQty: '양품수량',
-                    sumPrice: '단가',
-                    sumOSPCurAmt: '금액',
-                    sumOSPCurVAT: '부가세',
-                    sumOSPTotCurAmt: '금액계',
-                    sumOSPDomPrice: '원화단가',
-                    sumOSPDomAmt: '원화금액',
-                    sumOSPDomVAT: '원화부가세',
-                    sumOSPTotDomAmt: '원화금액계',
-                }
-
-                for (let i in trList) {
-                    if (trList.hasOwnProperty(i)) {
-                        if (i >= 6 && i <= 18 && i != 9 && i != 13 && i != 14) {
-                            Object.keys(keyMapping).forEach(k => {
-                                if (trList[i].innerText == keyMapping[k])
-                                    strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
-                            });
-                        } else { 
-                            strTd += '<td></td>';
-                        }
-                    }
-                }
-
-                let createTr = document.createElement('tr');
-                createTr.style.backgroundColor = '#e0fec0';
-                createTr.style.color = 'black';
-                createTr.innerHTML = strTd;
-                document.querySelector('[id="grid"] table thead').append(createTr);
-            }
         },
 
         /** 조회 **/
@@ -285,78 +255,42 @@ let app = new Vue({
                 else if (k == 'Dept') params.DeptSeq = params[k];
             });
 
-            let regex = new RegExp(/(\d)(?=(?:\d{3})+(?!\d))/g);
-
             vThis.rows.Query = [];
-            vThis.rows.QuerySummary = {};
             
             GX._METHODS_
             .setMethodId('PDWorkReportQuery')    // 여기에 호출ID를 입력해주세요.
             .ajax([params], [function (data){
                 if(data.length > 0){
-                    let summaryList = {
-                        sumProdQty: 0, sumBadQty: 0, sumOKQty: 0, sumPrice: 0, sumOSPCurAmt: 0, sumOSPCurVAT: 0, sumOSPTotCurAmt: 0,
-                        sumOSPDomPrice: 0, sumOSPDomAmt: 0, sumOSPDomVAT: 0, sumOSPTotDomAmt: 0, sumOrderQty: 0
-                    }
-
-                    for(let i in data){
-                        if(data.hasOwnProperty(i)){
-                            data[i].ROWNUM = parseInt(i) + 1;
-                            data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
-                            data[i].IsVAT = parseInt(data[i].IsVAT);
-                            data[i].IsLastProc = parseInt(data[i].IsLastProc);
-                            data[i].IsMatInput = parseInt(data[i].IsMatInput);
-                            data[i].IsGoodIn = parseInt(data[i].IsGoodIn);
-                            data[i].IsAccident = parseInt(data[i].IsAccident);
-                            data[i].OrderQty = data[i].OrderQty.toString().replace(regex, '$1,');
-                            data[i].ProdQty = data[i].ProdQty.toString().replace(regex, '$1,');
-                            data[i].BadQty = data[i].BadQty.toString().replace(regex, '$1,');
-                            data[i].OKQty = data[i].OKQty.toString().replace(regex, '$1,');
-                            data[i].Price = data[i].Price.toString().replace(regex, '$1,');
-                            data[i].OSPCurAmt = data[i].OSPCurAmt.toString().replace(regex, '$1,');
-                            data[i].OSPCurVAT = data[i].OSPCurVAT.toString().replace(regex, '$1,');
-                            data[i].OSPTotCurAmt = data[i].OSPTotCurAmt.toString().replace(regex, '$1,');
-                            data[i].ExRate = data[i].ExRate.toString().replace(regex, '$1,');
-                            data[i].OSPDomPrice = data[i].OSPDomPrice.toString().replace(regex, '$1,');
-                            data[i].OSPDomAmt = data[i].OSPDomAmt.toString().replace(regex, '$1,');
-                            data[i].OSPDomVAT = data[i].OSPDomVAT.toString().replace(regex, '$1,');
-                            data[i].OSPTotDomAmt = data[i].OSPTotDomAmt.toString().replace(regex, '$1,');
-
-                            Object.keys(summaryList).map((k) => {
-                                if(data[i][k.replace('sum', '')].replace(/\,/g, '')) {
-                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')].replace(/\,/g, ''))))
-                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')].replace(/\,/g, ''));
-                                    else
-                                        summaryList[k] += 0;
-
-                                    if (GX._METHODS_.nvl(summaryList[k].toString().split('.')[1]).length > 0)
-                                        summaryList[k] = parseFloat(summaryList[k].toFixed(2));
-                                }
-                            });
-                        }
-                    }
-
-                    // 추가. 단가 = 단가합 / 수량합
-                    let valSumPrice = summaryList.sumPrice.toString().replace(/\,/g, '');
-                    let valSumProdQty = summaryList.sumProdQty.toString().replace(/\,/g, '');
-                    if (isNaN(valSumPrice)) valSumPrice = 0; // 분자
-                    if (isNaN(valSumProdQty)) valSumProdQty = 1; // 분모
-                    else { if (parseFloat(valSumProdQty) <= 0) valSumProdQty = 1 }
-                    summaryList.sumPrice = (parseFloat(valSumPrice) / parseFloat(valSumProdQty)).toFixed(2).toString().replace(regex, '$1,');
-                    
                     vThis.rows.Query = data;
-                    vThis.rows.QuerySummary = summaryList;
+                    toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                 } else{
-                    alert('조회 결과가 없습니다.');
+                    vThis.rows.Query = [];
+                    toastr.info('조회 결과가 없습니다.');
                 }
 
                 if (typeof callback === 'function') callback();
+
+                // 그리드에 데이터 바인딩
+                vThis.mainGrid.resetData(vThis.rows.Query);
+
+                // 조회 조건 영역 데이터 저장
+                vThis.saveHistory();
             }]);
         },
 
         /**엑셀 다운로드 xlxs */
         excelDownload: function () {
-            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
+            const gridDt = document.getElementsByClassName('tui-grid-table');
+            let gridTbodyTr = gridDt[gridDt.length - 1].getElementsByTagName('tbody')[0].children;
+            let summaryTbodyTr = gridDt[gridDt.length - 2]
+
+            if (gridTbodyTr.length > 0) {
+                
+                
+                // GX._METHODS_.excelDownload();
+            } else {
+                toastr.warning('다운로드할 데이터가 없습니다.');
+            }
         },
     },
 
@@ -399,11 +333,22 @@ let app = new Vue({
                             vThis[k].push({ key: data[i][Object.keys(data[i])[0]], val: data[i][Object.keys(data[i])[1]] })
                         }
                     }
-                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
-                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
-                    
+
                     // 공정 기본 값 = 52:입고(의류)로 세팅
+                    // 20230612 req 박태근 이사님 - 공정 기본값 입고(의류), 생지정포, 전체만 나오게 수정. 기본 세팅 = 전체
                     if (k === 'ProcessNameList') {
+                        const tempList = vThis.ProcessNameList;
+                        vThis.ProcessNameList = [];
+                        for (let i = 0; i < tempList.length; i++) {
+                            if ((tempList[i].val.indexOf('입고') > -1 && tempList[i].val.indexOf('의류') > -1)
+                            || (tempList[i].val.indexOf('생지') > -1 && tempList[i].val.indexOf('정포') > -1)
+                            || (tempList[i].val.indexOf('전체') > -1)) {
+                                vThis.ProcessNameList.push(tempList[i]);
+                            }
+                            // 공정은 3개만 나오게함. 전체, 입고(의류), 생지정포
+                            if (vThis.ProcessNameList.length === 3) break;
+                        }
+                        /*
                         for (let i = 0; i < vThis.ProcessNameList.length; i++) {
                             if (vThis.ProcessNameList[i].val.indexOf('입고') > -1 && vThis.ProcessNameList[i].val.indexOf('의류') > -1) {
                                 vThis.queryForm.Process = vThis.ProcessNameList[i].key;
@@ -411,74 +356,121 @@ let app = new Vue({
                                 break;
                             }
                         }
+                        */
+                    }
+
+                    // Select box의 경우 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
+                    if (k == 'ProcessNameList') {
+                        // 공정은 3개만 나오게함. 전체, 입고(의류), 생지정포
+                        vThis['Keep' + k] = vThis.ProcessNameList;
+                    } else {
+                        if (typeof vThis['Keep' + k] === 'object') vThis['Keep' + k] = vThis[k];
                     }
                 }]);
             });
-
-            GX.VueGrid
-            .bodyRow('@click="selectRow(index);"')
-            .item('ROWNUM').head('No.', '')
-            .item('WorkDate').head('작업일', '')
-            .item('GoodItemNo').head('품번', '').body(null, 'text-l')
-            .item('GoodItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
-                .body('<div style="width: 90px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{row.GoodItemName}}</div>', 'text-l')
-            .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
-            // .item('GoodItemSpec').head('규격', '').body(null, 'text-l')
-            // .item('ProcName').head('공정', '').body(null, 'text-l')
-            .item('ProdUnitName').head('단위', '')
-            .item('OrderQty').head('발주수량', '').body(null, 'text-r')
-            .item('ProdQty').head('생산수량', '').body(null, 'text-r')
-            // .item('BadQty').head('불량수량', '').body(null, 'text-r')
-            // .item('OKQty').head('양품수량', '').body(null, 'text-r')
-            .item('Price').head('단가', '').body(null, 'text-r')
-            .item('IsVAT').head('부가세포함', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsVAT" :value="row.IsVAT" :checked="row.IsVAT" disabled/></div>')
-            .item('OSPCurAmt').head('금액', '').body(null, 'text-r')
-            .item('OSPCurVAT').head('부가세', '').body(null, 'text-r')
-            .item('OSPTotCurAmt').head('금액계', '').body(null, 'text-r')
-            .item('CurrName').head('통화', '')
-            .item('ExRate').head('환율', '').body(null, 'text-r')
-            .item('OSPDomPrice').head('원화단가', '').body(null, 'text-r')
-            .item('OSPDomAmt').head('원화금액', '').body(null, 'text-r')
-            .item('OSPDomVAT').head('원화부가세', '').body(null, 'text-r')
-            .item('OSPTotDomAmt').head('원화금액계', '').body(null, 'text-r')
-            .item('SizeText').head('Size', '')
-            // .item('AssyItemNo').head('공정품번호', '').body(null, 'text-l')
-            // .item('AssyItemName').head('공정품명', '').body(null, 'text-l')
-            // .item('AssyItemSpec').head('공정품규격', '').body(null, 'text-l')
-            .item('IsLastProc').head('최종공정', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsLastProc" :value="row.IsLastProc" :checked="row.IsLastProc" disabled/></div>')
-            .item('IsMatInput').head('자재투입', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsMatInput" :value="row.IsMatInput" :checked="row.IsMatInput" disabled/></div>')
-            .item('IsGoodIn').head('입고', '')
-                .body('<div class="chkBox"><input type="checkbox" name="IsGoodIn" :value="row.IsGoodIn" :checked="row.IsGoodIn" disabled/></div>')
-            // .item('Weight').head('중량', '').body(null, 'text-r') // +추가필요
-            // .item('RealLotNo').head('Lot No.', '').body(null, 'text-l')
-            // .item('Width').head('폭', '').body(null, 'text-r') // +추가필요
-            // .item('Density').head('밀도', '').body(null, 'text-r')
-            // .item('IsAccident').head('사고지', '')
-            //     .body('<div class="chkBox"><input type="checkbox" name="IsAccident" :value="row.IsAccident" :checked="row.IsAccident" disabled/></div>')
-            .item('WorkOrderNo').head('작업지시번호', '').body(null, 'text-l')
-            .loadTemplate('#grid', 'rows.Query');
-
-            // 참고화면 : FrmWPDSFCWorkReport_03_KNIC
         }
     },
 
     mounted(){
-        let vThis = this;
+        const vThis = this;
 
-        GX.Calendar.datePicker('gx-datepicker', {
-            height: '400px',
-            monthSelectWidth: '25%',
-            callback: function(result, attribute){
-                const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
-                const info = GX.Calendar.dateFormatInfo(openerObj);
-                let keys = attribute.split('.');
-                if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-            }
+        // init from to Datepicker
+        const today = new Date();
+        vThis.rangePickerWorkDate = new tui.DatePicker.createRangePicker({
+            startpicker: {
+                date: today,
+                input: '#WorkDateFr-startpicker-input',
+                container: '#WorkDateFr-startpicker-container'
+            },
+            endpicker: {
+                date: today,
+                input: '#WorkDateTo-endpicker-input',
+                container: '#WorkDateTo-endpicker-container'
+            },
+            format: 'yyyy-MM-dd',
+            language: 'ko',
+            timePicker: false
         });
+
+        // put default data into "this.queryForm.~"
+        vThis.queryForm.WorkDateFr = vThis.rangePickerWorkDate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        vThis.queryForm.WorkDateTo = vThis.rangePickerWorkDate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+
+        // regist range datepicker change event
+        vThis.rangePickerWorkDate.on('change:start', () => {
+            if (vThis.rangePickerWorkDate.getStartDate())
+                vThis.queryForm.WorkDateFr = vThis.rangePickerWorkDate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+        vThis.rangePickerWorkDate.on('change:end', () => {
+            if (vThis.rangePickerWorkDate.getEndDate())
+                vThis.queryForm.WorkDateTo = vThis.rangePickerWorkDate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+
+        ToastUIGrid.setColumns
+        .init()
+        .setRowHeaders('rowNum')
+        .header('작업일').name('WorkDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
+        .header('품번').name('GoodItemNo').align('left').width(140).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('품명').name('GoodItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('Buyer No').name('BuyerNo').align('left').width(150).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('규격').name('GoodItemSpec').align('left').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('공정').name('ProcName').align('center').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('단위').name('ProdUnitName').align('center').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('발주수량').name('OrderQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('생산수량').name('ProdQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        // .header('불량수량').name('BadQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        // .header('양품수량').name('OKQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('단가').name('Price').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('부가세포함').name('IsVAT').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsVAT'}).sortable().setRow()
+        .header('금액').name('OSPCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('부가세').name('OSPCurVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('금액계').name('OSPTotCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('통화').name('CurrName').align('center').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('환율').name('ExRate').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').sortable(true).setRow()
+        .header('원화단가').name('OSPDomPrice').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('원화금액').name('OSPDomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('원화부가세').name('OSPDomVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('원화금액계').name('OSPTotDomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('Size').name('SizeText').align('center').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('공정품번호').name('AssyItemNo').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('공정품명').name('AssyItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('공정품규격').name('AssyItemSpec').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('최종공정').name('IsLastProc').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsLastProc'}).sortable().setRow()
+        .header('자재투입').name('IsMatInput').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsMatInput'}).sortable().setRow()
+        .header('입고').name('IsGoodIn').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsGoodIn'}).sortable().setRow()
+        // .header('중량').name('Weight').align('right').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('Lot No.').name('RealLotNo').align('left').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('폭').name('Width').align('right').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('밀도').name('Density').align('right').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('사고지').name('IsAccident').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsAccident'}).sortable().setRow()
+        .header('작업지시번호').name('WorkOrderNo').align('left').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('공정').name('ProcName').align('left').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        ;
+        
+        // create grid
+        vThis.mainGrid = ToastUIGrid.initGrid('grid');
+
+        // grid data init
+        vThis.rows.Query = [];
+        vThis.mainGrid.resetData(vThis.rows.Query);
+
+        // 새로고침 수행 시 SessionStorage 삭제
+        let reloadYN = false;
+        const entries = performance.getEntriesByType("navigation");
+        for (let i = 0; i < entries.length; i++) {
+            if (entries[i].type === "reload") {
+                reloadYN = true;
+                break;
+            }
+        }
+        if (reloadYN) {
+            try {
+                GX.SessionStorage.remove(vThis.locationPath + '-queryForm');
+            } catch (e) {
+                console.log('SessionStorage 삭제 중 에러 발생', e);
+            }
+        } else {
+            vThis.loadHistory();
+        }
     }
 });

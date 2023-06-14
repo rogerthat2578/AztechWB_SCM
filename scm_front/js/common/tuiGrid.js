@@ -169,7 +169,7 @@ ToastUIGrid = {
             this.options.sortingType = 'desc';
             return this;
         },
-        editor: function (v) {
+        editor: function (v, listItems = []) {
             if (v === 'date') {
                 this.options.editor = {
                     type: 'datePicker',
@@ -178,13 +178,21 @@ ToastUIGrid = {
                         // format: 'yyyy-MM-dd', // format 옵션이 안먹힘
                     }
                 }
+            } else if (v === 'selectBox') {
+                this.options.editor = {
+                    type: 'select',
+                    options: {
+                        listItems: listItems
+                    }
+                }
             } else {
                 this.options.editor = v ? v : 'text';
             }
             return this;
         },
-        formatter: function (v) {
+        formatter: function (v, o = {}) {
             if (GX._METHODS_.nvl(v) !== '') {
+                
                 switch (v) {
                     case 'addWonTextAfter':
                         this.options = {
@@ -213,6 +221,33 @@ ToastUIGrid = {
                             }
                         }
                         break;
+                    case 'selectBox':
+                        // 내장 포매터 = listItemText
+                        this.options = {
+                            ...this.options,
+                            formatter: 'listItemText'
+                        }
+                        break;
+                    case 'checkbox':
+                        this.options = {
+                            ...this.options,
+                            formatter: function (r) {
+                                const pObj = Object.keys(o);
+
+                                if (pObj.length > 0) {
+                                    const attrDisabled = o[pObj.filter(f => f === 'attrDisabled' ? o[f] : '')];
+                                    const strColKey = o[pObj.filter(f => f === 'colKey' ? o[f] : '')];
+
+                                    if (r.row[strColKey] === 'Y' || r.row[strColKey] === 'N') {
+                                        return r.row[strColKey] === 'Y' ? `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} />`
+                                    } else {
+                                        // 0 or 1 | true or false -> 문자열로 인식하는 경우가 있기에 조건식에 JSON.parse를 해준다.
+                                        return JSON.parse(r.row[strColKey]) ? `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} />`
+                                    }
+                                }
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -232,7 +267,7 @@ ToastUIGrid = {
                 height: 40,
                 position: 'top',
                 columnContent: {}
-            }
+            };
             return this;
         },
     },

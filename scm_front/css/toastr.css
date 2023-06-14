@@ -81,10 +81,17 @@ button.toast-close-button {
   top: 12px;
   left: 12px;
 }
+
 .toast-top-right {
   top: 12px;
   right: 12px;
 }
+@media (max-width: 420px) {
+  .toast-top-right {
+    top: 8%;
+  }
+}
+
 .toast-bottom-right {
   right: 12px;
   bottom: 12px;

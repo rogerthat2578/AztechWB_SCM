@@ -8,4 +8,8 @@
 	'js/lib/chart.min-3.9.1.js',
 	'js/lib/xlsx.mini.min.js',
 	'js/lib/toastr.js',
+	// tui-grid (순서 중요함)
+	'js/lib/tui-date-picker.js',
+	'js/lib/tui-grid.js',
+	'js/common/tuiGrid.js',
 ],'js/');
