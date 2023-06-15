@@ -49,7 +49,7 @@ let app = new Vue({
         /**
          * 조회조건 SessionStorage에 담기
          */
-        saveHistory: function () {
+        saveHistory: function() {
             try {
                 GX.SessionStorage.set(this.locationPath + '-queryForm', JSON.stringify(this.queryForm));
             } catch (e) {
@@ -59,7 +59,7 @@ let app = new Vue({
         /**
          * SessionStorage에 담겨있는 조회조건 가져와서 세팅
          */
-        loadHistory: function () {
+        loadHistory: function() {
             try {
                 const vThis = this;
                 const queryForm = GX._METHODS_.nvl(GX.SessionStorage.get(vThis.locationPath + '-queryForm')) == '' ? {} : JSON.parse(GX.SessionStorage.get(vThis.locationPath + '-queryForm'));
@@ -209,36 +209,6 @@ let app = new Vue({
             });
         },
 
-        /**행 클릭(선택), 행 더블 시
-         * 클릭(선택) 행 색상으로 표시
-         * 입력화면으로 점프
-         */
-        selectRow: function (idx) {
-            let vThis = this;
-            let e = event;
-
-            // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
-            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
-                ele.classList.remove('fill-color-sel-row');
-            });
-            if (e.target.nodeName.toUpperCase() === 'TD')
-                e.target.parentNode.classList.add('fill-color-sel-row');
-
-            GX.doubleClickRun(event.target, function () {
-                if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let tempObj = {}, jumpData = [];
-                    tempObj.WorkReportSeq = vThis.rows.Query[idx].WorkReportSeq;
-                    jumpData.push(tempObj);
-                    if (jumpData.length > 0 && !isNaN(tempObj.WorkReportSeq)) {
-                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                        GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
-                        location.href = 'outsourcing_purchase_delivery.html';
-                    } else 
-                        toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
-                }
-            });
-        },
-
         /** 조회 **/
         search: function(callback){
             let vThis = this;
@@ -281,13 +251,16 @@ let app = new Vue({
         /**엑셀 다운로드 xlxs */
         excelDownload: function () {
             const gridDt = document.getElementsByClassName('tui-grid-table');
-            let gridTbodyTr = gridDt[gridDt.length - 1].getElementsByTagName('tbody')[0].children;
-            let summaryTbodyTr = gridDt[gridDt.length - 2]
+            let gridTbodyTr = gridDt[gridDt.length - 1].getElementsByTagName('tbody')[0].cloneNode(true);
 
-            if (gridTbodyTr.length > 0) {
+            if (gridTbodyTr.childElementCount > 0) {
+                let summaryTbodyTr = gridDt[gridDt.length - 2].getElementsByTagName('tbody')[0].childNodes[0].cloneNode(true);
+                let headerTbodyTr = gridDt[gridDt.length - 3].getElementsByTagName('tbody')[0].childNodes[0].cloneNode(true);
+                gridTbodyTr.prepend(headerTbodyTr, summaryTbodyTr);
+                let table = document.createElement('table');
+                table.append(gridTbodyTr);
                 
-                
-                // GX._METHODS_.excelDownload();
+                GX._METHODS_.excelDownload(table);
             } else {
                 toastr.warning('다운로드할 데이터가 없습니다.');
             }
@@ -453,6 +426,24 @@ let app = new Vue({
         // grid data init
         vThis.rows.Query = [];
         vThis.mainGrid.resetData(vThis.rows.Query);
+
+        // grid dblclick event
+        vThis.mainGrid.on('dblclick', function(e) {
+            // 행 더블 클릭 시 점프
+            if (e.rowKey || e.rowKey === 0) {
+                if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                    let tempObj = {}, jumpData = [];
+                    tempObj.WorkReportSeq = vThis.rows.Query[e.rowKey].WorkReportSeq;
+                    jumpData.push(tempObj);
+                    if (jumpData.length > 0 && !isNaN(tempObj.WorkReportSeq)) {
+                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                        GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
+                        location.href = 'outsourcing_purchase_delivery.html';
+                    } else 
+                        toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                }
+            }
+        });
 
         // 새로고침 수행 시 SessionStorage 삭제
         let reloadYN = false;
