@@ -2,8 +2,8 @@ let app = new Vue({
     el: '#app',
     data:{
         leftMenu: GX._METHODS_.createLeftMenu(),
-        deptName: GX.Cookie.get('DeptName'),
-        userName: GX.Cookie.get('UserName'),
+        deptName: '',
+        userName: '',
         params: GX.getParameters(),
         BizUnitList: [], // 사업 단위 리스트
         isCheckList: [],

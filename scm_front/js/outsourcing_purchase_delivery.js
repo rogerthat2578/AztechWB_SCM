@@ -209,6 +209,7 @@ let app = new Vue({
         /** 조회 **/
         search: function(callback){
             let vThis = this;
+            
             let params = GX.deepCopy(vThis.queryForm);
             let paramsList = [];
 

@@ -106,7 +106,7 @@ let app = new Vue({
                     vThis.rangePickerPODate.setStartDate(new Date(parseInt(vThis.queryForm.PODateFr.substring(0, 4)), parseInt(vThis.queryForm.PODateFr.substring(4, 6)) - 1, parseInt(vThis.queryForm.PODateFr.substring(6))));
                     vThis.rangePickerPODate.setEndDate(new Date(parseInt(vThis.queryForm.PODateTo.substring(0, 4)), parseInt(vThis.queryForm.PODateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.PODateTo.substring(6))));
                     vThis.rangePickerDelvPlanDate.setStartDate(new Date(parseInt(vThis.queryForm.DelvPlanDateFr.substring(0, 4)), parseInt(vThis.queryForm.DelvPlanDateFr.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvPlanDateFr.substring(6))));
-                    vThis.rangePickerDelvPlanDate.setStartDate(new Date(parseInt(vThis.queryForm.DelvPlanDateTo.substring(0, 4)), parseInt(vThis.queryForm.DelvPlanDateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvPlanDateTo.substring(6))));
+                    vThis.rangePickerDelvPlanDate.setEndDate(new Date(parseInt(vThis.queryForm.DelvPlanDateTo.substring(0, 4)), parseInt(vThis.queryForm.DelvPlanDateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvPlanDateTo.substring(6))));
                 }
                 if (rowsQuery.length > 0) {
                     vThis.rows.Query = rowsQuery;
@@ -297,7 +297,10 @@ let app = new Vue({
             console.log(vThis.rows.ChangeIdx)
 
             let test = vThis.mainGrid.getModifiedRows({
-                withRawData: true
+                // checkedOnly: false, // defualt=false If set to true, only checked rows will be considered.
+                withRawData: true, // defualt=false If set to true, the data will contains the row data for internal use.
+                // rowKeyOnly: false, // defualt=false If set to true, only keys of the changed rows will be returned.
+                // ignoredColumns: [], // A list of column name to be excluded.
             })
             console.log('test', test)
             console.log('updatedRows', test.updatedRows)

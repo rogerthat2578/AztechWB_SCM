@@ -9,6 +9,9 @@
 	<link rel="stylesheet" href="css/scm_style.css">
 	<link rel="stylesheet" href="css/date_picker.css">
 	<link rel="stylesheet" href="css/toastr.css">
+	<!-- tui-grid -->
+	<link rel="stylesheet" href="css/tui-date-picker.css">
+	<link rel="stylesheet" href="css/tui-grid.css">
 	<style>
         [v-cloak] {
             display: none;
@@ -54,9 +57,14 @@
 								<label>납품일</label>
 							</li>
 							<li class="date">
-								<input type="text" class="datepicker" name="DelvDateFr" v-model.trim="queryForm.DelvDateFr" gx-datepicker="queryForm.DelvDateFr" @chagne="updateDate">
-								<span>-</span>
-								<input type="text" class="datepicker" name="DelvDateTo" v-model.trim="queryForm.DelvDateTo" gx-datepicker="queryForm.DelvDateTo" @chagne="updateDate">
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input type="text" id="DelvDateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="DelvDateFr-startpicker-container" style="margin-left: -1px;"></div>
+								</div>
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input id="DelvDateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="DelvDateTo-endpicker-container" style="margin-left: -1px;"></div>
+								</div>
 							</li>
 						</ul>
 		
@@ -164,7 +172,7 @@
 			<div class="main-data-wrap">
 				<div class="btn-row">
 					<div>
-						<button class="btn-stlye-01" @click="search(addSummary)">
+						<button class="btn-stlye-01" @click="search()">
 							<img src="img/ic_04.png" alt="조회버튼이미지">
 							<span class="web">조회</span>
 						</button>

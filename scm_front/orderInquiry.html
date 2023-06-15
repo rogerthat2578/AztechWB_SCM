@@ -9,6 +9,9 @@
 	<link rel="stylesheet" href="css/scm_style.css">
 	<link rel="stylesheet" href="css/date_picker.css">
 	<link rel="stylesheet" href="css/toastr.css">
+	<!-- tui-grid -->
+	<link rel="stylesheet" href="css/tui-date-picker.css">
+	<link rel="stylesheet" href="css/tui-grid.css">
 	<style>
         [v-cloak] {
             display: none;
@@ -54,20 +57,30 @@
 								<label>발주일</label>
 							</li>
 							<li class="date">
-								<input type="text" class="datepicker" name="PODateFr" v-model.trim="queryForm.PODateFr" gx-datepicker="queryForm.PODateFr" @chagne="updateDate">
-								<span>-</span>
-								<input type="text" class="datepicker" name="PODateTo" v-model.trim="queryForm.PODateTo" gx-datepicker="queryForm.PODateTo" @chagne="updateDate">
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input type="text" id="PODateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="PODateFr-startpicker-container" style="margin-left: -1px;"></div>
+								</div>
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input id="PODateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="PODateTo-endpicker-container" style="margin-left: -1px;"></div>
+								</div>
 							</li>
 						</ul>
-		
-						<ul class="input-wrap">
+
+                        <ul class="input-wrap">
 							<li class="name">
 								<label>납품예정일</label>
 							</li>
 							<li class="date">
-								<input type="text" class="datepicker" name="DelvPlanDateFr" v-model.trim="queryForm.DelvPlanDateFr" gx-datepicker="queryForm.DelvPlanDateFr" @chagne="updateDate">
-								<span>-</span>
-								<input type="text" class="datepicker" name="DelvPlanDateTo" v-model.trim="queryForm.DelvPlanDateTo" gx-datepicker="queryForm.DelvPlanDateTo" @chagne="updateDate">
+                                <div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input type="text" id="DelvPlanDateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="DelvPlanDateFr-startpicker-container" style="margin-left: -1px;"></div>
+								</div>
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input id="DelvPlanDateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="DelvPlanDateTo-endpicker-container" style="margin-left: -1px;"></div>
+								</div>
 							</li>
 						</ul>
 		
@@ -147,7 +160,7 @@
 			<div class="main-data-wrap">
 				<div class="btn-row">
 					<div>
-						<button class="btn-stlye-01" @click="search(addSummary)">
+						<button class="btn-stlye-01" @click="search()">
 							<img src="img/ic_04.png" alt="조회버튼이미지">
 							<span class="web">조회</span>
 						</button>

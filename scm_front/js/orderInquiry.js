@@ -6,13 +6,12 @@ let app = new Vue({
 		userName: '',
 		params: GX.getParameters(),
         BizUnitList: [], // 사업 단위 리스트
+        locationPath: location.pathname.replace(/\//g, '').replace('.html', ''),
         /**
          * rows.Query 조회 결과
-         * rows.QuerySummary 조회 결과 합계 Object
          */
 		rows: {
             Query: [],
-            QuerySummary: {},
         },
         /**
          * 조회 조건
@@ -50,8 +49,79 @@ let app = new Vue({
         DeptNameList: [],
         // 부서 리스트
         KeepDeptNameList: [],
+        // checkbox 선택한 행
+        selectedChkRow: {},
+        // grid 내 날짜 edit 모드일 때 기존 데이터 유지
+        objGridDatepicker: {
+            boolEditingStart: false,
+            strEditingStart: '',
+        },
 	},
+    watch: {
+        'rows.Query': 'saveHistory',
+        'objGridDatepicker.boolEditingStart': 'postEditingStartEvt',
+    },
+
     methods: {
+        /**
+         * 조회조건 SessionStorage에 담기
+         */
+        saveHistory: function() {
+            try {
+                GX.SessionStorage.set(this.locationPath + '-queryForm', JSON.stringify(this.queryForm));
+            } catch (e) {
+                toastr.warning('화면 이력을 저장하지 못하였습니다.');
+            }
+        },
+        /**
+         * SessionStorage에 담겨있는 조회조건 가져와서 세팅
+         */
+        loadHistory: function() {
+            try {
+                const vThis = this;
+                const queryForm = GX._METHODS_.nvl(GX.SessionStorage.get(vThis.locationPath + '-queryForm')) == '' ? {} : JSON.parse(GX.SessionStorage.get(vThis.locationPath + '-queryForm'));
+
+                if (Object.keys(queryForm).length > 0) {
+                    vThis.queryForm = queryForm;
+                /**
+                    * Default data setting
+                    * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+                    * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+                    * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+                    */
+                    vThis.deptName = GX.Cookie.get('DeptName');
+                    vThis.userName = GX.Cookie.get('UserName');
+                    vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
+                    vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
+                    vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
+                    vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+                    vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+                    
+                    // tui-datepicker에서 날짜를 바인딩 시킬때 Date 형식으로 바인딩해야함 
+                    vThis.rangePickerPODate.setStartDate(new Date(parseInt(vThis.queryForm.PODateFr.substring(0, 4)), parseInt(vThis.queryForm.PODateFr.substring(4, 6)) - 1, parseInt(vThis.queryForm.PODateFr.substring(6))));
+                    vThis.rangePickerPODate.setEndDate(new Date(parseInt(vThis.queryForm.PODateTo.substring(0, 4)), parseInt(vThis.queryForm.PODateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.PODateTo.substring(6))));
+                    vThis.rangePickerDelvPlanDate.setStartDate(new Date(parseInt(vThis.queryForm.DelvPlanDateFr.substring(0, 4)), parseInt(vThis.queryForm.DelvPlanDateFr.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvPlanDateFr.substring(6))));
+                    vThis.rangePickerDelvPlanDate.setEndDate(new Date(parseInt(vThis.queryForm.DelvPlanDateTo.substring(0, 4)), parseInt(vThis.queryForm.DelvPlanDateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvPlanDateTo.substring(6))));
+
+                    // 조회 조건 로드 후 조회 실행
+                    vThis.search();
+                }
+            } catch (e) {
+                toastr.warning('화면 이력을 가져오는 중 문제가 발생하여 정상적으로 가져오지 못하였습니다.');
+            }
+        },
+        /**
+         * tui grid의 datepicker 셀이 editing 상태가 시작했을 때 발생하는 이벤트의 후처리 함수 
+         * tui grid의 datepicker 셀이 editing 상태가 시작되면 해당 셀의 데이터가 사라지는 현상 때문에 추가
+         * 'editingStart' 이벤트 내부에 watch에서 감시중인 객체의 데이터를 변경하여 아래 함수가 실행되도록하면
+           마치 'editingStart' 이벤트 직후에 아래 함수가 실행되는것처럼됨 
+         */
+        postEditingStartEvt: function () {
+            const vThis = this;
+            if (vThis.objGridDatepicker.boolEditingStart)
+                document.getElementsByClassName('tui-grid-datepicker-input')[0].value = vThis.objGridDatepicker.strEditingStart;
+        },
+
         /**이벤트 처리 */
         eventCheck: function() {
             let vThis = this;
@@ -86,10 +156,21 @@ let app = new Vue({
                     setTimeout(() => {
                         if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
                     }, 1000)
+                } else if (e.key.toLowerCase() === 'backspace' && e.target.getAttribute('id').split('-')[0].indexOf('DelvPlanDate') > -1) {
+                    // 조회조건 납품예정일 데이터를 지웠을 때 연결되어있는 vThis.queryForm.DelvPlanDateFr 또는 vThis.queryForm.DelvPlanDateTo의 데이터도 제거
+                    let eTemp = e.target.getAttribute('id').split('-')[0];
+                    if (eTemp.substr(-2).toLowerCase() === 'fr') {
+                        vThis.rangePickerDelvPlanDate.setStartDate(null)
+                        vThis.queryForm[eTemp] = ''
+                        vThis.queryForm[eTemp.substr(0, eTemp.length - 2) + 'To'] = ''
+                    } else if (eTemp.substr(-2).toLowerCase() === 'to') {
+                        vThis.rangePickerDelvPlanDate.setEndDate(null)
+                        vThis.queryForm[eTemp] = ''
+                    }
                 }
 
                 if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
-                    vThis.search(vThis.addSummary);
+                    vThis.search();
                     vThis.initKeyCombi();
                 }
             }
@@ -134,50 +215,10 @@ let app = new Vue({
                 vThis.DeptNameList = vThis[strConcat];
             }
         },
-        /**날짜 번경 후처리
-         * v: 날짜
-         * o: 날짜 input 엘리먼트
-         */
-        updateDate: function(v = '', o = null) {
-            if (v && o) {
-                let vThis = this;
-
-                let selEle = o;
-                let selVal = v;
-                let selEleName = selEle.getAttribute('name');
-                if (selEleName.indexOf('Fr') > -1) { // 선택한 날짜가 from일 때 to와 비교.
-                    if (new Date(selVal) > new Date(vThis.queryForm[selEleName.replace('Fr', 'To')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('Fr', 'To')];
-                    }
-                } else if (selEleName.indexOf('To') > -1) { // 선택한 날짜가 to일 때 from과 비교.
-                    if (new Date(selVal) < new Date(vThis.queryForm[selEleName.replace('To', 'Fr')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('To', 'Fr')];
-                    }
-                }
-            }
-        },
-        /**
-         * 
-         */
-        updateRowDelvPlanDate: function (idx = null) {
-            let evtTarget = event.target;
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != ''
-                && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
-                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
-                this.rows.Query[idx].RowEdit = true;
-                document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
-            }
-        },
         init: function () {
             let vThis = this;
             vThis.initKeyCombi();
-            vThis.initSelected();
             vThis.rows.Query = [];
-            vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
             vThis.queryForm.PODateFr = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
@@ -200,142 +241,33 @@ let app = new Vue({
                 this.keyCombi[k] = false;
             });
         },
-        selectAll: function () {
-            let obj = document.querySelectorAll('[name="RowCheck"]');
-            let isCheckList = [];
-            for (let i in obj) {
-                if (obj.hasOwnProperty(i)) {
-                    obj[i].checked = event.target.checked;
-                    if (event.target.checked) isCheckList.push(Number(i));
-                }
-            }
-            this.isCheckList = isCheckList;
-        },
-        initSelected: function () {
-            this.isCheckList = [];
-            let selAllObj = document.querySelector('thead [type="checkbox"]');
-            if (selAllObj != null) {
-                selAllObj.checked = true;
-                selAllObj.click();
-            }
-        },
-        isChecked: function (index) {
-            return (this.isCheckList.indexOf(index) != -1);
-        },
-        selectedMark: function (index) {
-            let idx = this.isCheckList.indexOf(index);
-            if (event.target.checked) this.isCheckList.push(index);
-            else if (idx != -1) this.isCheckList.splice(idx, 1);
-        },
-        applyAll: function (name, idx) {
-            event.target.setAttribute('gx-datepicker', idx);
-            GX.Calendar.openInRow(name, { useYN: true, idx: idx });
-        },
-        selectRow: function (idx) {
-            let vThis = this;
-            let e = event;
-
-            // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
-            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
-                ele.classList.remove('fill-color-sel-row');
-            });
-            if (e.target.nodeName.toUpperCase() === 'TD')
-                e.target.parentNode.classList.add('fill-color-sel-row');
-
-            GX.doubleClickRun(event.target, function () {
-                if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let tempObj = {}, jumpData = [];
-                    tempObj.POSeq = vThis.rows.Query[idx].POSeq;
-                    tempObj.POSerl = vThis.rows.Query[idx].POSerl;
-                    jumpData.push(tempObj);
-                    if (jumpData.length > 0 && !isNaN(tempObj.POSeq) && !isNaN(tempObj.POSerl)) {
-                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
-                        GX.SessionStorage.set('jumpSetMethodId', 'PUORDPOJump');
-                        location.href = 'purchase_delivery.html';
-                    } else 
-                        alert('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
-                }
-            });
-        },
         /**납품등록 화면으로 점프. 여러행 */
         pageJump: function () {
-            let vThis = this;
+            const vThis = this;
 
-            let jumpData = [];
-            for (let i in vThis.isCheckList) {
-                if (vThis.isCheckList.hasOwnProperty(i)) {
-                    let tempObj = {};
-                    tempObj.POSeq = vThis.rows.Query[vThis.isCheckList[i]].POSeq;
-                    tempObj.POSerl = vThis.rows.Query[vThis.isCheckList[i]].POSerl;
-                    jumpData.push(tempObj);
-                }
-            }
+            if (Object.keys(vThis.selectedChkRow).length > 0) {
+                // 선택된 행 담기
+                let arr = [];
+                Object.keys(vThis.selectedChkRow).map(k => {
+                    arr.push(vThis.selectedChkRow[k]);
+                });
 
-            /**
-             * sessionStorage 사용.
-             * > 해당 탭 닫으면 없어짐.
-             * > 현재 PDA, SCM이 돌고있는 Web Server를 수정할 수 없음.
-             */
-            if (jumpData.length > 0) {
-                GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                GX.SessionStorage.set('jumpData', JSON.stringify(arr));
                 GX.SessionStorage.set('jumpSetMethodId', 'PUORDPOJump');
                 location.href = 'purchase_delivery.html';
-            } else
-                alert('선택한 행이 없습니다.')
-        },
-        /**
-         * 소계 행 추가
-         */
-        addSummary: function () {
-            let vThis = this;
-
-            if (document.querySelectorAll('[id="grid"] table thead tr').length > 1) {
-                for (let i in document.querySelectorAll('[id="grid"] table thead tr')) {
-                    if (document.querySelectorAll('[id="grid"] table thead tr').hasOwnProperty(i) && i > 0)
-                        document.querySelectorAll('[id="grid"] table thead tr')[i].remove();
-                }
-            }
-
-            if (vThis.rows.Query.length > 0) {
-                let objQeury = GX.deepCopy(vThis.rows.QuerySummary);
-                let trList = document.querySelectorAll('[id="grid"] table thead tr td');
-                let strTd = '';
-                const keyMapping = {
-                    sumQty: '발주수량',
-                    sumCurAmt: '발주금액',
-                    sumCurVAT: '부가세',
-                    sumTotCurAmt: '금액계',
-                    sumRemainQty: '미납수량',
-                    sumDelvQty: '납품수량',
-                    sumDelvCurAmt: '납품금액'
-                }
-
-                for (let i in trList) {
-                    if (trList.hasOwnProperty(i)) {
-                        if (i >= 11 && i <= 18 && i != 12) {
-                            Object.keys(keyMapping).forEach(k => {
-                                if (trList[i].innerText == keyMapping[k])
-                                    strTd += '<td class="text-r">' + objQeury[k].toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,') + '</td>';
-                            });
-                        } else { 
-                            strTd += '<td></td>';
-                        }
-                    }
-                }
-
-                let createTr = document.createElement('tr');
-                createTr.style.backgroundColor = '#e0fec0';
-                createTr.style.color = 'black';
-                createTr.innerHTML = strTd;
-                document.querySelector('[id="grid"] table thead').append(createTr);
+            } else{
+                toastr.warning("선택된 데이터가 없습니다.");
             }
         },
+
         /**조회 */
         search: function(callback) {
             let vThis = this;
 
+            // 포커스 제거
+            document.activeElement.blur();
+
             vThis.initKeyCombi();
-            vThis.initSelected();
 
             let params = GX.deepCopy(vThis.queryForm);
 
@@ -350,107 +282,89 @@ let app = new Vue({
             params.DeptSeq = params.Dept;
 
             vThis.rows.Query = [];
-            vThis.rows.QuerySummary = {};
             
             GX._METHODS_
             .setMethodId('PUORDPOQuery')
             .ajax([params], [function (data) {
-                if (data.length > 0) {
-                    // data for loop
-                    let noDataIndex = [];
-                    let summaryList = {sumQty: 0, sumCurAmt: 0, sumCurVAT: 0, sumTotCurAmt: 0, sumRemainQty: 0, sumDelvQty: 0, sumDelvCurAmt: 0, Price: 0 /**Price: 화면에 표시X */};
-                    for (let i in data) {
-                        if (data.hasOwnProperty(i)) {
-                            data[i].ROWNUM = parseInt(i) + 1;
-                            data[i].RowEdit = false;
-                            data[i].PODate = data[i].PODate.length == 8 ? (data[i].PODate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].PODate;
-                            data[i].DelvDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                            
-                            if (data[i].DelvPlanDate != null && data[i].DelvPlanDate.replace(/\ /g, '') != '' && data[i].DelvPlanDate != undefined) {
-                                data[i].DelvPlanDate = data[i].DelvPlanDate.length == 8 ? (data[i].DelvPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvPlanDate;
-                            } else {
-                                data[i].DelvPlanDate = data[i].DelvDate.length == 8 ? (data[i].DelvDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].DelvDate;
-                                noDataIndex.push(i);
-                            }
-
-                            Object.keys(summaryList).map((k) => {
-                                if(data[i][k.replace('sum', '')]) {
-                                    if (!isNaN(GX._METHODS_.nvl(data[i][k.replace('sum', '')]))) {
-                                        summaryList[k] += parseFloat(data[i][k.replace('sum', '')]);
-                                        data[i][k.replace('sum', '')] = GX._METHODS_.nvl(data[i][k.replace('sum', '')]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                                    } else
-                                        summaryList[k] += 0;
-
-                                    if (GX._METHODS_.nvl(summaryList[k].toString().split('.')[1]).length > 0)
-                                        summaryList[k] = parseFloat(summaryList[k].toFixed(2));
-                                }
-                            });
+                if(data.length > 0){
+                    let i = 0;
+                    while (i < data.length) {
+                        // 납품예정일에 데이터가 없을 경우 납기일 기본 세팅
+                        if (GX._METHODS_.nvl(data[i].DelvPlanDate).length !== 8) {
+                            data[i].DelvPlanDate = data[i].DelvDate;
                         }
+                        i++;
                     }
-
-                    // bind data, bind summary data
                     vThis.rows.Query = data;
-                    vThis.rows.QuerySummary = summaryList;
-
-                    /**DOM에 아직 그리드(table tags)가 다 그려지지 않아서 바로 DOM에 접근하면 Element를 못찾음... setTimeout 그냥 쓸까..? */
-                    // element for loop
-                    if (noDataIndex.length > 0) {
-                        setTimeout(() => {
-                            for (let i in noDataIndex) {
-                                if (noDataIndex.hasOwnProperty(i)) {
-                                    document.getElementsByName('DelvPlanDate')[noDataIndex[i]].parentNode.parentNode.classList.add('no-data');
-                                    vThis.rows.Query[noDataIndex[i]].RowEdit = true;
-                                }
-                            }
-                        }, 20);
-                    }
-                } else {
-                    alert('조회 결과가 없습니다.');
+                    toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
+                } else{
+                    vThis.rows.Query = [];
+                    toastr.info('조회 결과가 없습니다.');
                 }
+
                 if (typeof callback === 'function') callback();
+
+                // 그리드에 데이터 바인딩
+                vThis.mainGrid.resetData(vThis.rows.Query);
+
+                // 조회 조건 영역 데이터 저장
+                vThis.saveHistory();
             }])
         },
         save: function() {
-            let vThis = this;
+            const vThis = this;
 
-            let saveArrData = GX.deepCopy(vThis.rows.Query);
+            // 현재 edit 상태인 셀 적용 처리
+            vThis.mainGrid.blur();
 
-            // DataBlock1에 공통으로 들어가야하는 파라메터 세팅
-            for (let i = saveArrData.length - 1; i >= 0; i--) {
-                if (saveArrData[i].RowEdit) {
-                    saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
-                    saveArrData[i].WorkingTag = 'U';
-                    saveArrData[i].DelvPlanDate = saveArrData[i].DelvPlanDate.indexOf('-') > -1 ? saveArrData[i].DelvPlanDate.replace(/\-/g, "") : saveArrData[i].DelvPlanDate;
-                } else {
-                    saveArrData.splice(i, 1);
+            let getModiData = vThis.mainGrid.getModifiedRows({
+                // checkedOnly: false, // defualt=false If set to true, only checked rows will be considered.
+                withRawData: true, // defualt=false If set to true, the data will contains the row data for internal use.
+                // rowKeyOnly: false, // defualt=false If set to true, only keys of the changed rows will be returned.
+                // ignoredColumns: [], // A list of column name to be excluded.
+            }).updatedRows;
+
+            if (getModiData.length > 0) {
+                // DataBlock1에 공통으로 들어가야 하는 파라미터 세팅
+                for (let i = 0; i < getModiData.length; i++) {
+                    getModiData[i].IDX_NO = parseInt(getModiData[i].rowKey) + 1;
+                    getModiData[i].WorkingTag = 'U';
                 }
-            }
 
-            if (saveArrData.length > 0) {
-                GX._METHODS_
-                .setMethodId('PUORDPOSave')
-                .ajax(saveArrData, [], [function (data) {
-                    vThis.initSelected();
-                    vThis.initKeyCombi();
-                    vThis.rows.Query = [];
-                    vThis.rows.QuerySummary = {};
-                    alert('저장 성공');
-                    vThis.search(vThis.addSummary);
-                }, function (data) {
-                }]);
+                try {
+                    GX._METHODS_
+                    .setMethodId('PUORDPOSave')
+                    .ajax(getModiData, [], [function(data){
+                        toastr.info('저장 성공');
+                        vThis.search();
+                    }]);
+                } catch(e) {
+                    toastr.error('저장 중 에러 발생 \n' + e);
+                }
             } else {
-                alert('파라메터 세팅 중<br>예외사항 발생.');
+                toastr.warning('저장할 데이터가 없습니다.');
             }
         },
 
         /**엑셀 다운로드 xlxs */
         excelDownload: function () {
-            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
-        },
+            const vThis = this;
+            console.log(vThis.mainGrid.getCheckedRowKeys())
 
-        /**비고 클릭 시 alert 대신 Toast 띄우기 */
-        alertToast: function (text = '') {
-            toastr.info(text);
+            const gridDt = document.getElementsByClassName('tui-grid-table');
+            let gridTbodyTr = gridDt[gridDt.length - 1].getElementsByTagName('tbody')[0].cloneNode(true);
+
+            if (gridTbodyTr.childElementCount > 0) {
+                let summaryTbodyTr = gridDt[gridDt.length - 2].getElementsByTagName('tbody')[0].childNodes[0].cloneNode(true);
+                let headerTbodyTr = gridDt[gridDt.length - 3].getElementsByTagName('tbody')[0].childNodes[0].cloneNode(true);
+                gridTbodyTr.prepend(headerTbodyTr, summaryTbodyTr);
+                let table = document.createElement('table');
+                table.append(gridTbodyTr);
+                
+                GX._METHODS_.excelDownload(table);
+            } else {
+                toastr.warning('다운로드할 데이터가 없습니다.');
+            }
         },
     },
     created() {
@@ -494,68 +408,190 @@ let app = new Vue({
                     if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
                 }]);
             });
-
-            GX.VueGrid
-            .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
-            .item('ROWNUM').head('No.', '')
-            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
-                .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
-            .item('SMCurrStatusName').head('진행상태', '')
-            .item('PODate').head('발주일', '')
-            // .item('PONo').head('발주번호', '')
-            .item('DeptName').head('발주부서', '')
-            .item('DelvDate').head('납기일', '')
-            .item('DelvPlanDate', { styleSyntax: 'style="width: 92px;"' }).head('납품예정일', '')
-                .body('<div style="width: 90px;"><input type="text" class="datepicker" name="DelvPlanDate" gx-datepicker="" attr-condition="" :value="row.DelvPlanDate" @input="updateRowDelvPlanDate(index)" @click="applyAll(\'DelvPlanDate\', index)" style="border: 0px solid; text-align: center; background: transparent; width: 100%;" /></div>')
-            .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('ItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
-                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.ItemName)">{{row.ItemName}}</div>', 'text-l')
-            .item('Spec').head('규격', '').body(null, 'text-l')
-            .item('UnitName').head('단위', '')
-            .item('Qty').head('발주수량', '').body(null, 'text-r')
-            .item('Price').head('발주단가', '').body(null, 'text-r')
-            .item('CurAmt').head('발주금액', '').body(null, 'text-r')
-            .item('CurVAT').head('부가세', '').body(null, 'text-r')
-            .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
-            .item('RemainQty').head('미납수량', '').body(null, 'text-r')
-            .item('DelvQty').head('납품수량', '').body(null, 'text-r')
-            .item('DelvCurAmt').head('납품금액', '').body(null, 'text-r')
-            .item('WHName').head('입고창고', '')
-            .item('Remark1').head('비고', '')
-                .body('<div style="width: 120px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.Remark1)">{{row.Remark1}}</div>', 'text-l')
-            .item('OrderItemName').head('Order품명', '').body(null, 'text-l')
-            .item('OrderItemNo').head('Order품번', '').body(null, 'text-l')
-            // .item('OrderSpec').head('Order규격', '').body(null, 'text-l')
-            .item('BuyerNo').head('BuyerNo.', '').body(null, 'text-l')
-            .item('SizeName').head('사이즈', '')
-            .item('ColorNo').head('색상', '')
-                .body('<div style="width: 140px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.ColorNo)">{{row.ColorNo}}</div>', 'text-l')
-            .item('UseSelect').head('사용부위', '')
-                .body('<div style="width: 140px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" @click="alertToast(row.UseSelect)">{{row.UseSelect}}</div>', 'text-l')
-            .loadTemplate('#grid', 'rows.Query');
         }
     },
     mounted() {
-        let vThis = this;
+        const vThis = this;
 
-        GX.Calendar.datePicker('gx-datepicker', {
-            height: '400px',
-            monthSelectWidth: '25%',
-            callback: function (result, attribute) {
-                if (!isNaN(attribute)) {
-                    vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
-                    vThis.rows.Query[attribute].RowEdit = true;
-                    document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
-                } else {
-                    const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
-                    const info = GX.Calendar.dateFormatInfo(openerObj);
-                    let keys = attribute.split('.');
-                    if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    vThis.updateDate(GX.formatDate(result, info.format), openerObj);
+        // init from to Datepicker
+        const today = new Date();
+        vThis.rangePickerPODate = new tui.DatePicker.createRangePicker({
+            startpicker: {
+                date: today,
+                input: '#PODateFr-startpicker-input',
+                container: '#PODateFr-startpicker-container'
+            },
+            endpicker: {
+                date: today,
+                input: '#PODateTo-endpicker-input',
+                container: '#PODateTo-endpicker-container'
+            },
+            format: 'yyyy-MM-dd',
+            language: 'ko',
+            timePicker: false
+        });
+        vThis.rangePickerDelvPlanDate = new tui.DatePicker.createRangePicker({
+            startpicker: {
+                input: '#DelvPlanDateFr-startpicker-input',
+                container: '#DelvPlanDateFr-startpicker-container'
+            },
+            endpicker: {
+                input: '#DelvPlanDateTo-endpicker-input',
+                container: '#DelvPlanDateTo-endpicker-container'
+            },
+            format: 'yyyy-MM-dd',
+            language: 'ko',
+            timePicker: false
+        });
+
+        // put default data into "this.queryForm.~"
+        vThis.queryForm.PODateFr = vThis.rangePickerPODate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        vThis.queryForm.PODateTo = vThis.rangePickerPODate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+
+        // regist range datepicker change event
+        vThis.rangePickerPODate.on('change:start', () => {
+            if (vThis.rangePickerPODate.getStartDate())
+                vThis.queryForm.PODateFr = vThis.rangePickerPODate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+        vThis.rangePickerPODate.on('change:end', () => {
+            if (vThis.rangePickerPODate.getEndDate())
+                vThis.queryForm.PODateTo = vThis.rangePickerPODate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+        vThis.rangePickerDelvPlanDate.on('change:start', () => {
+            if (vThis.rangePickerDelvPlanDate.getStartDate())
+                vThis.queryForm.DelvPlanDateFr = vThis.rangePickerDelvPlanDate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+        vThis.rangePickerDelvPlanDate.on('change:end', () => {
+            if (vThis.rangePickerDelvPlanDate.getEndDate())
+                vThis.queryForm.DelvPlanDateTo = vThis.rangePickerDelvPlanDate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+
+        // init grid columns, set grid columns
+        ToastUIGrid.setColumns
+        .init()
+        .setRowHeaders('rowNum', 'checkbox')
+        .header('진행상태').name('SMCurrStatusName').align('center').width(80).whiteSpace().ellipsis().setRow()
+        .header('발주일').name('PODate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
+        // .header('발주번호').name('PONo').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('발주부서').name('DeptName').align('center').width(150).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('납기일').name('DelvDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
+        .header('납품예정일').name('DelvPlanDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('품번').name('ItemNo').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('품명').name('ItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('단위').name('UnitName').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('발주수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('발주단가').name('Price').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('발주금액').name('CurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('부가세').name('CurVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('금액계').name('TotCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('미납수량').name('RemainQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('납품수량').name('DelvQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('납품금액').name('DelvCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().sortable(true).setRow()
+        .header('입고창고').name('WHName').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('비고').name('Remark1').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('Order품명').name('OrderItemName').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('Order품번').name('OrderItemNo').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('Order규격').name('OrderSpec').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('BuyerNo.').name('BuyerNo').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('사이즈').name('SizeName').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('색상').name('ColorNo').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('사용부위').name('UseSelect').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        ;
+
+        // create grid
+        vThis.mainGrid = ToastUIGrid.initGrid('grid');
+
+        // grid data init
+        vThis.rows.Query = [];
+        vThis.mainGrid.resetData(vThis.rows.Query);
+
+        // grid afterSort event - 정렬(sorting) 시 다중 정렬 기능도 알림
+        vThis.mainGrid.on('afterSort', (e) => {
+            if (e.sortState.columns.length === 1) {
+                toastr.info('다중 정렬은 "Ctrl" 키를 누른 상태로 다른 컬럼들 클릭하면 됩니다.')
+            }
+        });
+
+        // grid click event
+        vThis.mainGrid.on('click', function (e) {
+            // e.targetType = cell / rowHeader / columnHeader / etc (cell 다중 선택)
+            // if (GX._METHODS_.nvl(e.targetType) === 'cell') console.log('click', e);
+            console.log(e.targetType, e)
+            console.log(vThis.mainGrid.getCheckedRowKeys())
+        });
+
+        // grid dblclick event
+        vThis.mainGrid.on('dblclick', function(e) {
+            // 행 더블 클릭 시 점프
+            if (e.rowKey || e.rowKey === 0) {
+                // 입력 받는 컬럼은 제외
+                if (e.columnName != 'DelvPlanDate') {
+                    if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                        let arr = [];
+                        arr.push(vThis.rows.Query[e.rowKey])
+                        if (arr.length > 0) {
+                            GX.SessionStorage.set('jumpData', JSON.stringify(arr));
+                            GX.SessionStorage.set('jumpSetMethodId', 'PUORDPOJump');
+                            location.href = 'purchase_delivery.html';
+                        } else 
+                            toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                    }
                 }
             }
         });
+
+        // grid rowHeader checkbox event : true
+        vThis.mainGrid.on('check', (ev) => {
+            vThis.selectedChkRow[ev.rowKey] = vThis.rows.Query[ev.rowKey];
+        });
+        
+        // grid rowHeader checkbox event : false
+        vThis.mainGrid.on('uncheck', (ev) => {
+            delete vThis.selectedChkRow[ev.rowKey];
+        });
+
+        // grid rowHeader checkbox event : all check
+        vThis.mainGrid.on('checkAll', (ev) => {
+            vThis.rows.Query.map((v, i) => {
+                vThis.selectedChkRow[i] = v;
+            });
+        });
+
+        // grid rowHeader checkbox event : all uncheck
+        vThis.mainGrid.on('uncheckAll', (ev) => {
+            vThis.selectedChkRow = {};
+        });
+
+        // grid editing mode start
+        vThis.mainGrid.on('editingStart', function (e) {
+            vThis.objGridDatepicker.boolEditingStart = true;
+            vThis.objGridDatepicker.strEditingStart = e.value;
+        })
+
+        // grid editing mode finish
+        vThis.mainGrid.on('editingFinish', function (e) {
+            vThis.objGridDatepicker.boolEditingStart = false;
+            vThis.objGridDatepicker.strEditingStart = '';
+        })
+
+        // 새로고침 수행 시 SessionStorage 삭제
+        let reloadYN = false;
+        const entries = performance.getEntriesByType("navigation");
+        for (let i = 0; i < entries.length; i++) {
+            if (entries[i].type === "reload") {
+                reloadYN = true;
+                break;
+            }
+        }
+        if (reloadYN) {
+            try {
+                GX.SessionStorage.remove(vThis.locationPath + '-queryForm');
+            } catch (e) {
+                console.log('SessionStorage 삭제 중 에러 발생', e);
+            }
+        } else {
+            vThis.loadHistory();
+        }
     }
 });

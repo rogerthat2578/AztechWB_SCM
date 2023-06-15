@@ -132,7 +132,7 @@ ToastUIGrid = {
             this.summary.height = 40;
             this.summary.columnContent[v] = {
                 template: function (valueMap) {
-                    return `${valueMap.sum}`.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                    return `${valueMap.sum || 0}`.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 }
             }
             return this;
@@ -206,7 +206,7 @@ ToastUIGrid = {
                         this.options = {
                             ...this.options,
                             formatter ({value}) {
-                                return `${value}`.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                                return `${value || 0}`.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                             }
                         }
                         break;

@@ -2,8 +2,8 @@ let app = new Vue({
     el: '#app',
     data:{
         leftMenu: GX._METHODS_.createLeftMenu(),
-        deptName: GX.Cookie.get('DeptName'),
-        userName: GX.Cookie.get('UserName'),
+        deptName: '',
+        userName: '',
         params: GX.getParameters(),
         BizUnitList: [], // 사업 단위 리스트
         locationPath: location.pathname.replace(/\//g, '').replace('.html', ''),
@@ -39,10 +39,10 @@ let app = new Vue({
             Control: false,
             Q: false,
         },
-        // 변경 감시
-        watch: {
-            'rows.Query': 'saveHistory',
-        },
+    },
+    // 변경 감시
+    watch: {
+        'rows.Query': 'saveHistory',
     },
 
     methods:{
@@ -212,6 +212,9 @@ let app = new Vue({
         /** 조회 **/
         search: function(callback){
             let vThis = this;
+
+            // 포커스 제거
+            document.activeElement.blur();
 
             vThis.initKeyCombi();
 
@@ -416,7 +419,7 @@ let app = new Vue({
         // .header('폭').name('Width').align('right').width(80).whiteSpace().ellipsis().sortable(true).setRow()
         // .header('밀도').name('Density').align('right').width(80).whiteSpace().ellipsis().sortable(true).setRow()
         // .header('사고지').name('IsAccident').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsAccident'}).sortable().setRow()
-        .header('작업지시번호').name('WorkOrderNo').align('left').width(80).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('작업지시번호').name('WorkOrderNo').align('center').width(120).whiteSpace().ellipsis().sortable(true).setRow()
         .header('공정').name('ProcName').align('left').width(80).whiteSpace().ellipsis().sortable(true).setRow()
         ;
         
@@ -427,16 +430,22 @@ let app = new Vue({
         vThis.rows.Query = [];
         vThis.mainGrid.resetData(vThis.rows.Query);
 
+        // grid afterSort event - 정렬(sorting) 시 다중 정렬 기능도 알림
+        vThis.mainGrid.on('afterSort', (e) => {
+            if (e.sortState.columns.length === 1) {
+                toastr.info('다중 정렬은 "Ctrl" 키를 누른 상태로 다른 컬럼들 클릭하면 됩니다.')
+            }
+        });
+
         // grid dblclick event
         vThis.mainGrid.on('dblclick', function(e) {
             // 행 더블 클릭 시 점프
             if (e.rowKey || e.rowKey === 0) {
                 if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let tempObj = {}, jumpData = [];
-                    tempObj.WorkReportSeq = vThis.rows.Query[e.rowKey].WorkReportSeq;
-                    jumpData.push(tempObj);
-                    if (jumpData.length > 0 && !isNaN(tempObj.WorkReportSeq)) {
-                        GX.SessionStorage.set('jumpData', JSON.stringify(jumpData));
+                    let arr = [];
+                    arr.push(vThis.rows.Query[e.rowKey])
+                    if (arr.length > 0) {
+                        GX.SessionStorage.set('jumpData', JSON.stringify(arr));
                         GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
                         location.href = 'outsourcing_purchase_delivery.html';
                     } else 

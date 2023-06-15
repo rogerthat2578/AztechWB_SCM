@@ -9,6 +9,9 @@
 	<link rel="stylesheet" href="css/scm_style.css">
 	<link rel="stylesheet" href="css/date_picker.css">
 	<link rel="stylesheet" href="css/toastr.css">
+	<!-- tui-grid -->
+	<link rel="stylesheet" href="css/tui-date-picker.css">
+	<link rel="stylesheet" href="css/tui-grid.css">
 	<style>
 		[v-cloak] {
 			display: none;
@@ -49,25 +52,19 @@
 			<div class="top-data-wrap">
 				<div class="data-row-wrap">
 					<div class="data-row">
-						<!-- <ul class="input-wrap">
-							<li class="name essential">
-								<label>작업예정일</label>
-							</li>
-							<li class="date">
-								<input type="text" name="WorkDateFr" class="datepicker" v-model.trim="queryForm.WorkDateFr" gx-datepicker="queryForm.WorkDateFr" @change="updateDate">
-								<span>-</span>
-								<input type="text" name="WorkDateTo" class="datepicker" v-model.trim="queryForm.WorkDateTo" gx-datepicker="queryForm.WorkDateTo" @change="updateDate">
-							</li>
-						</ul> -->
-
 						<ul class="input-wrap">
 							<li class="name essential">
 								<label>작업지시일</label>
 							</li>
 							<li class="date">
-								<input type="text" name="WorkOrderDateFr" class="datepicker" v-model.trim="queryForm.WorkOrderDateFr" gx-datepicker="queryForm.WorkOrderDateFr" @change="updateDate">
-								<span>-</span>
-								<input type="text" name="WorkOrderDateTo" class="datepicker" v-model.trim="queryForm.WorkOrderDateTo" gx-datepicker="queryForm.WorkOrderDateTo" @change="updateDate">
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input type="text" id="WorkOrderDateFr-startpicker-input" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="WorkOrderDateFr-startpicker-container" style="margin-left: -1px;"></div>
+								</div>
+								<div class="tui-datepicker-input tui-datetime-input-custom-short tui-has-focus">
+									<input id="WorkOrderDateTo-endpicker-input" type="text" aria-label="Date" style="font-size: 14px;">
+									<div class="tui-datepicker-mo-container-position" id="WorkOrderDateTo-endpicker-container" style="margin-left: -1px;"></div>
+								</div>
 							</li>
 						</ul>
 
@@ -153,7 +150,7 @@
 			<div class="main-data-wrap">
 				<div class="btn-row">
 					<div>
-						<button class="btn-stlye-01" @Click="search(addSummary)">
+						<button class="btn-stlye-01" @Click="search()">
 							<img src="img/ic_04.png" alt="조회버튼이미지">
 							<span class="web" id="btn-query">조회</span>
 						</button>

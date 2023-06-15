@@ -53,7 +53,7 @@ button {
   font-family: SCDream6;
   line-height: 36px;
 }
-button:hover {
+button:hover:not(.tui-calendar-btn) {
   background: linear-gradient(#112DA1, #0F1D6C);
 }
 
