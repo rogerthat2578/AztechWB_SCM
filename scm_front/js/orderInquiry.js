@@ -470,7 +470,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum', 'checkbox')
-        .header('진행상태').name('SMCurrStatusName').align('center').width(80).whiteSpace().ellipsis().setRow()
+        .header('진행상태').name('SMCurrStatusName').align('center').width(90).whiteSpace().ellipsis().sortable(true).setRow()
         .header('발주일').name('PODate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         // .header('발주번호').name('PONo').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
         .header('발주부서').name('DeptName').align('center').width(150).whiteSpace().ellipsis().sortable(true).setRow()
@@ -517,8 +517,8 @@ let app = new Vue({
         vThis.mainGrid.on('click', function (e) {
             // e.targetType = cell / rowHeader / columnHeader / etc (cell 다중 선택)
             // if (GX._METHODS_.nvl(e.targetType) === 'cell') console.log('click', e);
-            console.log(e.targetType, e)
-            console.log(vThis.mainGrid.getCheckedRowKeys())
+            // console.log(e.targetType, e)
+            // console.log(vThis.mainGrid.getCheckedRowKeys())
         });
 
         // grid dblclick event

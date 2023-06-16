@@ -132,7 +132,15 @@ ToastUIGrid = {
             this.summary.height = 40;
             this.summary.columnContent[v] = {
                 template: function (valueMap) {
-                    return `${valueMap.sum || 0}`.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+                    let rtnSum = '0';
+                    let procDecimal = valueMap.sum || 0;
+                    if (procDecimal % 1 == 0) {
+                        // 소수점 아래 값이 0이 아니면 소수점 자리 표기
+                        rtnSum = procDecimal.toString();
+                    } else {
+                        rtnSum = procDecimal.toFixed(1).toString();
+                    }
+                    return `${rtnSum}`.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
                 }
             }
             return this;
