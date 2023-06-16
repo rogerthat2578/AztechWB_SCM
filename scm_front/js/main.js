@@ -217,17 +217,17 @@ let app = new Vue({
 							data[i].LessQty = GX._METHODS_.nvl(data[i].LessQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
 							// 글자 생략
 							let defEllipsis = 12;
-							if (data[i].ItemNo.length > defEllipsis) {
-								data[i].ellipsisItemNo = data[i].ItemNo;
-								data[i].ItemNo = data[i].ItemNo.substr(0, defEllipsis) + '...';
+							if (GX._METHODS_.nvl(data[i].ItemNo).length > defEllipsis) {
+								data[i].ellipsisItemNo = GX._METHODS_.nvl(data[i].ItemNo);
+								data[i].ItemNo = GX._METHODS_.nvl(data[i].ItemNo).substr(0, defEllipsis) + '...';
 							}
-							if (data[i].ItemName.length > defEllipsis) {
-								data[i].ellipsisItemName = data[i].ItemName;
-								data[i].ItemName = data[i].ItemName.substr(0, defEllipsis) + '...';
+							if (GX._METHODS_.nvl(data[i].ItemName).length > defEllipsis) {
+								data[i].ellipsisItemName = GX._METHODS_.nvl(data[i].ItemName);
+								data[i].ItemName = GX._METHODS_.nvl(data[i].ItemName).substr(0, defEllipsis) + '...';
 							}
-							if (data[i].Spec.length > defEllipsis) {
-								data[i].ellipsisSpec = data[i].Spec;
-								data[i].Spec = data[i].Spec.substr(0, defEllipsis) + '...';
+							if (GX._METHODS_.nvl(data[i].Spec).length > defEllipsis) {
+								data[i].ellipsisSpec = GX._METHODS_.nvl(data[i].Spec);
+								data[i].Spec = GX._METHODS_.nvl(data[i].Spec).substr(0, defEllipsis) + '...';
 							}
 						}
 					}
@@ -247,17 +247,17 @@ let app = new Vue({
 							data[i].LessQty = GX._METHODS_.nvl(data[i].LessQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
 							// 글자 생략
 							let defEllipsis = 12;
-							if (data[i].ItemNo.length > defEllipsis) {
-								data[i].ellipsisItemNo = data[i].ItemNo;
-								data[i].ItemNo = data[i].ItemNo.substr(0, defEllipsis) + '...';
+							if (GX._METHODS_.nvl(data[i].ItemNo).length > defEllipsis) {
+								data[i].ellipsisItemNo = GX._METHODS_.nvl(data[i].ItemNo);
+								data[i].ItemNo = GX._METHODS_.nvl(data[i].ItemNo).substr(0, defEllipsis) + '...';
 							}
-							if (data[i].ItemName.length > defEllipsis) {
-								data[i].ellipsisItemName = data[i].ItemName;
-								data[i].ItemName = data[i].ItemName.substr(0, defEllipsis) + '...';
+							if (GX._METHODS_.nvl(data[i].ItemName).length > defEllipsis) {
+								data[i].ellipsisItemName = GX._METHODS_.nvl(data[i].ItemName);
+								data[i].ItemName = GX._METHODS_.nvl(data[i].ItemName).substr(0, defEllipsis) + '...';
 							}
-							if (data[i].Spec.length > defEllipsis) {
-								data[i].ellipsisSpec = data[i].Spec;
-								data[i].Spec = data[i].Spec.substr(0, defEllipsis) + '...';
+							if (GX._METHODS_.nvl(data[i].Spec).length > defEllipsis) {
+								data[i].ellipsisSpec = GX._METHODS_.nvl(data[i].Spec);
+								data[i].Spec = GX._METHODS_.nvl(data[i].Spec).substr(0, defEllipsis) + '...';
 							}
 						}
 					}
