@@ -485,14 +485,24 @@ let app = new Vue({
 
         // grid rowHeader checkbox event : true
         vThis.mainGrid.on('check', (ev) => {
-            // alert(`check: ${ev.rowKey}`);
             vThis.selectedChkRow[ev.rowKey] = vThis.rows.Query[ev.rowKey];
         });
         
         // grid rowHeader checkbox event : false
         vThis.mainGrid.on('uncheck', (ev) => {
-            // alert(`uncheck: ${ev.rowKey}`);
             delete vThis.selectedChkRow[ev.rowKey];
+        });
+
+        // grid rowHeader checkbox event : all check
+        vThis.mainGrid.on('checkAll', (ev) => {
+            vThis.rows.Query.map((v, i) => {
+                vThis.selectedChkRow[i] = v;
+            });
+        });
+
+        // grid rowHeader checkbox event : all uncheck
+        vThis.mainGrid.on('uncheckAll', (ev) => {
+            vThis.selectedChkRow = {};
         });
 
         // after editing grid data

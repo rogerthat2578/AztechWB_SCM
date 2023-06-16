@@ -8,11 +8,9 @@ let app = new Vue({
 		BizUnitList: [], // 사업 단위 리스트
         /**
          * rows.Query 조회 결과
-         * rows.QuerySummary 조회 결과 합계 Object
          */
 		rows: {
             Query: [],
-            QuerySummary: {},
         },
         /**
          * 조회 조건
@@ -45,6 +43,7 @@ let app = new Vue({
         keyCombi: {
             Control: false,
             Q: false,
+            Z: false,
         },
         isCheckList: [],
         jumpDataList: [],
@@ -54,18 +53,8 @@ let app = new Vue({
             SumCurVAT: 0,
             SumTotCurAmt: 0,
         },
-        /**수량, 금액 관련 컬럼 3자리마다 쉼표(,) 삽입할 컬럼 */
-        keyMapping: {
-            Qty: '납품수량',
-            Price: '단가',
-            CurAmt: '금액',
-            CurVAT: '부가세',
-            TotCurAmt: '금액계',
-            DomPrice: '원화단가',
-            DomAmt: '원화금액',
-            DomVAT: '원화부가세',
-            TotDomAmt: '원화금액계',
-        },
+        // grid 내 데이터 edit 모드일 때 기존 데이터 유지
+        strBeforeEditData: '',
 	},
     methods: {
         /**이벤트 처리 */
@@ -81,6 +70,11 @@ let app = new Vue({
 				document.getElementsByClassName('drop-box')[0].style.display = 'none';
 			}
 
+            if (e.type === 'click' && e.target.getAttribute('class') !== 'tui-grid-content-text') {
+                // 현재 editing인 영역을 제외한 다른 영역 클릭 시 edit mode 종료
+                vThis.mainGrid.finishEditing(); // 수정한 데이터 적용된 상태로 종료. 반대는 cancelEditing()
+            }
+
             if (e.type === 'keyup') {
                 if (e.key.toLowerCase() === 'control') {
                     vThis.keyCombi.Control = true;
@@ -92,40 +86,27 @@ let app = new Vue({
                     setTimeout(() => {
                         if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
                     }, 1000)
+                } else if (e.key.toLowerCase() === 'z') {
+                    vThis.keyCombi.Z = true;
+                    setTimeout(() => {
+                        if (vThis.keyCombi.Z) vThis.keyCombi.Z = false;
+                    }, 1000)
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                if (vThis.keyCombi.Control && vThis.keyCombi.Q && !vThis.keyCombi.Z) {
                     vThis.search(vThis.calSum);
                     vThis.initKeyCombi();
+                } else if (vThis.keyCombi.Control && vThis.keyCombi.Z && !vThis.keyCombi.Q) {
+                    if (confirm('초기 상태로 복구하시겠습니까?')) {
+                        vThis.mainGrid.restore();
+                    }
                 }
             }
-        },
-        /**조회 조건의 진행상태 열기/닫기 */
-        openCloseDropBox: function(inputEleName = '') {
-            let e = event;
-            
-            if (e.target.nodeName.toUpperCase() === 'LI') {
-                if (inputEleName.length == 0) inputEleName = e.target.parentNode.previousElementSibling.name;
-                this.queryForm[inputEleName.replace('Name', '')] = e.target.value;
-                this.queryForm[inputEleName] = e.target.innerText;
-                e.target.parentNode.style.display = 'none';
-            } else {
-                if (e.target.nextElementSibling.style.display == 'none' || e.target.nextElementSibling.style.display == '')
-                    e.target.nextElementSibling.style.display = 'block';
-                else
-                    e.target.nextElementSibling.style.display = 'none';
-            }
-        },
-        /**날짜 번경 후처리 */
-        updateDate: function(v = '', o = null) {
-            this.queryForm.DelvDate = v;
         },
         init: function () {
             let vThis = this;
             vThis.initKeyCombi();
-            vThis.initSelected();
             vThis.rows.Query = [];
-            vThis.rows.QuerySummary = {};
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
         },
@@ -133,156 +114,6 @@ let app = new Vue({
             Object.keys(this.keyCombi).map(k => {
                 this.keyCombi[k] = false;
             });
-        },
-        selectAll: function () {
-            let obj = document.querySelectorAll('[name="RowCheck"]');
-            let isCheckList = [];
-            for (let i in obj) {
-                if (obj.hasOwnProperty(i)) {
-                    obj[i].checked = event.target.checked;
-                    if (event.target.checked) isCheckList.push(Number(i));
-                }
-            }
-            this.isCheckList = isCheckList;
-        },
-        initSelected: function () {
-            this.isCheckList = [];
-            let selAllObj = document.querySelector('thead [type="checkbox"]');
-            if (selAllObj != null) {
-                selAllObj.checked = true;
-                selAllObj.click();
-            }
-        },
-        isChecked: function (index) {
-            return (this.isCheckList.indexOf(index) != -1);
-        },
-        selectedMark: function (index) {
-            let idx = this.isCheckList.indexOf(index);
-            if (event.target.checked) this.isCheckList.push(index);
-            else if (idx != -1) this.isCheckList.splice(idx, 1);
-        },
-        applyAll: function (name, idx) {
-            event.target.setAttribute('gx-datepicker', idx);
-            GX.Calendar.openInRow(name, { useYN: true, idx: idx });
-        },
-        selectRow: function (idx) {
-            let vThis = this;
-            let e = event;
-
-            // 무언가 스크립트가 꼬여 여러행에 fill-color-sel-row 클래스가 적용되어있어도 다시 하나만 적용될 수 있게
-            document.querySelectorAll('tr.fill-color-sel-row').forEach(ele => {
-                ele.classList.remove('fill-color-sel-row');
-            });
-            if (e.target.nodeName.toUpperCase() === 'TD')
-                e.target.parentNode.classList.add('fill-color-sel-row');
-        },
-        calSum: function () {
-            let vThis = this;
-
-            Object.keys(vThis.summaryArea).map(k => {
-                vThis.summaryArea[k] = 0;
-            });
-            
-            if (vThis.rows.Query.length > 0) {
-                let calList = GX.deepCopy(vThis.rows.Query);
-                for (let i in calList) {
-                    if (calList.hasOwnProperty(i)) {
-                        Object.keys(vThis.summaryArea).map(k => {
-                            if (!isNaN(GX._METHODS_.nvl(calList[i][k.replace('Sum', '')]).toString().replace(/\,/, '')) && GX._METHODS_.nvl(calList[i][k.replace('Sum', '')]).toString().replace(/\,/, '') != '')
-                                vThis.summaryArea[k] += parseFloat(GX._METHODS_.nvl(calList[i][k.replace('Sum', '')]).toString().replace(/\,/, ''));
-                        });
-                    }
-                }
-            }
-
-            Object.keys(vThis.summaryArea).map(k => {
-                vThis.summaryArea[k] = GX._METHODS_.nvl(vThis.summaryArea[k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-            });
-        },
-        updateRowQty: function (idx = null) {
-            let evtTarget = event.target;
-
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
-                let queryIdx = this.rows.Query[idx]; // 해당 행 obj
-                queryIdx[evtTarget.name] = evtTarget.value;
-                queryIdx.RowEdit = true;
-                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('possible-input-data')) {
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
-                } else {
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data')
-                }
-
-                // 납품수량
-                let rowDelvQty = this.rows.Query[idx][evtTarget.name] == '' ? '0' : this.rows.Query[idx][evtTarget.name];
-
-                // 부가세 여부에 따라 변경 값
-                let mulVal = [];
-                if (queryIdx.IsVAT == '0') mulVal = [1.0, 0.1, 1.1]; // 부가세 별도
-                else mulVal = [0.9, 0.1, 1.0]; // 부가세 포함
-
-                rowDelvQty = rowDelvQty == '' ? '0' : rowDelvQty;
-                queryIdx.Price = queryIdx.Price == '' ? '0' : queryIdx.Price;
-                queryIdx.DomPrice = queryIdx.DomPrice == '' ? '0' : queryIdx.DomPrice;
-                queryIdx.ExRate = queryIdx.ExRate == '' ? '0' : queryIdx.ExRate;
-
-                /**해당 행 금액들 수정 */
-                // 금액 = 납품수량 * 단가 * 환율
-                queryIdx.CurAmt = (parseFloat(rowDelvQty.replace(/\,/g, '')) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                // 부가세 = 납품수량 * 단가 * 환율 * 0.1
-                queryIdx.CurVAT = (parseFloat(rowDelvQty.replace(/\,/g, '')) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[1])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                // 금액계 = 납품수량 * 단가 * 환율 * 1.1
-                queryIdx.TotCurAmt = (parseFloat(rowDelvQty.replace(/\,/g, '')) * parseFloat(queryIdx.Price.replace(/\,/g, '')) * parseFloat(queryIdx.ExRate) * parseFloat(mulVal[2])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                // 통화가 KRW인 경우
-                // 원화금액 = 납품수량 * 원화단가
-                queryIdx.DomAmt = (parseFloat(rowDelvQty.replace(/\,/g, '')) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[0])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                // 원화부가세 = 납품수량 * 원화단가 * 0.1
-                queryIdx.DomVAT = (parseFloat(rowDelvQty.replace(/\,/g, '')) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[1])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                // 원화금액계 = 납품수량 * 원화단가 * 1.1
-                queryIdx.TotDomAmt = (parseFloat(rowDelvQty.replace(/\,/g, '')) * parseFloat(queryIdx.DomPrice.replace(/\,/g, '')) * parseFloat(mulVal[2])).toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                
-                // 합계 수정
-                for (let i in this.rows.Query) {
-                    if (this.rows.Query.hasOwnProperty(i)) {
-                        if (i == 0) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = 0);
-                        this.summaryArea.SumCurAmt = isNaN(parseFloat(this.summaryArea.SumCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].CurAmt.toString().replace(/\,/g, ''))) ? '0' : parseFloat(this.summaryArea.SumCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].CurAmt.toString().replace(/\,/g, ''));
-                        this.summaryArea.SumCurVAT = isNaN(parseFloat(this.summaryArea.SumCurVAT.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].CurVAT.toString().replace(/\,/g, ''))) ? '0' : parseFloat(this.summaryArea.SumCurVAT.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].CurVAT.toString().replace(/\,/g, ''));
-                        this.summaryArea.SumTotCurAmt = isNaN(parseFloat(this.summaryArea.SumTotCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].TotCurAmt.toString().replace(/\,/g, ''))) ? '0' : parseFloat(this.summaryArea.SumTotCurAmt.toString().replace(/\,/g, '')) + parseFloat(this.rows.Query[i].TotCurAmt.toString().replace(/\,/g, ''));
-                        if (i == this.rows.Query.length - 1) Object.keys(this.summaryArea).map(k => this.summaryArea[k] = this.summaryArea[k].toFixed(0).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,'));
-                    }
-                }
-            }
-        },
-        updateRowRemark: function (idx = null) {
-            let evtTarget = event.target;
-
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
-                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
-                this.rows.Query[idx].RowEdit = true;
-                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('no-data')) {
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
-                } else {
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
-                }
-            }
-        },
-        /**그리드 수량 비교
-         * 발주수량 >= 납품수량
-         */
-         compareQty: function (idx = null, stdName = '') {
-            let vThis = this;
-            let queryIdx = vThis.rows.Query[idx];
-            const Qty = parseFloat(GX._METHODS_.nvl(queryIdx.Qty).toString().replace(/\,/g, ''));
-            const STDUnitQty = parseFloat(GX._METHODS_.nvl(queryIdx.STDUnitQty).toString().replace(/\,/g, ''));
-            if (idx != null && (stdName == 'Qty')) {
-                let chk = false;
-                if (!isNaN(Qty) && !isNaN(STDUnitQty) && Qty > STDUnitQty) {
-                    alert('발주수량(' + STDUnitQty + ')은 납품수량(' + Qty + ') 보다 크거나 같아야 합니다.');
-                    chk = true;
-                }
-                if (chk) queryIdx[stdName] = STDUnitQty;
-            }
         },
         /**조회 */
         search: function(callback) {
@@ -305,45 +136,26 @@ let app = new Vue({
                 if (data[0].Status && data[0].Status != 0) {
                     alert(data[0].Result);
                     history.back(-1);
-                } else if (data.length > 0) {
-                    for (let i in data) {
-                        if (data.hasOwnProperty(i)) {
-                            data[i].ROWNUM = parseInt(i) + 1;
-                            data[i].RowEdit = true;
-                            data[i].boolIsVAT = data[i].IsVAT != '0' ? true : false;
-
-                            Object.keys(vThis.keyMapping).map((k) => {
-                                data[i][k] = isNaN(GX._METHODS_.nvl(data[i][k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,')) ? '0' : GX._METHODS_.nvl(data[i][k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-                            });
+                } else if(data.length > 0) {
+                    let i = 0;
+                    while (i < data.length) {
+                        // 납품예정일에 데이터가 없을 경우 납기일 기본 세팅
+                        if (GX._METHODS_.nvl(data[i].DelvPlanDate).length !== 8) {
+                            data[i].DelvPlanDate = data[i].DelvDate;
                         }
+                        i++;
                     }
-
-                    // 그리드와 바인딩
                     vThis.rows.Query = data;
-
-                    // 마스터 영역 데이터 바인딩
-                    let oneData = data[0];
-                    Object.keys(vThis.queryForm).map(k => {
-                        if (k != 'CompanySeq' || k != 'BizUnit' || k != 'BizUnitName' || k != 'CustSeq') {
-                            Object.keys(oneData).map(j => {
-                                let t = '';
-                                if (!isNaN(GX._METHODS_.nvl(oneData[j]))) t = GX._METHODS_.nvl(oneData[j]).toString();
-                                else t = GX._METHODS_.nvl(oneData[j]);
-
-                                if (k == j && t.length > 0) {
-                                    if (k === 'DelvDate')
-                                        vThis.queryForm[k] = oneData[j].length == 8 ? oneData[j].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : oneData[j];
-                                    else
-                                        vThis.queryForm[k] = oneData[j];
-                                }
-                            });
-                        }
-                    });
-                } else {
-                    alert('조회 결과가 없습니다.');
-                    history.back(-1);
+                    toastr.info('점프 결과: ' + vThis.rows.Query.length + '건');
+                } else{
+                    vThis.rows.Query = [];
+                    toastr.info('점프 결과가 없습니다.');
                 }
+
                 if (typeof callback === 'function') callback();
+
+                // 그리드에 데이터 바인딩
+                vThis.mainGrid.resetData(vThis.rows.Query);
             }])
         },
         save: function() {
@@ -351,26 +163,6 @@ let app = new Vue({
 
             let params1 = [], params2 = [];
             let saveArrData = GX.deepCopy(vThis.rows.Query);
-
-            // 오늘 날짜
-            let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
-
-            // 수량, 금액 컬럼의 ,(쉼표) 제거
-            for (let i in saveArrData) {
-                // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
-                /*
-                if (saveArrData[i]?.InsDate) {
-                    if (vThis.jumpSetMethodId == 'DelvItemListJump' && saveArrData[i].InsDate != today) {
-                        alert('Order품번: ' + saveArrData[i].OrderItemNo + '\n품번: ' + saveArrData[i].ItemNo + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
-                        return false;
-                    }
-                }
-                */
-                
-                Object.keys(vThis.keyMapping).map((k) => {
-                    saveArrData[i][k] = GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '').length > 0 ? parseFloat(GX._METHODS_.nvl(saveArrData[i][k]).toString().replace(/\,/g, '')) : 0;
-                });
-            }
 
             // params2 공통으로 들어가야하는 파라메터 세팅
             for (let i = saveArrData.length - 1; i >= 0; i--) {
@@ -412,7 +204,6 @@ let app = new Vue({
                         // 뭔가 문제가 발생했을 때 리턴
                         alert('저장 실패\n' + data[0].Result);
                     } else {
-                        vThis.initSelected();
                         vThis.initKeyCombi();
                         for (let i in vThis.rows.Query) {
                             if (vThis.rows.Query.hasOwnProperty(i))
@@ -506,8 +297,6 @@ let app = new Vue({
                     }
                     
                     vThis.rows.Query = temp;
-                    vThis.initSelected();
-                    vThis.calSum();
                 } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
                     // 구매납품조회
                     let delArrData = GX.deepCopy(vThis.rows.Query);
@@ -549,7 +338,6 @@ let app = new Vue({
                             alert('삭제 실패\n' + data[0].Result);
                         } else {
                             alert('삭제 성공');
-                            vThis.initSelected();
                             vThis.search(vThis.calSum);
                         }
                     }, function (data) {
@@ -636,65 +424,129 @@ let app = new Vue({
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
 
-            GX.VueGrid
-            .bodyRow(':class="{\'check\':isChecked(index)}" @click="selectRow(index);"')
-            .item('ROWNUM').head('No.', '')
-            .item('RowCheck').head('<div class="chkBox"><input type="checkbox" @click="selectAll()" /></div>', '')
-                .body('<div class="chkBox"><input type="checkbox" name="RowCheck" :value="row.RowCheck" @click="selectedMark(index);" /></div>', '')
-            .item('OrderItemNo').head('Order품번', '').body(null, 'text-l')
-            .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('BuyerNo').head('BuyerNo.', '').body(null, 'text-l')
-            .item('ItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
-                .body('<div style="width: 90px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{row.ItemName}}</div>', 'text-l')
-            .item('Spec').head('규격', '').body(null, 'text-l')
-            .item('UnitName').head('단위', '')
-            .item('STDUnitQty').head('발주수량', '').body(null, 'text-r')
-            .item('Qty', { styleSyntax: 'style="width: 110px;"' }).head('납품수량', '')
-                .body('<div style="width: 104px;"><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: right;" name="Qty" :value="row.Qty" @input="updateRowQty(index)" @blur="compareQty(index, \'Qty\')" /></div>', 'possible-input-data')
-            .item('Price').head('단가', '').body(null, 'text-r')
-            .item('CurAmt').head('금액', '').body(null, 'text-r')
-            .item('IsVAT', { styleSyntax: 'style="width: 100px;"' }).head('부가세포함여부', '')
-                .body('<div class="chkBox" style="width: 100px;"><input type="checkbox" name="IsVAT" v-model="row.boolIsVAT" :value="row.IsVAT" disabled="true" /></div>', '')
-            .item('CurVAT').head('부가세', '').body(null, 'text-r')
-            .item('TotCurAmt').head('금액계', '').body(null, 'text-r')
-            .item('DomPrice').head('원화단가', '').body(null, 'text-r')
-            .item('DomAmt').head('원화금액', '').body(null, 'text-r')
-            .item('DomVAT').head('원화부가세', '').body(null, 'text-r')
-            .item('TotDomAmt').head('원화금액계', '').body(null, 'text-r')
-            // .item('WHName').head('창고', '')
-            .item('Remark').head('비고', '')
-                .body('<div><input type="text" style="border: 0px solid; text-align: center; background: transparent; width: 100%; text-align: left;" name="Remark" :value="row.Remark" @input="updateRowRemark(index)" /></div>', 'possible-input-data')
-            .item('ColorNo').head('색상', '')
-            .loadTemplate('#grid', 'rows.Query');
         }
     },
     mounted() {
-        let vThis = this;
+        const vThis = this;
+        
+        vThis.calendarPODateFr = new tui.DatePicker('#DelvDate-container', {
+            input: {
+                element: '#DelvDate-input',
+                format: 'yyyy-MM-dd',
+            },
+            showAlways: false,
+            type: 'date',
+            language: 'ko',
+        });
 
-        GX.Calendar.datePicker('gx-datepicker', {
-            height: '400px',
-            monthSelectWidth: '25%',
-            callback: function (result, attribute) {
-                if (!isNaN(attribute)) {
-                    vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
-                    vThis.rows.Query[attribute].RowEdit = true;
-                    if (document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
-                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.remove('possible-input-data');
-                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
-                    } else {
-                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
-                    }
-                } else {
-                    const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
-                    const info = GX.Calendar.dateFormatInfo(openerObj);
-                    let keys = attribute.split('.');
-                    if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    vThis.updateDate(GX.formatDate(result, info.format), openerObj);
-                }
+        // init grid columns, set grid columns
+        ToastUIGrid.setColumns
+        .init()
+        .setRowHeaders('rowNum', 'checkbox')
+        .header('Order품번').name('OrderItemNo').align('left').width(100).whiteSpace().ellipsis().setRow()
+        .header('품번').name('ItemNo').align('left').width(120).whiteSpace().ellipsis().setRow()
+        .header('BuyerNo.').name('BuyerNo').align('left').width(100).whiteSpace().ellipsis().setRow()
+        .header('품명').name('ItemName').align('left').width(120).whiteSpace().ellipsis().setRow()
+        .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().setRow()
+        .header('단위').name('UnitName').align('center').width(100).whiteSpace().ellipsis().setRow()
+        .header('발주수량').name('STDUnitQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('납품수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('단가').name('Price').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('금액').name('CurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('부가세포함').name('IsVAT').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsVAT'}).setRow()
+        .header('부가세').name('CurVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('금액계').name('TotCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('원화단가').name('DomPrice').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('원화금액').name('DomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('원화부가세').name('DomVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('원화금액계').name('TotDomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        // .header('창고').name('WHName').align('left').width(100).whiteSpace().ellipsis().setRow()
+        .header('비고').name('Remark').align('left').width(140).whiteSpace().ellipsis().editor().setRow()
+        .header('색상').name('ColorNo').align('center').width(100).whiteSpace().ellipsis().setRow()
+        ;
+
+        // create grid
+        // vThis.mainGrid = ToastUIGrid.initGrid('grid', [], [], {height: 40, position: 'top', columnContent: {}});
+        vThis.mainGrid = ToastUIGrid.initGrid('grid');
+
+        // grid data init
+        vThis.rows.Query = [];
+        vThis.mainGrid.resetData(vThis.rows.Query);
+
+        // grid afterSort event - 정렬(sorting) 시 다중 정렬 기능도 알림
+        vThis.mainGrid.on('afterSort', (e) => {
+            if (e.sortState.columns.length === 1) {
+                toastr.info('다중 정렬은 "Ctrl" 키를 누른 상태로 다른 컬럼들 클릭하면 됩니다.')
             }
         });
+
+        // grid editing mode start
+        vThis.mainGrid.on('editingStart', function (e) {
+            // console.log('editingStart', e)
+            // 수정 이전 데이터 가지고 있기
+            if (GX._METHODS_.nvl(e.columnName) === 'Qty') vThis.strBeforeEditData = e.value || '0';
+            else if (GX._METHODS_.nvl(e.columnName) === 'Remark') vThis.strBeforeEditData = e.value || '';
+        })
+
+        // grid editing mode finish
+        vThis.mainGrid.on('editingFinish', function (e) {
+            // console.log('editingFinish', e)
+            // 납품수량 수정 시 비교, 계산 로직 태우기
+            if (GX._METHODS_.nvl(e.columnName) === 'Qty') {
+                // 입력한 데이터가 숫자인지 체크
+                if (isNaN(e.value)) {
+                    toastr.warning('납품수량에 숫자만 입력 가능합니다.');
+                    vThis.mainGrid.setValue(e.rowKey, 'Qty', vThis.strBeforeEditData);
+                    return false;
+                }
+                
+                const stdUnitQty = vThis.mainGrid.getValue(e.rowKey, 'STDUnitQty') || 0; // 발주수량
+                const qty = e.value || 0; // 납품수량 - 수정한거
+                
+                if (parseFloat(stdUnitQty) < parseFloat(qty)) {
+                    // 발주수량 < 납품수량 == 에러 발생
+                    toastr.warning('발주수량(' + stdUnitQty + ')은 납품수량(' + qty + ') 보다 크거나 같아야 합니다.');
+                    vThis.mainGrid.setValue(e.rowKey, 'Qty', vThis.strBeforeEditData);
+                    return false;
+                } else {
+                    // 해당 행 금액, 부가세, 금액계, 원화금액, 원화부가세, 원화금액계 계산하여 갱신
+                    const price = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'Price')) || 0; // 단가
+                    const exRate = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'ExRate')) || 0; // 환율
+                    
+                    // 부가세 여부에 따라 계산 변경
+                    let [floatAmt, floatVat, floatTotAmt] = [1.0, 0.1, 1.0];
+                    if (vThis.mainGrid.getValue(e.rowKey, 'IsVAT') == '0') floatTotAmt += floatVat; // 부가세 별도
+                    else floatAmt -= floatVat; // 부가세 포함
+
+                    // 금액 계산 = 납품수량 * 단가 * 환율
+                    const cur = parseFloat(qty) * parseFloat(price) * parseFloat(exRate)
+                    // 원화 금액 계산 = 납품수량 * 원화단가
+                    const dom = parseFloat(qty) * parseFloat(price)
+
+                    // 금액 = 납품수량 * 단가 * 환율 * [적용 부가세]
+                    vThis.mainGrid.setValue(e.rowKey, 'CurAmt', (cur * floatAmt).toFixed(0));
+                    // 부가세 = 납품수량 * 단가 * 환율 * [적용 부가세]
+                    vThis.mainGrid.setValue(e.rowKey, 'CurVAT', (cur * floatVat).toFixed(0));
+                    // 금액계 = 납품수량 * 단가 * 환율 * [적용 부가세]
+                    vThis.mainGrid.setValue(e.rowKey, 'TotCurAmt', (cur * floatTotAmt).toFixed(0));
+
+                    // 원화금액 = 납품수량 * 원화단가 * [적용 부가세]
+                    vThis.mainGrid.setValue(e.rowKey, 'DomAmt', (dom * floatAmt).toFixed(0));
+                    // 원화부가세 = 납품수량 * 원화단가 * [적용 부가세]
+                    vThis.mainGrid.setValue(e.rowKey, 'DomVAT', (dom * floatVat).toFixed(0));
+                    // 원화금액계 = 납품수량 * 원화단가 * [적용 부가세]
+                    vThis.mainGrid.setValue(e.rowKey, 'TotDomAmt', (dom * floatTotAmt).toFixed(0));
+
+                    console.log(vThis.mainGrid.getSummaryValues('TotCurAmt'))
+                    console.log(vThis.mainGrid.getSummaryValues('CurAmt'))
+
+                    // vThis.rows.Query에 수정된 데이터 넣기
+                    vThis.rows.Query = vThis.mainGrid.getData();
+                }
+            }
+        })
+
+        
 
         let jumpData = GX.SessionStorage.get('jumpData') != null ? JSON.parse(GX.SessionStorage.get('jumpData')) : [];
         let jumpSetMethodId = GX.SessionStorage.get('jumpSetMethodId') != null ? GX.SessionStorage.get('jumpSetMethodId') : '';

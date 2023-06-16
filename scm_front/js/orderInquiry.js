@@ -49,8 +49,6 @@ let app = new Vue({
         DeptNameList: [],
         // 부서 리스트
         KeepDeptNameList: [],
-        // checkbox 선택한 행
-        selectedChkRow: {},
         // grid 내 날짜 edit 모드일 때 기존 데이터 유지
         objGridDatepicker: {
             boolEditingStart: false,
@@ -142,6 +140,11 @@ let app = new Vue({
                         vThis.queryForm.Dept = vThis.KeepDeptNameList[0].key;
                         vThis.queryForm.DeptName = vThis.KeepDeptNameList[0].val;
                     }
+                }
+
+                if (e.type === 'click' && e.target.getAttribute('class') !== 'tui-grid-content-text') {
+                    // 현재 editing인 영역을 제외한 다른 영역 클릭 시 edit mode 종료
+                    vThis.mainGrid.finishEditing(); // 수정한 데이터 적용된 상태로 종료. 반대는 cancelEditing()
                 }
             }
 
@@ -245,13 +248,10 @@ let app = new Vue({
         pageJump: function () {
             const vThis = this;
 
-            if (Object.keys(vThis.selectedChkRow).length > 0) {
-                // 선택된 행 담기
-                let arr = [];
-                Object.keys(vThis.selectedChkRow).map(k => {
-                    arr.push(vThis.selectedChkRow[k]);
-                });
+            // 체크된 행만 가져오기
+            let arr = vThis.mainGrid.getCheckedRows();
 
+            if (arr.length > 0) {
                 GX.SessionStorage.set('jumpData', JSON.stringify(arr));
                 GX.SessionStorage.set('jumpSetMethodId', 'PUORDPOJump');
                 location.href = 'purchase_delivery.html';
@@ -539,28 +539,6 @@ let app = new Vue({
                     }
                 }
             }
-        });
-
-        // grid rowHeader checkbox event : true
-        vThis.mainGrid.on('check', (ev) => {
-            vThis.selectedChkRow[ev.rowKey] = vThis.rows.Query[ev.rowKey];
-        });
-        
-        // grid rowHeader checkbox event : false
-        vThis.mainGrid.on('uncheck', (ev) => {
-            delete vThis.selectedChkRow[ev.rowKey];
-        });
-
-        // grid rowHeader checkbox event : all check
-        vThis.mainGrid.on('checkAll', (ev) => {
-            vThis.rows.Query.map((v, i) => {
-                vThis.selectedChkRow[i] = v;
-            });
-        });
-
-        // grid rowHeader checkbox event : all uncheck
-        vThis.mainGrid.on('uncheckAll', (ev) => {
-            vThis.selectedChkRow = {};
         });
 
         // grid editing mode start

@@ -177,7 +177,7 @@ ToastUIGrid = {
             this.options.sortingType = 'desc';
             return this;
         },
-        editor: function (v, listItems = []) {
+        editor: function (v, listItem = []) {
             if (v === 'date') {
                 this.options.editor = {
                     type: 'datePicker',
@@ -190,7 +190,7 @@ ToastUIGrid = {
                 this.options.editor = {
                     type: 'select',
                     options: {
-                        listItems: listItems
+                        listItems: listItem
                     }
                 }
             } else {
