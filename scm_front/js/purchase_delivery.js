@@ -457,7 +457,7 @@ let app = new Vue({
         .header('품명').name('ItemName').align('left').width(120).whiteSpace().ellipsis().setRow()
         .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().setRow()
         .header('단위').name('UnitName').align('center').width(100).whiteSpace().ellipsis().setRow()
-        .header('발주수량').name('STDUnitQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('발주수량').name('StdUnitQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('납품수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('단가').name('Price').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('금액').name('CurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -508,7 +508,7 @@ let app = new Vue({
                     return false;
                 }
                 
-                const stdUnitQty = vThis.mainGrid.getValue(e.rowKey, 'STDUnitQty') || 0; // 발주수량
+                const stdUnitQty = vThis.mainGrid.getValue(e.rowKey, 'StdUnitQty') || 0; // 발주수량
                 const qty = e.value || 0; // 납품수량 - 수정한거
                 
                 if (parseFloat(stdUnitQty) < parseFloat(qty)) {
