@@ -225,7 +225,7 @@ ToastUIGrid = {
                                 if (GX._METHODS_.nvl(`${value}`).length === 8)
                                     return `${value}`.toString().replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
                                 else
-                                    return `${value}`;
+                                    return `${GX._METHODS_.nvl(value)}`;
                             }
                         }
                         break;

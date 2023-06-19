@@ -6,8 +6,7 @@ let app = new Vue({
         userName: '',
         params: GX.getParameters(),
         BizUnitList: [], // 사업 단위 리스트
-        isCheckList: [],
-
+        locationPath: location.pathname.replace(/\//g, '').replace('.html', ''),
         rows: {
             Query: [],
         },
@@ -26,7 +25,6 @@ let app = new Vue({
             Dept: 0,
             DeptName: '전체',
         },
-
         // 부서 리스트
         DeptNameList: [],
         // 부서 리스트
@@ -38,9 +36,76 @@ let app = new Vue({
             isKeyHold: false,
             Control: false,
             Q: false,
-        }
+        },
+        // grid 내 날짜 edit 모드일 때 기존 데이터 유지
+        objGridDatepicker: {
+            boolEditingStart: false,
+            strEditingStart: '',
+        },
     },
+    watch: {
+        'rows.Query': 'saveHistory',
+        'objGridDatepicker.boolEditingStart': 'postEditingStartEvt',
+    },
+
     methods:{
+        /**
+         * 조회조건 SessionStorage에 담기
+         */
+        saveHistory: function() {
+            try {
+                GX.SessionStorage.set(this.locationPath + '-queryForm', JSON.stringify(this.queryForm));
+            } catch (e) {
+                toastr.warning('화면 이력을 저장하지 못하였습니다.');
+            }
+        },
+        /**
+         * SessionStorage에 담겨있는 조회조건 가져와서 세팅
+         */
+        loadHistory: function() {
+            try {
+                const vThis = this;
+                const queryForm = GX._METHODS_.nvl(GX.SessionStorage.get(vThis.locationPath + '-queryForm')) == '' ? {} : JSON.parse(GX.SessionStorage.get(vThis.locationPath + '-queryForm'));
+
+                if (Object.keys(queryForm).length > 0) {
+                    vThis.queryForm = queryForm;
+                /**
+                    * Default data setting
+                    * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+                    * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+                    * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+                    */
+                    vThis.deptName = GX.Cookie.get('DeptName');
+                    vThis.userName = GX.Cookie.get('UserName');
+                    vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
+                    vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
+                    vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
+                    vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+                    vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
+                    
+                    // tui-datepicker에서 날짜를 바인딩 시킬때 Date 형식으로 바인딩해야함 
+                    vThis.rangePickerWorkOrderDate.setStartDate(new Date(parseInt(vThis.queryForm.WorkOrderDateFr.substring(0, 4)), parseInt(vThis.queryForm.WorkOrderDateFr.substring(4, 6)) - 1, parseInt(vThis.queryForm.WorkOrderDateFr.substring(6))));
+                    vThis.rangePickerWorkOrderDate.setEndDate(new Date(parseInt(vThis.queryForm.WorkOrderDateTo.substring(0, 4)), parseInt(vThis.queryForm.WorkOrderDateTo.substring(4, 6)) - 1, parseInt(vThis.queryForm.WorkOrderDateTo.substring(6))));
+
+                    // 조회 조건 로드 후 조회 실행
+                    vThis.search();
+                }
+            } catch (e) {
+                toastr.warning('화면 이력을 가져오는 중 문제가 발생하여 정상적으로 가져오지 못하였습니다.');
+            }
+        },
+        /**
+         * tui grid의 datepicker 셀이 editing 상태가 시작했을 때 발생하는 이벤트의 후처리 함수 
+         * tui grid의 datepicker 셀이 editing 상태가 시작되면 해당 셀의 데이터가 사라지는 현상 때문에 추가
+         * 'editingStart' 이벤트 내부에 watch에서 감시중인 객체의 데이터를 변경하여 아래 함수가 실행되도록하면
+           마치 'editingStart' 이벤트 직후에 아래 함수가 실행되는것처럼됨 
+         */
+           postEditingStartEvt: function () {
+            const vThis = this;
+            if (vThis.objGridDatepicker.boolEditingStart)
+                document.getElementsByClassName('tui-grid-datepicker-input')[0].value = vThis.objGridDatepicker.strEditingStart;
+        },
+
         // 이벤트
         eventCheck: function(){
             let vThis = this;
@@ -130,44 +195,6 @@ let app = new Vue({
             }
         },
 
-        // DateBox 업데이트
-        updateDate: function(v = '', o = null) {
-            if (v && o) {
-                let vThis = this;
-
-                let selEle = o;
-                let selVal = v;
-                let selEleName = selEle.getAttribute('name');
-                if (selEleName.indexOf('Fr') > -1) { // 선택한 날짜가 from일 때 to와 비교.
-                    if (new Date(selVal) > new Date(vThis.queryForm[selEleName.replace('Fr', 'To')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('Fr', 'To')];
-                    }
-                } else if (selEleName.indexOf('To') > -1) { // 선택한 날짜가 to일 때 from과 비교.
-                    if (new Date(selVal) < new Date(vThis.queryForm[selEleName.replace('To', 'Fr')])) {
-                        let msg = selEle.parentNode.parentNode.childNodes[0].childNodes[0].innerText;
-                        alert(msg + '이(가) 비정상입니다.');
-                        vThis.queryForm[selEleName] = vThis.queryForm[selEleName.replace('To', 'Fr')];
-                    }
-                }
-            }
-        },
-
-        updateRowData: function(idx = null){
-            let evtTarget = event.target;
-            if (idx != null && evtTarget.name != null && evtTarget.name != undefined && evtTarget.name != '' && evtTarget.value != null && evtTarget.value != undefined && evtTarget.value != '') {
-                this.rows.Query[idx][evtTarget.name] = evtTarget.value;
-                this.rows.Query[idx].RowEdit = true;
-                if (document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.contains('possible-input-data')) {
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.remove('possible-input-data');
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data');
-                } else {
-                    document.getElementsByName(evtTarget.name)[idx].parentNode.parentNode.classList.add('no-data')
-                }
-            }
-        },
-
         // 초기화
         init: function(){
             let vThis = this;
@@ -184,36 +211,43 @@ let app = new Vue({
             vThis.queryForm.CustSeq = '';
         },
 
-        applyAll: function (name, idx) {
-            event.target.setAttribute('gx-datepicker', idx);
-            GX.Calendar.openInRow(name, { useYN: true, idx: idx });
-        },
-
         /**그리드 일자 비교
          * 재단최초투입일 <= 봉제최초투입일 <= 완성투입일
          */
         compareDate: function (idx = null, stdName = '') {
             let vThis = this;
-            let queryIdx = vThis.rows.Query[idx];
-            const cutDate = +new Date(GX._METHODS_.nvl(queryIdx.CutInPutDate).split('-')[0], GX._METHODS_.nvl(queryIdx.CutInPutDate).split('-')[1], GX._METHODS_.nvl(queryIdx.CutInPutDate).split('-')[2]);
-            const sewDate = +new Date(GX._METHODS_.nvl(queryIdx.SewInPutDate).split('-')[0], GX._METHODS_.nvl(queryIdx.SewInPutDate).split('-')[1], GX._METHODS_.nvl(queryIdx.SewInPutDate).split('-')[2]);
-            const finDate = +new Date(GX._METHODS_.nvl(queryIdx.FinishInPutDate).split('-')[0], GX._METHODS_.nvl(queryIdx.FinishInPutDate).split('-')[1], GX._METHODS_.nvl(queryIdx.FinishInPutDate).split('-')[2]);
+            if (idx !== 0) {
+                if (GX._METHODS_.nvl(idx).length == 0) {
+                    toastr.warning('일자를 비교할 행의 인덱스가 이상합니다.');
+                    return false;
+                }
+            }
+            
+            const queryIdx = vThis.mainGrid.getRow(idx);
+            const cut = GX._METHODS_.nvl(queryIdx.CutInPutDate);
+            const sew = GX._METHODS_.nvl(queryIdx.SewInPutDate);
+            const fin = GX._METHODS_.nvl(queryIdx.FinishInPutDate);
+
+            const cutDate = new Date(parseInt(cut.substring(0, 4)), parseInt(cut.substring(4, 6)) - 1, parseInt(cut.substring(6)));
+            const sewDate = new Date(parseInt(sew.substring(0, 4)), parseInt(sew.substring(4, 6)) - 1, parseInt(sew.substring(6)));
+            const finDate = new Date(parseInt(fin.substring(0, 4)), parseInt(fin.substring(4, 6)) - 1, parseInt(fin.substring(6)));
+
             if (stdName == 'CutInPutDate' || stdName == 'SewInPutDate' || stdName == 'FinishInPutDate') {
                 let chk = false;
                 if (!isNaN(cutDate) && !isNaN(sewDate) && cutDate > sewDate) {
                     // alert('"재단최초투입일" ≦ "봉제최초투입일"');
-                    alert('"재단최초투입일" <= "봉제최초투입일"');
+                    toastr.warning('"재단최초투입일" <= "봉제최초투입일"');
                     chk = true;
                 } else if (!isNaN(cutDate) && !isNaN(finDate) && cutDate > finDate) {
                     // alert('"재단최초투입일" ≦ "완성투입일"');
-                    alert('"재단최초투입일" <= "완성투입일"');
+                    toastr.warning('"재단최초투입일" <= "완성투입일"');
                     chk = true;
                 } else if (!isNaN(sewDate) && !isNaN(finDate) && sewDate > finDate) {
                     // alert('"봉제최초투입일" ≦ "완성투입일"');
-                    alert('"봉제최초투입일" <= "완성투입일"');
+                    toastr.warning('"봉제최초투입일" <= "완성투입일"');
                     chk = true;
                 }
-                if (chk) queryIdx[stdName] = '';
+                if (chk) vThis.mainGrid.setValue(idx, stdName, '');
             }
         },
 
@@ -222,26 +256,33 @@ let app = new Vue({
          */
         compareQty: function (idx = null, stdName = '') {
             let vThis = this;
-            let queryIdx = vThis.rows.Query[idx];
-            const cutQty = parseFloat(GX._METHODS_.nvl(queryIdx.CutQty).toString().replace(/\,/g, ''));
-            const sewQty = parseFloat(GX._METHODS_.nvl(queryIdx.SewQty).toString().replace(/\,/g, ''));
-            const finQty = parseFloat(GX._METHODS_.nvl(queryIdx.FinishQty).toString().replace(/\,/g, ''));
+            if (idx !== 0) {
+                if (GX._METHODS_.nvl(idx).length == 0) {
+                    toastr.warning('수량을 비교할 행의 인덱스가 이상합니다.');
+                    return false;
+                }
+            }
+
+            const queryIdx = vThis.mainGrid.getRow(idx);
+            const cutQty = parseFloat(GX._METHODS_.nvl(queryIdx.CutQty).toString());
+            const sewQty = parseFloat(GX._METHODS_.nvl(queryIdx.SewQty).toString());
+            const finQty = parseFloat(GX._METHODS_.nvl(queryIdx.FinishQty).toString());
             if (idx != null && (stdName == 'CutQty' || stdName == 'SewQty' || stdName == 'FinishQty')) {
                 let chk = false;
                 if (!isNaN(cutQty) && !isNaN(sewQty) && cutQty < sewQty) {
                     // alert('"재단량" ≧ "봉제량"');
-                    alert('"재단량" >= "봉제량"');
+                    toastr.warning('"재단량" >= "봉제량"');
                     chk = true;
                 } else if (!isNaN(cutQty) && !isNaN(finQty) && cutQty < finQty) {
                     // alert('"재단량" ≧ "완성량"');
-                    alert('"재단량" >= "완성량"');
+                    toastr.warning('"재단량" >= "완성량"');
                     chk = true;
                 } else if (!isNaN(sewQty) && !isNaN(finQty) && sewQty < finQty) {
                     // alert('"봉제량" ≧ "완성량"');
-                    alert('"봉제량" >= "완성량"');
+                    toastr.warning('"봉제량" >= "완성량"');
                     chk = true;
                 }
-                if (chk) queryIdx[stdName] = '';
+                if (chk) vThis.mainGrid.setValue(idx, stdName, 0);
             }
         },
 
@@ -263,70 +304,79 @@ let app = new Vue({
             GX._METHODS_
                 .setMethodId('ProdProgressInfoQuery')    // 여기에 호출ID를 입력해주세요.
                 .ajax([params], [function (data){
-                    if (data.length > 0) {
-                        // 조회 결과를 가져와서 그리드에 출력한다.
-                        for(let i in data){
-                            if(data.hasOwnProperty(i)){
-                                data[i].ROWNUM = parseInt(i) + 1;
-                                data[i].RowEdit = false;
-                                data[i].WorkOrderDate = data[i].WorkOrderDate.length == 8 ? (data[i].WorkOrderDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkOrderDate;
-                                data[i].WorkDate = data[i].WorkDate.length == 8 ? (data[i].WorkDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkDate;
-                                data[i].WorkPlanDate = data[i].WorkPlanDate.length == 8 ? (data[i].WorkPlanDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].WorkPlanDate;
-
-                                if(data[i].CutInPutDate != null && data[i].CutInPutDate.replace(/\ /g, '') != '' && data[i].CutInPutDate != undefined){
-                                    data[i].CutInPutDate = data[i].CutInPutDate.length == 8 ? (data[i].CutInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].CutInPutDate;
-                                }
-                                if(data[i].SewInPutDate != null && data[i].SewInPutDate.replace(/\ /g, '') != '' && data[i].SewInPutDate != undefined){
-                                    data[i].SewInPutDate = data[i].SewInPutDate.length == 8 ? (data[i].SewInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].SewInPutDate;
-                                }
-                                if(data[i].FinishInPutDate != null && data[i].FinishInPutDate.replace(/\ /g, '') != '' && data[i].FinishInPutDate != undefined){
-                                    data[i].FinishInPutDate = data[i].FinishInPutDate.length == 8 ? (data[i].FinishInPutDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : data[i].FinishInPutDate;
-                                }
-                            }
-                        }
+                    if(data.length > 0){
                         vThis.rows.Query = data;
-
+                        toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                     } else{
-                        alert('조회 결과가 없습니다.');
+                        vThis.rows.Query = [];
+                        toastr.info('조회 결과가 없습니다.');
                     }
+    
+                    if (typeof callback === 'function') callback();
+    
+                    // 그리드에 데이터 바인딩
+                    vThis.mainGrid.resetData(vThis.rows.Query);
+    
+                    // 조회 조건 영역 데이터 저장
+                    vThis.saveHistory();
                 }])
         },
 
         /** 저장 **/
         save: function(){
-            let vThis = this;
-            let saveArrData = GX.deepCopy(vThis.rows.Query);
+            const vThis = this;
 
-            // DataBlock1에 공통으로 들어가야 하는 파라미터 세팅
-            for(let i = saveArrData.length - 1; i >= 0; i--){
-                if(saveArrData[i].RowEdit){
-                    saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
-                    saveArrData[i].WorkingTag = 'U';
-                    saveArrData[i].CutInPutDate = saveArrData[i].CutInPutDate.indexOf('-') > -1 ? saveArrData[i].CutInPutDate.replace(/\-/g, "") : saveArrData[i].CutInPutDate;
-                    saveArrData[i].SewInPutDate = saveArrData[i].SewInPutDate.indexOf('-') > -1 ? saveArrData[i].SewInPutDate.replace(/\-/g, "") : saveArrData[i].SewInPutDate;
-                    saveArrData[i].FinishInPutDate = saveArrData[i].FinishInPutDate.indexOf('-') > -1 ? saveArrData[i].FinishInPutDate.replace(/\-/g, "") : saveArrData[i].FinishInPutDate;
-                } else{
-                    saveArrData.splice(i, 1);
+            // 현재 edit 상태인 셀 적용 처리
+            vThis.mainGrid.blur();
+
+            let getModiData = vThis.mainGrid.getModifiedRows({
+                // checkedOnly: false, // defualt=false If set to true, only checked rows will be considered.
+                withRawData: true, // defualt=false If set to true, the data will contains the row data for internal use.
+                // rowKeyOnly: false, // defualt=false If set to true, only keys of the changed rows will be returned.
+                // ignoredColumns: [], // A list of column name to be excluded.
+            }).updatedRows;
+
+            if (getModiData.length > 0) {
+                // DataBlock1에 공통으로 들어가야 하는 파라미터 세팅
+                for (let i = 0; i < getModiData.length; i++) {
+                    getModiData[i].IDX_NO = parseInt(getModiData[i].rowKey) + 1;
+                    getModiData[i].WorkingTag = 'U';
                 }
-            }
 
-            if(saveArrData.length > 0){
-                GX._METHODS_
-                .setMethodId('ProdProGressInfoSave')
-                .ajax(saveArrData, [], [function(data){
-                    vThis.rows.Query = [];
-                    alert('저장 성공');
-                    vThis.search();
-                }]);
-
-            } else{
-                alert('파라메터 세팅 중<br>예외사항 발생.');
+                try {
+                    GX._METHODS_
+                    .setMethodId('ProdProGressInfoSave')
+                    .ajax(getModiData, [], [function(data){
+                        toastr.info('저장 성공');
+                        vThis.search();
+                    }]);
+                } catch(e) {
+                    toastr.error('저장 중 에러 발생 \n' + e);
+                }
+            } else {
+                toastr.warning('저장할 데이터가 없습니다.');
             }
         },
 
         /**엑셀 다운로드 xlxs */
         excelDownload: function () {
-            GX._METHODS_.excelDownload(document.querySelector('[id="grid"] table'));
+            const vThis = this;
+            console.log(vThis.mainGrid.getCheckedRowKeys())
+
+            const gridDt = document.getElementsByClassName('tui-grid-table');
+            let gridTbodyTr = gridDt[gridDt.length - 1].getElementsByTagName('tbody')[0].cloneNode(true);
+
+            if (gridTbodyTr.childElementCount > 0) {
+                let summaryTbodyTr = gridDt[gridDt.length - 2].getElementsByTagName('tbody')[0].childNodes[0].cloneNode(true);
+                let headerTbodyTr = gridDt[gridDt.length - 3].getElementsByTagName('tbody')[0].childNodes[0].cloneNode(true);
+                gridTbodyTr.prepend(headerTbodyTr, summaryTbodyTr);
+                let table = document.createElement('table');
+                table.append(gridTbodyTr);
+                
+                GX._METHODS_.excelDownload(table);
+            } else {
+                toastr.warning('다운로드할 데이터가 없습니다.');
+            }
         },
     },
 
@@ -372,66 +422,128 @@ let app = new Vue({
                     if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
                 }]);
             });
-
-            GX.VueGrid
-            //.bodyRow(':class="{\'check\':isChecked(index)}"')
-            .item('ROWNUM').head('No.', '')
-            .item('WorkOrderDate').head('작업지시일', '')
-            .item('WorkDate').head('납기일', '') // 작업예정일
-            .item('WorkPlanDate').head('납품예정일', '') // 추가
-            .item('DeptName').head('의뢰부서', '').body(null, 'text-l')
-            .item('ItemNo').head('품번', '').body(null, 'text-l')
-            .item('ItemName', { styleSyntax: 'style="width: 90px;"' }).head('품명', '')
-                .body('<div style="width: 90px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{row.ItemName}}</div>', 'text-l')
-            .item('BuyerNo').head('Buyer No', '').body(null, 'text-l')
-            // .item('Spec').head('규격', '').body(null, 'text-l')
-            .item('OrderQty', { styleSyntax: 'style="width: 92px;"' }).head('지시수량', '')
-                .body('<div style="width: 90px;"><input type="number" name="OrderQty" attr-condition="" :value="row.OrderQty" @input="updateRowData(index)" style="border: 0px solid; text-align: right; background: transparent; width: 100%;" /></div>', 'possible-input-data')
-            .item('CutInPutDate').head('재단최초투입일', '')
-                .body('<div><input type="text" class="datepicker" name="CutInPutDate" gx-datepicker="" attr-condition="" :value="row.CutInPutDate" @input="updateRowData(index)" @click="applyAll(\'CutInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>', 'possible-input-data')
-            .item('CutQty').head('재단량', '')
-                .body('<div><input type="number" name="CutQty" attr-condition="" :value="row.CutQty" @input="updateRowData(index)" @blur="compareQty(index, \'CutQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>', 'possible-input-data')
-            .item('SewInPutDate').head('봉제최초투입일', '')
-                .body('<div><input type="text" class="datepicker" name="SewInPutDate" gx-datepicker="" attr-condition="" :value="row.SewInPutDate" @input="updateRowData(index)" @click="applyAll(\'SewInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>', 'possible-input-data')
-            .item('SewQty').head('봉제량', '')
-                .body('<div><input type="number" name="SewQty" attr-condition="" :value="row.SewQty" @input="updateRowData(index)" @blur="compareQty(index, \'SewQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>', 'possible-input-data')
-            .item('FinishInPutDate').head('완성투입일', '')
-                .body('<div><input type="text" class="datepicker" name="FinishInPutDate" gx-datepicker="" attr-condition="" :value="row.FinishInPutDate" @input="updateRowData(index)" @click="applyAll(\'FinishInPutDate\', index)" style="border: 0px solid; text-align: center; background: transparent;" /></div>', 'possible-input-data')
-            .item('FinishQty').head('완성량', '')
-                .body('<div><input type="number" name="FinishQty" attr-condition="" :value="row.FinishQty" @input="updateRowData(index)" @blur="compareQty(index, \'FinishQty\')" style="border: 0px solid; text-align: right; background: transparent;" /></div>', 'possible-input-data')
-            .item('WorkOrderNo').head('작업지시번호', '')
-            .loadTemplate('#grid', 'rows.Query');
         }
     },
 
     mounted(){
-        let vThis = this;
+        const vThis = this;
 
-        GX.Calendar.datePicker('gx-datepicker', {
-            height: '400px',
-            monthSelectWidth: '25%',
-            callback: function(result, attribute){
-                if (!isNaN(attribute)) {
-                    vThis.rows.Query[attribute][GX.Calendar.openerName] = result;
-                    vThis.rows.Query[attribute].RowEdit = true;
-                    if (document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.contains('possible-input-data')) {
-                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.remove('possible-input-data');
-                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
-                    } else {
-                        document.getElementsByName(GX.Calendar.openerName)[attribute].parentNode.parentNode.classList.add('no-data');
-                    }
-                    // 그리드 날짜 비교
-                    vThis.compareDate(attribute, GX.Calendar.openerName);
-                } else{
-                    const openerObj = document.querySelector('[name="' + GX.Calendar.openerName + '"]');
-                    const info = GX.Calendar.dateFormatInfo(openerObj);
-                    let keys = attribute.split('.');
-                    if (keys.length == 1 && vThis[keys[0]] != null) vThis[keys[0]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    else if (keys.length == 2 && vThis[keys[0]][keys[1]] != null) vThis[keys[0]][keys[1]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    else if (keys.length == 3 && vThis[keys[0]][keys[1]][keys[2]] != null) vThis[keys[0]][keys[1]][keys[2]] = (result.length == 0) ? '' : GX.formatDate(result, info.format);
-                    vThis.updateDate(GX.formatDate(result, info.format, openerObj));
-                }
+        // init from to Datepicker
+        const today = new Date();
+        vThis.rangePickerWorkOrderDate = new tui.DatePicker.createRangePicker({
+            startpicker: {
+                date: today,
+                input: '#WorkOrderDateFr-startpicker-input',
+                container: '#WorkOrderDateFr-startpicker-container'
+            },
+            endpicker: {
+                date: today,
+                input: '#WorkOrderDateTo-endpicker-input',
+                container: '#WorkOrderDateTo-endpicker-container'
+            },
+            format: 'yyyy-MM-dd',
+            language: 'ko',
+            timePicker: false
+        });
+
+        // put default data into "this.queryForm.~"
+        vThis.queryForm.WorkOrderDateFr = vThis.rangePickerWorkOrderDate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        vThis.queryForm.WorkOrderDateTo = vThis.rangePickerWorkOrderDate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+
+        // regist range datepicker change event
+        vThis.rangePickerWorkOrderDate.on('change:start', () => {
+            if (vThis.rangePickerWorkOrderDate.getStartDate())
+                vThis.queryForm.WorkOrderDateFr = vThis.rangePickerWorkOrderDate.getStartDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+        vThis.rangePickerWorkOrderDate.on('change:end', () => {
+            if (vThis.rangePickerWorkOrderDate.getEndDate())
+                vThis.queryForm.WorkOrderDateTo = vThis.rangePickerWorkOrderDate.getEndDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+
+        // init grid columns, set grid columns
+        ToastUIGrid.setColumns
+        .init()
+        .setRowHeaders('rowNum')
+        .header('작업지시일').name('WorkOrderDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
+        .header('납기일').name('WorkDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
+        .header('납품예정일').name('WorkPlanDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
+        .header('의뢰부서').name('DeptName').align('center').width(150).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('품번').name('ItemNo').align('left').width(140).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('품명').name('ItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('BuyerNo.').name('BuyerNo').align('left').width(130).whiteSpace().ellipsis().sortable(true).setRow()
+        // .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('지시수량').name('OrderQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('재단최초투입일').name('CutInPutDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('재단량').name('CutQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('봉제최초투입일').name('SewInPutDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('봉제량').name('SewQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('완성투입일').name('FinishInPutDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('완성량').name('FinishQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('작업지시번호').name('WorkOrderNo').align('center').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        ;
+
+        // create grid
+        vThis.mainGrid = ToastUIGrid.initGrid('grid');
+
+        // grid data init
+        vThis.rows.Query = [];
+        vThis.mainGrid.resetData(vThis.rows.Query);
+
+        // grid afterSort event - 정렬(sorting) 시 다중 정렬 기능도 알림
+        vThis.mainGrid.on('afterSort', (e) => {
+            if (e.sortState.columns.length === 1) {
+                const platform = (navigator.userAgentData?.platform || navigator.platform)?.toLowerCase();
+                let rtn = '';
+                if(platform.startsWith("win")) rtn = "windows";
+                else if(platform.startsWith("mac")) rtn = "macos";
+                else rtn = "unknown";
+
+                if (rtn == 'macos')
+                    toastr.info('다중 정렬은 "Command" 키를 누른 상태로 다른 컬럼들 클릭하면 됩니다.');
+                else
+                    toastr.info('다중 정렬은 "Ctrl" 키를 누른 상태로 다른 컬럼들 클릭하면 됩니다.');
             }
         });
+
+        // grid editing mode start
+        vThis.mainGrid.on('editingStart', function (e) {
+            if (GX._METHODS_.nvl(e.columnName) === 'CutInPutDate' || GX._METHODS_.nvl(e.columnName) === 'SewInPutDate' || GX._METHODS_.nvl(e.columnName) === 'FinishInPutDate') {
+                // 그리드 날짜 셀 수정 시
+                vThis.objGridDatepicker.boolEditingStart = true;
+                vThis.objGridDatepicker.strEditingStart = e.value;
+            }
+        })
+
+        // grid editing mode finish
+        vThis.mainGrid.on('editingFinish', function (e) {
+            if (GX._METHODS_.nvl(e.columnName) === 'CutInPutDate' || GX._METHODS_.nvl(e.columnName) === 'SewInPutDate' || GX._METHODS_.nvl(e.columnName) === 'FinishInPutDate') {
+                // 그리드 날짜 셀 수정 시
+                vThis.objGridDatepicker.boolEditingStart = false;
+                vThis.objGridDatepicker.strEditingStart = '';
+
+                vThis.compareDate(e.rowKey, e.columnName);
+            } else if (GX._METHODS_.nvl(e.columnName) === 'CutQty' || GX._METHODS_.nvl(e.columnName) === 'SewQty' || GX._METHODS_.nvl(e.columnName) === 'FinishQty') {
+                vThis.compareQty(e.rowKey, e.columnName);
+            }
+        })
+
+        // 새로고침 수행 시 SessionStorage 삭제
+        let reloadYN = false;
+        const entries = performance.getEntriesByType("navigation");
+        for (let i = 0; i < entries.length; i++) {
+            if (entries[i].type === "reload") {
+                reloadYN = true;
+                break;
+            }
+        }
+        if (reloadYN) {
+            try {
+                GX.SessionStorage.remove(vThis.locationPath + '-queryForm');
+            } catch (e) {
+                console.log('SessionStorage 삭제 중 에러 발생', e);
+            }
+        } else {
+            vThis.loadHistory();
+        }
     }
 })
