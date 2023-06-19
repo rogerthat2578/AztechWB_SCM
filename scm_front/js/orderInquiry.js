@@ -41,6 +41,7 @@ let app = new Vue({
          * Control + Q = 조회
          */
         keyCombi: {
+            isKeyHold: false,
             Control: false,
             Q: false,
         },
@@ -148,33 +149,37 @@ let app = new Vue({
                 }
             }
 
-            if (e.type === 'keyup') {
-                if (e.key.toLowerCase() === 'control') {
-                    vThis.keyCombi.Control = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Control) vThis.keyCombi.Control = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'q') {
-                    vThis.keyCombi.Q = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'backspace' && e.target.getAttribute('id').split('-')[0].indexOf('DelvPlanDate') > -1) {
-                    // 조회조건 납품예정일 데이터를 지웠을 때 연결되어있는 vThis.queryForm.DelvPlanDateFr 또는 vThis.queryForm.DelvPlanDateTo의 데이터도 제거
-                    let eTemp = e.target.getAttribute('id').split('-')[0];
-                    if (eTemp.substr(-2).toLowerCase() === 'fr') {
-                        vThis.rangePickerDelvPlanDate.setStartDate(null)
-                        vThis.queryForm[eTemp] = ''
-                        vThis.queryForm[eTemp.substr(0, eTemp.length - 2) + 'To'] = ''
-                    } else if (eTemp.substr(-2).toLowerCase() === 'to') {
-                        vThis.rangePickerDelvPlanDate.setEndDate(null)
-                        vThis.queryForm[eTemp] = ''
-                    }
+            // Key Event
+            else if(e.type === 'keyup'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = false; break;
+                    case 'q': vThis.keyCombi.Q = false; break;
+                }
+                vThis.keyCombi.isKeyHold = false;
+            }
+            else if(e.type === 'keydown'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = true; break;
+                    case 'q': vThis.keyCombi.Q = true; break;
+                    case 'backspace':
+                        if (e.target.getAttribute('id')) {
+                            // 조회조건 납품예정일 데이터를 지웠을 때 연결되어있는 vThis.queryForm.DelvPlanDateFr 또는 vThis.queryForm.DelvPlanDateTo의 데이터도 제거
+                            let eTemp = e.target.getAttribute('id').split('-')[0];
+                            if (eTemp.substr(-2).toLowerCase() === 'fr') {
+                                vThis.rangePickerDelvPlanDate.setStartDate(null)
+                                vThis.queryForm[eTemp] = ''
+                                vThis.queryForm[eTemp.substr(0, eTemp.length - 2) + 'To'] = ''
+                            } else if (eTemp.substr(-2).toLowerCase() === 'to') {
+                                vThis.rangePickerDelvPlanDate.setEndDate(null)
+                                vThis.queryForm[eTemp] = ''
+                            }
+                        }
+                        break;
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
+                    vThis.keyCombi.isKeyHold = true;
                     vThis.search();
-                    vThis.initKeyCombi();
                 }
             }
         },
@@ -220,7 +225,6 @@ let app = new Vue({
         },
         init: function () {
             let vThis = this;
-            vThis.initKeyCombi();
             vThis.rows.Query = [];
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
@@ -238,11 +242,6 @@ let app = new Vue({
             // vThis.queryForm.Spec = '';
             vThis.queryForm.OrderItemNo = '';
             vThis.queryForm.OrderItemName = '';
-        },
-        initKeyCombi: function () {
-            Object.keys(this.keyCombi).map(k => {
-                this.keyCombi[k] = false;
-            });
         },
         /**납품등록 화면으로 점프. 여러행 */
         pageJump: function () {
@@ -266,8 +265,6 @@ let app = new Vue({
 
             // 포커스 제거
             document.activeElement.blur();
-
-            vThis.initKeyCombi();
 
             let params = GX.deepCopy(vThis.queryForm);
 
@@ -375,6 +372,7 @@ let app = new Vue({
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
 			document.addEventListener('click', vThis.eventCheck, false);
+            document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
             /**

@@ -50,6 +50,7 @@ let app = new Vue({
          * Control + Q = 조회
          */
         keyCombi: {
+            isKeyHold: false,
             Control: false,
             Q: false,
         },
@@ -135,22 +136,23 @@ let app = new Vue({
                 }
             }
 
-            if (e.type === 'keyup') {
-                if (e.key.toLowerCase() === 'control') {
-                    vThis.keyCombi.Control = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Control) vThis.keyCombi.Control = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'q') {
-                    vThis.keyCombi.Q = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
-                    }, 1000)
+            // Key Event
+            else if(e.type === 'keyup'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = false; break;
+                    case 'q': vThis.keyCombi.Q = false; break;
+                }
+                vThis.keyCombi.isKeyHold = false;
+            }
+            else if(e.type === 'keydown'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = true; break;
+                    case 'q': vThis.keyCombi.Q = true; break;
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
+                    vThis.keyCombi.isKeyHold = true;
                     vThis.search();
-                    vThis.initKeyCombi();
                 }
             }
         },
@@ -197,7 +199,6 @@ let app = new Vue({
         },
         init: function () {
             let vThis = this;
-            vThis.initKeyCombi();
             vThis.rows.Query = [];
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
@@ -210,19 +211,13 @@ let app = new Vue({
             vThis.queryForm.ItemNo = '';
             vThis.queryForm.Spec = '';
         },
-        initKeyCombi: function () {
-            Object.keys(this.keyCombi).map(k => {
-                this.keyCombi[k] = false;
-            });
-        },
+
         /**조회 */
         search: function(callback) {
             let vThis = this;
 
             // 포커스 제거
             document.activeElement.blur();
-
-            vThis.initKeyCombi();
 
             let params = GX.deepCopy(vThis.queryForm);
 
@@ -287,7 +282,6 @@ let app = new Vue({
                 GX._METHODS_
                 .setMethodId('PUORDPOSave')
                 .ajax(saveArrData, [], [function (data) {
-                    vThis.initKeyCombi();
                     vThis.rows.Query = [];
                     alert('저장 성공');
                     vThis.search();
@@ -324,6 +318,7 @@ let app = new Vue({
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
 			document.addEventListener('click', vThis.eventCheck, false);
+            document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
             /**

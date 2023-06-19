@@ -245,12 +245,14 @@ ToastUIGrid = {
                                 if (pObj.length > 0) {
                                     const attrDisabled = o[pObj.filter(f => f === 'attrDisabled' ? o[f] : '')];
                                     const strColKey = o[pObj.filter(f => f === 'colKey' ? o[f] : '')];
+                                    // input checkbox의 name attribute
+                                    const attrName = GX._METHODS_.nvl(o[pObj.filter(f => f === 'attrName' ? o[f] : '')]).length > 0 ? 'name="' + o[pObj.filter(f => f === 'attrName' ? o[f] : '')] + '"' : '';
 
                                     if (r.row[strColKey] === 'Y' || r.row[strColKey] === 'N') {
-                                        return r.row[strColKey] === 'Y' ? `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} />`
+                                        return r.row[strColKey] === 'Y' ? `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} />`
                                     } else {
                                         // 0 or 1 | true or false -> 문자열로 인식하는 경우가 있기에 조건식에 JSON.parse를 해준다.
-                                        return JSON.parse(r.row[strColKey]) ? `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" value="${r.row[strColKey]}" ${attrDisabled} />`
+                                        return JSON.parse(r.row[strColKey]) ? `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} />`
                                     }
                                 }
                             }

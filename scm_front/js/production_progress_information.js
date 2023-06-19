@@ -31,7 +31,9 @@ let app = new Vue({
         DeptNameList: [],
         // 부서 리스트
         KeepDeptNameList: [],
-
+        /**단축키로 기능 실행 (K-System 참고)
+         * Control + Q = 조회
+         */
         keyCombi: {
             isKeyHold: false,
             Control: false,
@@ -169,7 +171,6 @@ let app = new Vue({
         // 초기화
         init: function(){
             let vThis = this;
-            vThis.initKeyCombi();
             vThis.rows.Query = [];
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.BizUnit = '1';
@@ -181,12 +182,6 @@ let app = new Vue({
             vThis.queryForm.ItemNo = '';
             vThis.queryForm.Spec = '';
             vThis.queryForm.CustSeq = '';
-        },
-
-        initKeyCombi: function(){
-            Object.keys(this.keyCombi).map(k => {
-                this.keyCombi[k] = false;
-            });
         },
 
         applyAll: function (name, idx) {
@@ -319,7 +314,6 @@ let app = new Vue({
                 GX._METHODS_
                 .setMethodId('ProdProGressInfoSave')
                 .ajax(saveArrData, [], [function(data){
-                    vThis.initKeyCombi();
                     vThis.rows.Query = [];
                     alert('저장 성공');
                     vThis.search();

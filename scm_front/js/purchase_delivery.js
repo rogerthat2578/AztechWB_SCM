@@ -41,9 +41,9 @@ let app = new Vue({
          * Control + Q = 조회
          */
         keyCombi: {
+            isKeyHold: false,
             Control: false,
             Q: false,
-            Z: false,
         },
         jumpDataList: [],
         jumpSetMethodId: '',
@@ -74,31 +74,23 @@ let app = new Vue({
                 vThis.mainGrid.finishEditing(); // 수정한 데이터 적용된 상태로 종료. 반대는 cancelEditing()
             }
 
-            if (e.type === 'keyup') {
-                if (e.key.toLowerCase() === 'control') {
-                    vThis.keyCombi.Control = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Control) vThis.keyCombi.Control = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'q') {
-                    vThis.keyCombi.Q = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'z') {
-                    vThis.keyCombi.Z = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Z) vThis.keyCombi.Z = false;
-                    }, 1000)
+            // Key Event
+            else if(e.type === 'keyup'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = false; break;
+                    case 'q': vThis.keyCombi.Q = false; break;
+                }
+                vThis.keyCombi.isKeyHold = false;
+            }
+            else if(e.type === 'keydown'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = true; break;
+                    case 'q': vThis.keyCombi.Q = true; break;
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q && !vThis.keyCombi.Z) {
-                    vThis.search(vThis.calSum);
-                    vThis.initKeyCombi();
-                } else if (vThis.keyCombi.Control && vThis.keyCombi.Z && !vThis.keyCombi.Q) {
-                    if (confirm('초기 상태로 복구하시겠습니까?')) {
-                        vThis.mainGrid.restore();
-                    }
+                if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
+                    vThis.keyCombi.isKeyHold = true;
+                    vThis.search(vThis.calSum());
                 }
             }
         },
@@ -120,16 +112,10 @@ let app = new Vue({
         },
         init: function () {
             let vThis = this;
-            vThis.initKeyCombi();
             vThis.rows.Query = [];
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
-        },
-        initKeyCombi: function () {
-            Object.keys(this.keyCombi).map(k => {
-                this.keyCombi[k] = false;
-            });
         },
         /**마스터 영역 금액 계산 */
         calSum: function () {
@@ -261,7 +247,6 @@ let app = new Vue({
                         toastr.error('저장 실패\n' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.initKeyCombi();
                         vThis.search(vThis.calSum());
                     }
                 }, function (data) {
@@ -304,7 +289,6 @@ let app = new Vue({
                                     toastr.error('삭제 실패\n' + data[0].Result);
                                 } else {
                                     toastr.info('삭제 성공');
-                                    vThis.initKeyCombi();
                                     vThis.search(vThis.calSum());
                                 }
                             }, function (data) {
@@ -348,7 +332,6 @@ let app = new Vue({
                                 toastr.error('삭제 실패\n' + data[0].Result);
                             } else {
                                 toastr.info('삭제 성공');
-                                vThis.initKeyCombi();
                                 vThis.search(vThis.calSum());
                             }
                         }, function (data) {
@@ -396,7 +379,6 @@ let app = new Vue({
                                 toastr.error('삭제 실패\n' + data[0].Result);
                             } else {
                                 toastr.info('삭제 성공');
-                                vThis.initKeyCombi();
                                 vThis.search(vThis.calSum());
                             }
                         }, function (data) {
@@ -416,6 +398,7 @@ let app = new Vue({
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
 			document.addEventListener('click', vThis.eventCheck, false);
+            document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
             /**
@@ -470,6 +453,7 @@ let app = new Vue({
         .header('부가세포함').name('IsVAT').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsVAT'}).setRow()
         .header('부가세').name('CurVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('금액계').name('TotCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('LOT-NO').name('testtest').align('left').width(100).whiteSpace().ellipsis().setRow()
         .header('원화단가').name('DomPrice').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('원화금액').name('DomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('원화부가세').name('DomVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -491,6 +475,16 @@ let app = new Vue({
         vThis.mainGrid.on('afterSort', (e) => {
             if (e.sortState.columns.length === 1) {
                 toastr.info('다중 정렬은 "Ctrl" 키를 누른 상태로 다른 컬럼들 클릭하면 됩니다.')
+            }
+        });
+
+        // grid dblclick event
+        vThis.mainGrid.on('dblclick', function(e) {
+            // 행 더블 클릭 시 점프
+            if (e.rowKey || e.rowKey === 0) {
+                if (e.columnName === 'testtest') {
+                    toastr.info('123123')
+                }
             }
         });
 

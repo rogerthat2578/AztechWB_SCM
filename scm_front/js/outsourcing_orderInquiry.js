@@ -220,7 +220,6 @@ let app = new Vue({
         // 초기화
         init: function(){
           let vThis = this;
-          vThis.initKeyCombi();
           vThis.rows.Query = [];
           vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
           vThis.queryForm.BizUnit = '1';
@@ -238,20 +237,12 @@ let app = new Vue({
           vThis.queryForm.BuyerNo = '';
         },
 
-        initKeyCombi: function(){
-            Object.keys(this.keyCombi).map(k => {
-               this.keyCombi[k] = false;
-            });
-        },
-
         /** 조회 **/
         search: function(callback){
             let vThis = this;
 
             // 포커스 제거
             document.activeElement.blur();
-
-            vThis.initKeyCombi();
 
             let params = GX.deepCopy(vThis.queryForm);
             Object.keys(params).map((k) => {

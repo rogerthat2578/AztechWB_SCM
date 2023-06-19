@@ -45,6 +45,7 @@ let app = new Vue({
          * Control + Q = 조회
          */
         keyCombi: {
+            isKeyHold: false,
             Control: false,
             Q: false,
         },
@@ -180,32 +181,25 @@ let app = new Vue({
                 }
             }
 
-            if (e.type === 'keyup') {
-                if (e.key.toLowerCase() === 'control') {
-                    vThis.keyCombi.Control = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Control) vThis.keyCombi.Control = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'q') {
-                    vThis.keyCombi.Q = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
-                    }, 1000)
+            // Key Event
+            else if(e.type === 'keyup'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = false; break;
+                    case 'q': vThis.keyCombi.Q = false; break;
+                }
+                vThis.keyCombi.isKeyHold = false;
+            }
+            else if(e.type === 'keydown'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = true; break;
+                    case 'q': vThis.keyCombi.Q = true; break;
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q) {
+                if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
+                    vThis.keyCombi.isKeyHold = true;
                     vThis.search();
-                    vThis.initKeyCombi();
                 }
             }
-        },
-
-        /**키보드 조합 초기화 */
-        initKeyCombi: function () {
-            Object.keys(this.keyCombi).forEach(v => {
-                if (this.keyCombi.hasOwnProperty)
-                this.keyCombi[v] = false;
-            })
         },
 
         /**조회 조건의 진행상태 열기/닫기 */
@@ -252,7 +246,7 @@ let app = new Vue({
 
         search: function () {
             const vThis = this;
-            vThis.initKeyCombi();
+            
             const params = GX.deepCopy(vThis.queryForm);
 
             // 부서코드 key 변경하여 넣기
@@ -332,6 +326,7 @@ let app = new Vue({
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 			
 			document.addEventListener('click', this.eventCheck, false);
+            document.addEventListener('keydown', this.eventCheck, false);
             document.addEventListener('keyup', this.eventCheck, false);
 
             /**

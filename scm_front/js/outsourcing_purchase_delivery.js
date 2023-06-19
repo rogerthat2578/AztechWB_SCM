@@ -19,12 +19,12 @@ let app = new Vue({
             CustSeq: '',
         },
         /**단축키로 기능 실행 (K-System 참고)
-                 * Control + Q = 조회
-                 */
+         * Control + Q = 조회
+         */
         keyCombi: {
+            isKeyHold: false,
             Control: false,
             Q: false,
-            Z: false,
         },
         jumpDataList: [],
         jumpSetMethodId: '',
@@ -44,52 +44,54 @@ let app = new Vue({
             if(e.type === 'click' && document.getElementsByClassName('left-menu')[0].style.display === 'block' && e.target.getAttribute('class') !== 'btn-menu'){
                 document.getElementsByClassName('left-menu')[0].style.display = 'none';
             }
-
+            
             if (e.type === 'click' && e.target.getAttribute('class') !== 'tui-grid-content-text') {
                 // 현재 editing인 영역을 제외한 다른 영역 클릭 시 edit mode 종료
                 vThis.mainGrid.finishEditing(); // 수정한 데이터 적용된 상태로 종료. 반대는 cancelEditing()
             }
 
-            if (e.type === 'keyup') {
-                if (e.key.toLowerCase() === 'control') {
-                    vThis.keyCombi.Control = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Control) vThis.keyCombi.Control = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'q') {
-                    vThis.keyCombi.Q = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Q) vThis.keyCombi.Q = false;
-                    }, 1000)
-                } else if (e.key.toLowerCase() === 'z') {
-                    vThis.keyCombi.Z = true;
-                    setTimeout(() => {
-                        if (vThis.keyCombi.Z) vThis.keyCombi.Z = false;
-                    }, 1000)
+            if (e.type === 'click' && e.target.getAttribute('id') === 'colHeaderIsEnd') {
+                // 완료여부 컬럼 헤더의 체크 박스 클릭 시
+                // 현재 컬럼 헤더의 체크 박스 체크 상태 true/false
+                const boolCurChecked = e.target.checked;
+                // 전체 체크/체크해제
+                for (let i = 0; i < vThis.mainGrid.getData().length; i++) {
+                    document.querySelectorAll('[name="AttrNameIsEnd"]')[i].checked = boolCurChecked;
+                    vThis.mainGrid.setValue(i, 'IsEnd', boolCurChecked ? '1' : '0');
+                }
+            } else if (e.type === 'click' && e.target.getAttribute('name') === 'AttrNameIsEnd') {
+                // 완료여부 컬럼 그리드 내부(셀)의 체크 박스 클릭 시
+                // 그리드 내 체크 박스 체크 상태 true/false
+                const boolCurChecked = e.target.checked;
+                vThis.mainGrid.setValue([...e.target.parentElement.children].indexOf(e.target), 'IsEnd', boolCurChecked ? '1' : '0');
+            }
+
+            // Key Event
+            else if(e.type === 'keyup'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = false; break;
+                    case 'q': vThis.keyCombi.Q = false; break;
+                }
+                vThis.keyCombi.isKeyHold = false;
+            }
+            else if(e.type === 'keydown'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = true; break;
+                    case 'q': vThis.keyCombi.Q = true; break;
                 }
 
-                if (vThis.keyCombi.Control && vThis.keyCombi.Q && !vThis.keyCombi.Z) {
+                if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
+                    vThis.keyCombi.isKeyHold = true;
                     vThis.search(vThis.calSum);
-                    vThis.initKeyCombi();
-                } else if (vThis.keyCombi.Control && vThis.keyCombi.Z && !vThis.keyCombi.Q) {
-                    if (confirm('초기 상태로 복구하시겠습니까?')) {
-                        vThis.mainGrid.restore();
-                    }
                 }
             }
         },
         init: function(){
             let vThis = this;
-            vThis.initKeyCombi();
             vThis.rows.Query = [];
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
-        },
-        initKeyCombi: function () {
-            Object.keys(this.keyCombi).map(k => {
-                this.keyCombi[k] = false;
-            });
         },
         /**마스터 영역 금액 계산 */
         calSum: function () {
@@ -214,7 +216,7 @@ let app = new Vue({
             }
             params2 = getModiData;
 
-            if (params1.length > 0 && params2.length > 0) {
+            if (params2.length > 0) {
                 GX._METHODS_
                 .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
                 .ajax(params2, [], [function (data) {
@@ -223,136 +225,98 @@ let app = new Vue({
                         toastr.error('저장 실패\n' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.initKeyCombi();
                         vThis.search(vThis.calSum());
                     }
                 }]);
 
             } else{
-                alert('저장할 데이터가 없습니다.');
+                toastr.warning('저장할 데이터가 없습니다.');
             }
         },
 
         delRow: function(){
             let vThis = this;
+            
+            // 체크된 행만 가져오기
+            let arr = vThis.mainGrid.getCheckedRows();
+            if (arr.length > 0) {
+                if (vThis.mainGrid.getData().length == arr.length) {
+                    // 행 전체 선택 시
+                    if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
+                        // 외주발주품목조회에서 넘어온 데이터 전체 삭제 불가능
+                        toastr.warning('"외주발주품목조회" 화면에서 넘어온 데이터는 "전체 삭제"가 불가능합니다.');
+                    } else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
+                        // 외주납품품목조회에서 넘어와 전체 행 선택 삭제(=전체 삭제)
+                        // 파라메터 선언
+                        let params1 = [], params2 = [];
 
-            if(vThis.rows.Query.length < 1 || vThis.isCheckList.length == 0) {
-                alert('삭제할 데이터가 없습니다. 삭제할 데이터를 선택 후 삭제해주세요.');
-
-            } else if(vThis.rows.Query.length == vThis.isCheckList.length){
-                // 전체 선택 시 전체 삭제
-                if(confirm('모든 데이터를 삭제하시겠습니까?')){
-
-                    // 외주발주품목조회에서 넘어온 데이터 전체 삭제 시 뒤로가기
-                    if(vThis.jumpSetMethodId == 'OSPWorkOrderJump'){
-                        history.back(-1);
-                    }
-                    // 외주납품품목조회에서 넘어온 데이터 전체 삭제 시
-                    else if(vThis.jumpSetMethodId == 'PDWorkReportJumpQuery'){
-                        let delArrData = GX.deepCopy(vThis.rows.Query);
-
-                        for(let i in delArrData){
-                            if(delArrData.hasOwnProperty(i)){
-                                /*
-                                // 오늘 날짜
-                                let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
-                                // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
-                                if (delArrData[i]?.InsDate) {
-                                    if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && delArrData[i].InsDate != today) {
-                                        alert('품번: ' + delArrData[i].ItemNo + '\n사이즈: ' + delArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
-                                        return false;
-                                    }
-                                }
-                                */
-
-                                delArrData[i].WorkingTag = 'D';
-                            }
+                        // detail 공통 파레메터 세팅
+                        for (let i = 0; i < arr.length; i++) {
+                            arr[i].WorkingTag = 'D';
                         }
+                        params2 = arr;
 
-                        if(delArrData.length > 0){
+                        // master
+                        // params1 = [params2[0]]; // 마스터 필요없다고함
+
+                        if (params2.length > 0) {
                             GX._METHODS_
                             .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
-                            .ajax(delArrData, [], [function (data){
-                                if(data[0].Status && data[0].Status != 0){
-                                    alert('삭제 실패\n' + data[0].Result);
-                                } else{
-                                    alert('삭제 성공');
-                                    for(let i=vThis.rows.Query.length - 1; i >=0; i--){
-                                        if(vThis.rows.Query.hasOwnProperty(i)){
-                                            vThis.rows.Query.splice(i, 1);
-                                        }
-                                    }
-                                    vThis.initSelected();
-                                    vThis.calSum();
+                            .ajax(params2, [], [function (data){
+                                if (data[0].Status && data[0].Status != 0) {
+                                    // 뭔가 문제가 발생했을 때 리턴
+                                    toastr.error('삭제 실패\n' + data[0].Result);
+                                } else {
+                                    toastr.info('삭제 성공');
+                                    vThis.search(vThis.calSum());
                                 }
                             }]);
-                        } else{
-                            alert('삭제할 데이터가 없습니다.');
-                        }
-                    }
-                }
-            } else{
-                // 행 삭제 (외주발주에서 넘어온 데이터인 경우)
-                if(vThis.jumpSetMethodId == 'OSPWorkOrderJump'){
-                    let temp = GX.deepCopy(vThis.rows.Query);
-                    let tempChk = vThis.isCheckList.sort(function(a, b){
-                        return b - a;
-                    });
-
-                    for(let i in tempChk){
-                        if(tempChk.hasOwnProperty(i))
-                            temp.splice(tempChk[i], 1);
-                    }
-
-                    for(let i in temp){
-                        if(temp.hasOwnProperty(i))
-                            temp[i].ROWNUM = parseInt(i) + 1;
-                    }
-
-                    vThis.rows.Query = temp;
-                    vThis.initSelected();
-                    vThis.calSum();
-
-                }
-                // 행 삭제 (외주납품에서 넘어온 데이터인 경우)
-                else if(vThis.jumpSetMethodId == 'PDWorkReportJumpQuery'){
-                    let delArrData = GX.deepCopy(vThis.rows.Query);
-
-                    for(let i in delArrData){
-                        if(delArrData.hasOwnProperty(i)){
-                            /*
-                            // 오늘 날짜
-                            let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
-                            // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
-                            if (delArrData[i]?.InsDate) {
-                                if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && delArrData[i].InsDate != today) {
-                                    alert('품번: ' + delArrData[i].ItemNo + '\n사이즈: ' + delArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
-                                    return false;
-                                }
-                            }
-                            */
-
-                            delArrData[i].WorkingTag = 'D';
-                        }
-                    }
-
-                    GX._METHODS_
-                    .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
-                    .ajax([], delArrData, [function (data) {
-                        if (data[0].Status && data[0].Status != 0) {
-                            // 뭔가 문제가 발생했을 때 리턴
-                            alert('삭제 실패\n' + data[0].Result);
                         } else {
-                            alert('삭제 성공');
-                            for(let i=vThis.rows.Query.length - 1; i >=0; i--){
-                                if(vThis.rows.Query.hasOwnProperty(i)){
-                                    vThis.rows.Query.splice(i, 1);
-                                }
-                            }
-                            vThis.initSelected();
+                            toastr.warning('삭제할 데이터가 없습니다.');
+                        }
+                    }
+                } else {
+                    // 행 삭제 (전체 선택 삭제 아닐 경우)
+                    if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
+                        // 외주발주조회에서 넘어온 데이터
+                        if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
+                            // 행 삭제
+                            vThis.mainGrid.removeCheckedRows();
+                            // this.rows.Query 데이터 갱신
+                            vThis.rows.Query = vThis.mainGrid.getData();
+
+                            // 마스터 영역 합계 계산
                             vThis.calSum();
                         }
-                    }]);
+                    } else if(vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
+                        // 외주납품조회에서 넘어온 데이터
+                        // 파라메터 선언
+                        let params1 = [], params2 = [];
+
+                        // detail 공통 파레메터 세팅
+                        for (let i = 0; i < arr.length; i++) {
+                            arr[i].WorkingTag = 'D';
+                        }
+                        params2 = arr;
+                        
+                        // master
+                        // params1 = [params2[0]] // 마스터 데이터는 넘겨줄 필요없다고함
+
+                        if (params2.length > 0) {
+                            GX._METHODS_
+                            .setMethodId('PDWorkReportSave')
+                            .ajax([], params2, [function (data) {
+                                if (data[0].Status && data[0].Status != 0) {
+                                    // 뭔가 문제가 발생했을 때 리턴
+                                    toastr.error('삭제 실패\n' + data[0].Result);
+                                } else {
+                                    toastr.info('삭제 성공');
+                                    vThis.search(vThis.calSum());
+                                }
+                            }, function (data) {
+                            }]);
+                        }
+                    }
                 }
             }
         },
@@ -360,50 +324,48 @@ let app = new Vue({
         del: function(){
             let vThis = this;
 
-            if (confirm('모든 데이터를 삭제하시겠습니까?')) {
-
-                // 삭제 (외주발주에서 넘어온 데이터인 경우)
+            if (confirm('전체 삭제하시겟습니까?')) {
                 if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
-                    history.back(-1);
-                }
+                    // 외주발주품목조회에서 넘어온 데이터 전체 삭제 불가능
+                    toastr.warning('"외주발주품목조회" 화면에서 넘어온 데이터는 "전체 삭제"가 불가능합니다.');
+                } else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
+                    // 외주납품조회에서 넘어온 데이터 전체 삭제
+                    // 파라메터 선언
+                    let params1 = [], params2 = [];
 
-                // 삭제 (외주납품에서 넘어온 데이터인 경우)
-                else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
-                    let delArrData = GX.deepCopy(vThis.rows.Query);
+                    // 전체 삭제 버튼을 클릭했기에 그리드에 있는 모든 데이터 가져오기
+                    let arr = vThis.mainGrid.getData();
 
-                    for (let i in delArrData) {
-                        /*
-                        // 오늘 날짜
-                        let today = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "");
-                        // 수정, 삭제 시 (최초)입력일자가 존재하고 저장할 때와 일자가 다른 경우 저장하지 못하게함. from 박태근이사
-                        if (delArrData[i]?.InsDate) {
-                            if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery' && delArrData[i].InsDate != today) {
-                                alert('품번: ' + delArrData[i].ItemNo + '\n사이즈: ' + delArrData[i].SizeText + '\n일일 마감되었습니다. 고객사 담당자에게 문의바랍니다.');
-                                return false;
-                            }
-                        }
-                        */
-
-                        delArrData[i].WorkingTag = 'D';
+                    // detail 공통 파레메터 세팅
+                    for (let i = 0; i < arr.length; i++) {
+                        arr[i].WorkingTag = 'D';
                     }
+                    params2 = arr;
 
-                    GX._METHODS_
-                    .setMethodId('PDWorkReportSave')
-                    .ajax(delArrData, [function (data) {
-                        if (data[0].Status && data[0].Status != 0) {
-                            // 뭔가 문제가 발생했을 때 리턴
-                            alert('삭제 실패\n' + data[0].Result);
-                        } else {
-                            alert('삭제 성공');
-                            for(let i=vThis.rows.Query.length - 1; i >=0; i--){
-                                vThis.rows.Query.splice(i, 1);
+                    // master
+                    // params1 = [params2[0]]
+
+                    if (params2.length > 0) {
+                        GX._METHODS_
+                        .setMethodId('PDWorkReportSave')
+                        .ajax(params2, [function (data) {
+                            if (data[0].Status && data[0].Status != 0) {
+                                // 뭔가 문제가 발생했을 때 리턴
+                                toastr.error('삭제 실패\n' + data[0].Result);
+                            } else {
+                                toastr.info('삭제 성공');
+                                vThis.search(vThis.calSum());
                             }
-                            vThis.initSelected();
-                            vThis.calSum();
-                        }
-                    }]);
+                        }]);
+                    } else {
+                        toastr.warning('삭제할 데이터가 없습니다.');
+                    }
                 }
             }
+        }
+
+        ,selectAll: function () {
+            console.log('123123', e)
         }
     },
 
@@ -415,6 +377,7 @@ let app = new Vue({
             GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
 
             document.addEventListener('click', vThis.eventCheck, false);
+            document.addEventListener('keydown', vThis.eventCheck, false);
             document.addEventListener('keyup', vThis.eventCheck, false);
 
             /**
@@ -471,7 +434,7 @@ let app = new Vue({
         // .header('불량수량').name('BadQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('입고창고').name('InWHName').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
         .header('비고').name('Remark').align('left').width(140).whiteSpace().ellipsis().editor().setRow()
-        .header('완료여부').name('IsEnd').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {colKey: 'IsEnd'}).setRow()
+        .header('완료여부').name('IsEnd').align('center').width(90).whiteSpace().ellipsis().formatter('checkbox', {colKey: 'IsEnd', attrName: 'AttrNameIsEnd'}).setRow()
         .header('단가').name('OSPPrice').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('부가세포함').name('IsVAT').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsVAT'}).setRow()
         .header('금액').name('OSPCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -491,6 +454,13 @@ let app = new Vue({
         // create grid
         // vThis.mainGrid = ToastUIGrid.initGrid('grid', [], [], {height: 40, position: 'top', columnContent: {}});
         vThis.mainGrid = ToastUIGrid.initGrid('grid');
+
+        // 완료여부 컬럼 헤더에 체크박스 추가 
+        let createInput = document.createElement('input');
+        createInput.setAttribute('type', 'checkbox');
+        createInput.setAttribute('id', 'colHeaderIsEnd');
+        createInput.setAttribute('value', '0');
+        document.querySelector('.tui-grid-cell.tui-grid-cell-header[data-column-name="IsEnd"]').append(createInput);
 
         // grid data init
         vThis.rows.Query = [];
