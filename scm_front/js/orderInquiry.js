@@ -476,7 +476,7 @@ let app = new Vue({
         .header('발주부서').name('DeptName').align('center').width(150).whiteSpace().ellipsis().sortable(true).setRow()
         .header('납기일').name('DelvDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('납품예정일').name('DelvPlanDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
-        .header('품번').name('ItemNo').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('품번').name('ItemNo').align('left').width(140).whiteSpace().ellipsis().sortable(true).setRow()
         .header('품명').name('ItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
         .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
         .header('단위').name('UnitName').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()

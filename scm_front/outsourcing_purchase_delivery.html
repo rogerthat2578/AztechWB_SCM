@@ -8,6 +8,10 @@
 	<link rel="stylesheet" href="css/setup.css">
 	<link rel="stylesheet" href="css/scm_style.css">
 	<link rel="stylesheet" href="css/date_picker.css">
+	<link rel="stylesheet" href="css/toastr.css">
+	<!-- tui-grid -->
+	<link rel="stylesheet" href="css/tui-date-picker.css">
+	<link rel="stylesheet" href="css/tui-grid.css">
 	<style>
 		[v-cloak] {
 			display: none;
@@ -68,7 +72,10 @@
 									<label>외주작업일(납품일)</label>
 								</li>
 								<li>
-									<input type="text" class="datepicker" name="DelvDate" v-model.trim="queryForm.DelvDate" gx-datepicker="queryForm.DelvDate" @chagne="updateDate">
+									<div class="tui-has-focus">
+										<input type="text" id="DelvDate-input" aria-label="Date-Time" style="font-size: 14px;">
+									</div>
+									<div class="tui-datepicker-mo-container-position" id="DelvDate-container" style="margin-left: -1px;"></div>
 								</li>
 							</ul>
 						</div>

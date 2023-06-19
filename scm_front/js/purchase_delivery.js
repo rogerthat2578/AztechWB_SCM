@@ -45,7 +45,6 @@ let app = new Vue({
             Q: false,
             Z: false,
         },
-        isCheckList: [],
         jumpDataList: [],
         jumpSetMethodId: '',
         summaryArea: {
@@ -119,6 +118,19 @@ let app = new Vue({
                     e.target.nextElementSibling.style.display = 'none';
             }
         },
+        init: function () {
+            let vThis = this;
+            vThis.initKeyCombi();
+            vThis.rows.Query = [];
+            vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
+            vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
+            vThis.queryForm.BizUnit = '1';
+        },
+        initKeyCombi: function () {
+            Object.keys(this.keyCombi).map(k => {
+                this.keyCombi[k] = false;
+            });
+        },
         /**마스터 영역 금액 계산 */
         calSum: function () {
             let vThis = this;
@@ -143,18 +155,6 @@ let app = new Vue({
                 vThis.summaryArea[k] = GX._METHODS_.nvl(vThis.summaryArea[k]).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
             });
         },
-        init: function () {
-            let vThis = this;
-            vThis.initKeyCombi();
-            vThis.rows.Query = [];
-            vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
-            vThis.queryForm.BizUnit = '1';
-        },
-        initKeyCombi: function () {
-            Object.keys(this.keyCombi).map(k => {
-                this.keyCombi[k] = false;
-            });
-        },
         /**조회 */
         search: function(callback) {
             let vThis = this;
@@ -173,7 +173,7 @@ let app = new Vue({
             GX._METHODS_
             .setMethodId(vThis.jumpSetMethodId)
             .ajax(paramsList, [function (data) {
-                if (data[0].Status && data[0].Status != 0) {
+                if (data[0]?.Status && data[0]?.Status != 0) {
                     alert(data[0].Result);
                     history.back(-1);
                 } else if(data.length > 0) {
@@ -214,7 +214,7 @@ let app = new Vue({
         },
         save: function() {
             let vThis = this;
-
+            
             // 현재 edit 상태인 셀 적용 처리
             vThis.mainGrid.blur();
 
@@ -447,12 +447,18 @@ let app = new Vue({
             language: 'ko',
         });
 
+        // regist datepicker change event
+        vThis.calendarDelvDate.on('change', () => {
+            if (vThis.calendarDelvDate.getDate())
+                vThis.queryForm.DelvDate = vThis.calendarDelvDate.getDate().toLocaleDateString('ko-kr', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\./g, '').replace(/\ /g, '');
+        });
+
         // init grid columns, set grid columns
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum', 'checkbox')
-        .header('Order품번').name('OrderItemNo').align('left').width(100).whiteSpace().ellipsis().setRow()
-        .header('품번').name('ItemNo').align('left').width(120).whiteSpace().ellipsis().setRow()
+        .header('Order품번').name('OrderItemNo').align('left').width(140).whiteSpace().ellipsis().setRow()
+        .header('품번').name('ItemNo').align('left').width(140).whiteSpace().ellipsis().setRow()
         .header('BuyerNo.').name('BuyerNo').align('left').width(100).whiteSpace().ellipsis().setRow()
         .header('품명').name('ItemName').align('left').width(120).whiteSpace().ellipsis().setRow()
         .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().setRow()
@@ -494,7 +500,7 @@ let app = new Vue({
             // 수정 이전 데이터 가지고 있기
             if (GX._METHODS_.nvl(e.columnName) === 'Qty') vThis.strBeforeEditData = e.value || '0';
             else if (GX._METHODS_.nvl(e.columnName) === 'Remark') vThis.strBeforeEditData = e.value || '';
-        })
+        });
 
         // grid editing mode finish
         vThis.mainGrid.on('editingFinish', function (e) {
@@ -519,6 +525,7 @@ let app = new Vue({
                 } else {
                     // 해당 행 금액, 부가세, 금액계, 원화금액, 원화부가세, 원화금액계 계산하여 갱신
                     const price = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'Price')) || 0; // 단가
+                    const domPrice = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'DomPrice')) || 0; // 원화단가
                     const exRate = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'ExRate')) || 0; // 환율
                     
                     // 부가세 여부에 따라 계산 변경
@@ -527,9 +534,9 @@ let app = new Vue({
                     else floatAmt -= floatVat; // 부가세 포함
 
                     // 금액 계산 = 납품수량 * 단가 * 환율
-                    const cur = parseFloat(qty) * parseFloat(price) * parseFloat(exRate)
+                    const cur = parseFloat(qty) * parseFloat(price) * parseFloat(exRate);
                     // 원화 금액 계산 = 납품수량 * 원화단가
-                    const dom = parseFloat(qty) * parseFloat(price)
+                    const dom = parseFloat(qty) * parseFloat(domPrice);
 
                     // 금액 = 납품수량 * 단가 * 환율 * [적용 부가세]
                     vThis.mainGrid.setValue(e.rowKey, 'CurAmt', (cur * floatAmt).toFixed(0));
@@ -552,9 +559,7 @@ let app = new Vue({
                     vThis.calSum();
                 }
             }
-        })
-
-        
+        });
 
         let jumpData = GX.SessionStorage.get('jumpData') != null ? JSON.parse(GX.SessionStorage.get('jumpData')) : [];
         let jumpSetMethodId = GX.SessionStorage.get('jumpSetMethodId') != null ? GX.SessionStorage.get('jumpSetMethodId') : '';
