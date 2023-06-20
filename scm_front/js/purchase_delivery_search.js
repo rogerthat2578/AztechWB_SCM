@@ -262,35 +262,6 @@ let app = new Vue({
                 vThis.saveHistory();
             }])
         },
-        save: function() {
-            let vThis = this;
-
-            let saveArrData = GX.deepCopy(vThis.rows.Query);
-
-            // DataBlock1에 공통으로 들어가야하는 파라메터 세팅
-            for (let i = saveArrData.length - 1; i >= 0; i--) {
-                if (saveArrData[i].RowEdit) {
-                    saveArrData[i].IDX_NO = saveArrData[i].ROWNUM;
-                    saveArrData[i].WorkingTag = 'U';
-                    saveArrData[i].DelvPlanDate = saveArrData[i].DelvPlanDate.indexOf('-') > -1 ? saveArrData[i].DelvPlanDate.replace(/\-/g, "") : saveArrData[i].DelvPlanDate;
-                } else {
-                    saveArrData.splice(i, 1);
-                }
-            }
-
-            if (saveArrData.length > 0) {
-                GX._METHODS_
-                .setMethodId('PUORDPOSave')
-                .ajax(saveArrData, [], [function (data) {
-                    vThis.rows.Query = [];
-                    alert('저장 성공');
-                    vThis.search();
-                }, function (data) {
-                }]);
-            } else {
-                alert('파라메터 세팅 중<br>예외사항 발생.');
-            }
-        },
 
         /**엑셀 다운로드 xlxs */
         excelDownload: function () {

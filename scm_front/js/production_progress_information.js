@@ -341,6 +341,15 @@ let app = new Vue({
                 for (let i = 0; i < getModiData.length; i++) {
                     getModiData[i].IDX_NO = parseInt(getModiData[i].rowKey) + 1;
                     getModiData[i].WorkingTag = 'U';
+
+                    // 날짜 형태의 데이터들 '-' 하이푼 있는지 확인하고 있을 경우 제거
+                    Object.keys(getModiData[i]).map(k => {
+                        if (k.toLowerCase().indexOf('date') > -1) {
+                            if (GX._METHODS_.nvl(getModiData[i][k]).indexOf('-') > -1) {
+                                getModiData[i][k] = getModiData[i][k].replace(/\-/g, '');
+                            }
+                        }
+                    });
                 }
 
                 try {
@@ -473,11 +482,11 @@ let app = new Vue({
         .header('BuyerNo.').name('BuyerNo').align('left').width(130).whiteSpace().ellipsis().sortable(true).setRow()
         // .header('규격').name('Spec').align('left').width(100).whiteSpace().ellipsis().sortable(true).setRow()
         .header('지시수량').name('OrderQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('재단최초투입일').name('CutInPutDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('재단최초투입일').name('CutInPutDate').align('center').width(120).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
         .header('재단량').name('CutQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('봉제최초투입일').name('SewInPutDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('봉제최초투입일').name('SewInPutDate').align('center').width(120).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
         .header('봉제량').name('SewQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('완성투입일').name('FinishInPutDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
+        .header('완성투입일').name('FinishInPutDate').align('center').width(120).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
         .header('완성량').name('FinishQty').align('right').width(90).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('작업지시번호').name('WorkOrderNo').align('center').width(120).whiteSpace().ellipsis().sortable(true).setRow()
         ;
@@ -525,6 +534,22 @@ let app = new Vue({
             } else if (GX._METHODS_.nvl(e.columnName) === 'CutQty' || GX._METHODS_.nvl(e.columnName) === 'SewQty' || GX._METHODS_.nvl(e.columnName) === 'FinishQty') {
                 vThis.compareQty(e.rowKey, e.columnName);
             }
+
+            /**
+             * 이 로직이 수행되는 시점이 dom에 데이터가 반영되기 이전이라 원하는 방향으로 구현되지 않음. - 보류
+            // 수정한 행의 edit 가능한 셀들이 모두 데이터가 없다면 (0 || '' || null || undefined 같은) update된 행이 아니라고 처리
+            const targetRowEditCell = document.querySelectorAll('.tui-grid-cell-editable[data-row-key="' + e.rowKey.toString() + '"]');
+            let cnt = 0;
+            for (let i = 0; i < targetRowEditCell.length; i++) {
+                const txt = GX._METHODS_.nvl(targetRowEditCell[i].innerText).replace(/\ /g, '');
+                if (txt.length == 0 || txt == '0') {
+                    cnt++;
+                }
+            }
+            if (cnt === targetRowEditCell.length) {
+                console.log('123123')
+            }
+             */
         })
 
         // 새로고침 수행 시 SessionStorage 삭제

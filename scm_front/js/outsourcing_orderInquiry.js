@@ -305,6 +305,15 @@ let app = new Vue({
                 for (let i = 0; i < getModiData.length; i++) {
                     getModiData[i].IDX_NO = parseInt(getModiData[i].rowKey) + 1;
                     getModiData[i].WorkingTag = 'U';
+
+                    // 날짜 형태의 데이터들 '-' 하이푼 있는지 확인하고 있을 경우 제거
+                    Object.keys(getModiData[i]).map(k => {
+                        if (k.toLowerCase().indexOf('date') > -1) {
+                            if (GX._METHODS_.nvl(getModiData[i][k]).indexOf('-') > -1) {
+                                getModiData[i][k] = getModiData[i][k].replace(/\-/g, '');
+                            }
+                        }
+                    });
                 }
 
                 try {

@@ -480,12 +480,13 @@ let app = new Vue({
 
         // grid dblclick event
         vThis.mainGrid.on('dblclick', function(e) {
-            // 행 더블 클릭 시 점프
-            if (e.rowKey || e.rowKey === 0) {
-                if (e.columnName === 'testtest') {
-                    toastr.info('123123')
-                }
-            }
+            // 행 더블 클릭 시 다이이얼로그 띄우기
+            // if (e.rowKey || e.rowKey === 0) {
+            //     if (e.columnName === 'testtest') {
+            //         // toastr.info('123123')
+            //         document.getElementById('test').showModal();
+            //     }
+            // }
         });
 
         // grid editing mode start
