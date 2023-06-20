@@ -689,6 +689,9 @@ main {
   overflow: auto;
   border: 1px solid #5A669A;
 }
+.data-table.dialog {
+  height: 25vh;
+}
 .data-table table .click {
   background-color: #E6E9F8;
 }

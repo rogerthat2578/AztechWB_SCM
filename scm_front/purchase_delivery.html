@@ -197,23 +197,105 @@
 				</div>
 			</div>
 		</main>
-	</div>
-	<!-- <dialog id="test">
-		<div class="top-input-wrap">
-			<div class="input-container">
-				<div class="input-wrap">
-					<ul class="condition num">
-						<li class="name">
-							<label>납품번호</label>
-						</li>
-						<li class="text">
-							<input type="text">
-						</li>
-					</ul>
+
+		<!-- 포장단위 다이얼로그 -->
+		<dialog id="packLotNoDialog" style="width: 50vw; height: 60vh; margin: auto;">
+			<div>
+				<h1 style="text-align: left;">&nbsp;&nbsp;포장단위입출고입력</h1>
+			</div>
+			<div style="text-align: right; margin: 5px;">
+				<button class="btn-stlye-06" style="margin-right: 20px;" onclick="document.getElementById('packLotNoDialog').close()">닫기</button>
+			</div>
+
+			<div class="top-data-wrap">
+				<div class="data-row-wrap">
+					<div class="data-row">
+						<ul class="input-wrap" style="margin-right: 20px;">
+							<li class="name" style="width: 80px;">
+								<label>일자</label>
+							</li>
+							<li class="txt">
+								<input type="text" style="width: 140px;" readonly>
+							</li>
+						</ul>
+						<ul class="input-wrap" style="margin-right: 20px;">
+							<li class="name" style="width: 80px;">
+								<label>입출고유형</label>
+							</li>
+							<li class="txt">
+								<input type="text" style="width: 180px;" readonly>
+							</li>
+						</ul>
+						<ul class="input-wrap">
+							<li class="name" style="width: 80px;">
+								<label>창고</label>
+							</li>
+							<li class="txt">
+								<input type="text" style="width: 230px;" readonly>
+							</li>
+						</ul>
+					</div>
+					<div class="data-row">
+						<ul class="input-wrap" style="margin-right: 20px;">
+							<li class="name" style="width: 80px;">
+								<label>품번</label>
+							</li>
+							<li class="txt">
+								<input type="text" style="width: 220px;" readonly>
+							</li>
+						</ul>
+						<ul class="input-wrap" style="margin-right: 20px;">
+							<li class="name" style="width: 80px;">
+								<label>품명</label>
+							</li>
+							<li class="txt">
+								<input type="text" style="width: 220px;" readonly>
+							</li>
+						</ul>
+						<ul class="input-wrap">
+							<li class="name" style="width: 80px;">
+								<label>합계수량</label>
+							</li>
+							<li class="txt">
+								<input type="text" style="width: 100px;" readonly>
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
-		</div>
-	</dialog> -->
+
+			<div class="main-data-wrap">
+				<div class="btn-row">
+					<div>
+						<button class="btn-stlye-01" @click="">
+							<img src="img/ic_04.png" alt="조회버튼이미지">
+							<span class="web">조회</span>
+						</button>
+						<button class="btn-stlye-01" style="margin-right: 10px;" @click="gridAppendRow('DialogGrid')">
+							<img src="img/ic_pius_white.png" alt="행추가버튼이미지" style="margin-left: 4px;">
+							<span class="web">행 추가</span>
+						</button>
+						<button class="btn-stlye-05" style="margin-right: 10px;" @click="">
+							<img src="img/ic_02.png" alt="삭제버튼이미지">
+							<span class="web">삭제</span>
+						</button>
+						<button class="btn-stlye-05" @click="">
+							<img src="img/ic_minus_white.png" alt="행삭제버튼이미지" style="margin-left: 4px;">
+							<span>행 삭제</span>
+						</button>
+					</div>
+			
+					<button class="btn-stlye-03" @click="">
+						<img src="img/ic_06.png" alt="적용버튼이미지">
+						<span>적용</span>
+					</button>
+				</div>
+
+				<div class="data-table dialog" id="DialogGrid"></div>
+			</div>
+		</dialog>
+	</div>
+
 	<script src="js/common/app.js?v=1665537373142"></script>
 </body>
 

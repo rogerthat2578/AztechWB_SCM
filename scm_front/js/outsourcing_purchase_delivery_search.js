@@ -39,6 +39,11 @@ let app = new Vue({
             Control: false,
             Q: false,
         },
+        // 모바일웹에서 더블클릭 처럼 동작하기위함
+        objDblClick: {
+            click: false,
+            time: 0,
+        },
     },
     // 변경 감시
     watch: {
@@ -429,21 +434,53 @@ let app = new Vue({
         });
 
         // grid dblclick event
-        vThis.mainGrid.on('dblclick', function(e) {
-            // 행 더블 클릭 시 점프
-            if (e.rowKey || e.rowKey === 0) {
-                if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let arr = [];
-                    arr.push(vThis.rows.Query[e.rowKey])
-                    if (arr.length > 0) {
-                        GX.SessionStorage.set('jumpData', JSON.stringify(arr));
-                        GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
-                        location.href = 'outsourcing_purchase_delivery.html';
-                    } else 
-                        toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+        // vThis.mainGrid.on('dblclick', function(e) {
+        //     // 행 더블 클릭 시 점프
+        //     if (e.rowKey || e.rowKey === 0) {
+        //         if (confirm('입력 화면으로 이동하시겠습니까?')) {
+        //             let arr = [];
+        //             arr.push(vThis.rows.Query[e.rowKey])
+        //             if (arr.length > 0) {
+        //                 GX.SessionStorage.set('jumpData', JSON.stringify(arr));
+        //                 GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
+        //                 location.href = 'outsourcing_purchase_delivery.html';
+        //             } else 
+        //                 toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+        //         }
+        //     }
+        // });
+
+        vThis.mainGrid.on('click', function(e) {
+            // 행 더블 클릭 시 점프 - 모바일 웹에선 그리드 더블클릭 이벤트가 동작하지 않음
+            const clickInterval = 600; // ms
+            if (vThis.objDblClick.click) {
+                if (new Date().getTime() - vThis.objDblClick.time <= clickInterval) {
+                    if (e.rowKey || e.rowKey === 0) {
+                        vThis.objDblClick.click = false;
+                        vThis.objDblClick.time = 0;
+                        if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                            let arr = [];
+                            arr.push(vThis.rows.Query[e.rowKey])
+                            if (arr.length > 0) {
+                                GX.SessionStorage.set('jumpData', JSON.stringify(arr));
+                                GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
+                                location.href = 'outsourcing_purchase_delivery.html';
+                            } else 
+                                toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                        }
+                    }
                 }
             }
-        });
+            if (e.rowKey || e.rowKey === 0) {
+                vThis.objDblClick.click = true;
+                vThis.objDblClick.time = new Date().getTime();
+                
+                setTimeout(() => {
+                    vThis.objDblClick.click = false;
+                    vThis.objDblClick.time = 0;
+                }, clickInterval)
+            }
+        })
 
         // 새로고침 수행 시 SessionStorage 삭제
         let reloadYN = false;
