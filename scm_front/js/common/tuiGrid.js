@@ -269,15 +269,19 @@ ToastUIGrid = {
             this.options = {};
             return this;
         },
-        init: function () {
+        init: function (summaryOpt = '') {
             this.pushColDatas = [];
             this.options = {};
             this.rowHeaders = [];
-            this.summary = {
-                height: 40,
-                position: 'top',
-                columnContent: {}
-            };
+            if (summaryOpt === 'noSummary') {
+                this.summary = {};
+            } else {
+                this.summary = {
+                    height: 40,
+                    position: 'top',
+                    columnContent: {}
+                };
+            }
             return this;
         },
     },

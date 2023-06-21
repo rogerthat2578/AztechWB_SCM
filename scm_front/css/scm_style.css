@@ -690,7 +690,7 @@ main {
   border: 1px solid #5A669A;
 }
 .data-table.dialog {
-  height: 25vh;
+  height: 50vh;
 }
 .data-table table .click {
   background-color: #E6E9F8;
@@ -724,7 +724,8 @@ main {
 }
 .main-data-container .data-table {
   margin-top: 10px;
-  height: 620px;
+  height: 100%;
+  /* height: 620px; */
 }
 
 .bg-wrap {
@@ -1207,7 +1208,7 @@ main {
   position: absolute;
   top: 0;
   background-color: #808080a1;
-  z-index: 3;
+  z-index: 15;
 }
 .fake-dialog-wrap .fake-dialog-container {
   position: relative;
@@ -1637,7 +1638,7 @@ main {
   position: absolute;
   top: 0;
   background-color: #808080a1;
-  z-index: 3;
+  z-index: 15;
 }
 .change-pw-dialog-wrap .change-pw-dialog-title {
   border-bottom: 1px solid #D5E0EB;

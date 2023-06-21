@@ -8,11 +8,9 @@ let app = new Vue({
 		BizUnitList: [], // 사업 단위 리스트
         /**
          * rows.Query 조회 결과
-         * rows.DialogQuery 포장단위입출고입력 다이얼로그 그리드
          */
 		rows: {
             Query: [],
-            DialogQuery: [],
         },
         /**
          * 조회 조건
@@ -56,6 +54,8 @@ let app = new Vue({
         },
         // grid 내 데이터 edit 모드일 때 기존 데이터 유지
         strBeforeEditData: '',
+        // 팝업(window.open)에 접근하기 위함
+        objWinOpen: null,
 	},
     methods: {
         /**이벤트 처리 */
@@ -391,38 +391,6 @@ let app = new Vue({
                 }
             }
         },
-
-        /**
-         * @param {String} 생성한 그리드 변수명 (=그리드 id와 맞춰야함)
-         */
-        gridAppendRow: function (gridId = '') {
-            const vThis = this;
-
-            if (GX._METHODS_.nvl(gridId).length > 0) {
-                let newRowData = {};
-                let newRowOptions = {
-                    // at: 0, // The index at which new row will be inserted
-                    // extendPrevRowSpan: false, // If set to true and the previous row at target index has a rowspan data, the new row will extend the existing rowspan data.
-                    // focus: true, // If set to true, move focus to the new row after appending
-                };
-
-                vThis[gridId].getColumns().map(k => {
-                    if (typeof k.formatter === undefined)
-                        newRowData[k.name] = '';
-                    else 
-                        newRowData[k.name] = 0;
-
-                    console.log(k.name)
-                });
-
-                console.log(newRowData)
-                // vThis.rows.DialogQuery.push(newRowData);
-                // console.log(vThis.rows.DialogQuery)
-                vThis[gridId].resetData([newRowData]);
-
-                // vThis[gridId].appendRow(newRowData, newRowOptions);
-            }
-        },
     },
     created() {
         let vThis = this;
@@ -517,8 +485,19 @@ let app = new Vue({
             // 행 더블 클릭 시 다이이얼로그 띄우기
             if (e.rowKey || e.rowKey === 0) {
                 if (e.columnName === 'packLotNo') {
-                    // toastr.info('123123')
-                    document.getElementById('packLotNoDialog').showModal();
+                    // SessionStorage로 데이터 전달
+                    GX.SessionStorage.set('codehelp_popup-queryForm', JSON.stringify(vThis.queryForm))
+                    GX.SessionStorage.set('codehelp_popup-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
+
+                    // window.name = "부모창 이름";
+                    window.name = 'parentPopup';
+
+                    let top = Math.floor(screen.availHeight / 4.5);
+                    let left = Math.floor(screen.availWidth / 4);
+                    
+                    // window.open("open할 window", "자식창 이름", "팝업창 옵션");
+                    vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=570, scrollbars=no, top=' + top + ', left=' + left);
+                    vThis.objWinOpen.focus();
                 }
             }
         });
@@ -600,31 +579,6 @@ let app = new Vue({
                 }
             }
         });
-
-
-        // dialog grid
-        // init grid columns, set grid columns
-        ToastUIGrid.setColumns
-        .init()
-        .setRowHeaders('rowNum', 'checkbox')
-        .header('적재위치(입고)').name('Location').align('left').width(120).whiteSpace().ellipsis().setRow()
-        .header('필번').name('BoxNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
-        .header('재고수량').name('StockQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('중량(실량)').name('Wight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('재고중량(실량)').name('StockWight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Gross량').name('Gross').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Stain').name('Stain').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Shade').name('Shade').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
-        ;
-
-        // create dialog grid
-        vThis.DialogGrid = ToastUIGrid.initGrid('DialogGrid');
-
-        // dialog grid data init
-        vThis.rows.DialogQuery = [];
-        vThis.mainGrid.resetData(vThis.rows.DialogQuery);
-
 
         let jumpData = GX.SessionStorage.get('jumpData') != null ? JSON.parse(GX.SessionStorage.get('jumpData')) : [];
         let jumpSetMethodId = GX.SessionStorage.get('jumpSetMethodId') != null ? GX.SessionStorage.get('jumpSetMethodId') : '';
