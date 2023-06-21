@@ -101,6 +101,11 @@ let app = new Vue({
                 toastr.warning('저장할 데이터가 없습니다.');
             }
         },
+
+        // 창고코드로 적재위치 가져오기
+        getLocationA1: function () {
+
+        },
     },
     created() {},
     mounted() {
@@ -142,35 +147,22 @@ let app = new Vue({
             }
         });
 
-        // grid dblclick event
-        vThis.mainGrid.on('dblclick', function(e) {
-            // 행 더블 클릭 시 다이이얼로그 띄우기
-            if (e.rowKey || e.rowKey === 0) {
-                if (e.columnName === 'Location') {
-                    // SessionStorage로 데이터 전달
-                    GX.SessionStorage.set('location_popup-queryForm', JSON.stringify(vThis.queryForm))
-                    GX.SessionStorage.set('location_popup-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
-
-                    // window.name = "부모창 이름";
-                    window.name = 'parentPopup';
-
-                    let top = Math.floor(screen.availHeight / 4.7);
-                    let left = Math.floor(screen.availWidth / 3.8);
-                    
-                    // window.open("open할 window", "자식창 이름", "팝업창 옵션");
-                    vThis.objWinOpen = window.open('location_popup.html', 'childPopup', 'width=800, height=490, scrollbars=no, top=' + top + ', left=' + left);
-                    vThis.objWinOpen.focus();
-                }
-            }
-        });
-
         // SessionStorage에 있는거 꺼내오기
-        vThis.queryForm = GX.SessionStorage.get('location_popup-queryForm') != null ? JSON.parse(GX.SessionStorage.get('location_popup-queryForm')) : {};
-        vThis.queryRow = GX.SessionStorage.get('location_popup-queryRow') != null ? JSON.parse(GX.SessionStorage.get('location_popup-queryRow')) : {};
+        vThis.queryForm = GX.SessionStorage.get('codehelp_popup-queryForm') != null ? JSON.parse(GX.SessionStorage.get('codehelp_popup-queryForm')) : {};
+        vThis.queryRow = GX.SessionStorage.get('codehelp_popup-queryRow') != null ? JSON.parse(GX.SessionStorage.get('codehelp_popup-queryRow')) : {};
         // 정상적으로 담았으면 SessionStorage 삭제
         if (Object.keys(vThis.queryForm).length > 0 && Object.keys(vThis.queryRow).length > 0) {
-            GX.SessionStorage.remove('location_popup-queryForm');
-            GX.SessionStorage.remove('location_popup-queryRow');
+            GX.SessionStorage.remove('codehelp_popup-queryForm');
+            GX.SessionStorage.remove('codehelp_popup-queryRow');
+            vThis.queryRow.Qty = GX._METHODS_.nvl(vThis.queryRow.Qty.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,'));
+
+            // 창고 정보로 적재위치 가져오기
+            const wh = {
+                whSeq: vThis.queryRow.WHSeq || 0,
+                whName: vThis.queryRow.WHName || ''
+            }
+            // 무조건 "A1" 적재위치 가져오기. 창고별로 적재위치가 다른데 가능한가
+            vThis.getLocationA1(wh);
         }
         
         // 새로고침 수행 시 SessionStorage 삭제

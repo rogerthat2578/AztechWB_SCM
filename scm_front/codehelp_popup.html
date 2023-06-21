@@ -72,12 +72,12 @@
                                 <input type="text" style="width: 220px;" v-model="queryRow.ItemName" readonly>
                             </li>
                         </ul>
-                        <ul class="input-wrap" style="justify-content: flex-start; z-index: -1;">
+                        <ul class="input-wrap" style="justify-content: flex-start;">
                             <li class="name" style="width: 80px;">
                                 <label>합계수량</label>
                             </li>
                             <li class="txt">
-                                <input type="text" style="width: 100px;" readonly>
+                                <input type="text" style="width: 100px; text-align: right; font-weight: bold; color: black;" v-model="queryRow.Qty" readonly>
                             </li>
                         </ul>
                     </div>
