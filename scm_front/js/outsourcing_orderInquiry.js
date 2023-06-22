@@ -367,6 +367,8 @@ let app = new Vue({
     },
 
     created(){
+        toastr.options.progressBar = true;
+        
         let vThis = this;
 
         if(!GX._METHODS_.isLogin()) location.replace('login.html');

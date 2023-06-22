@@ -10,6 +10,8 @@ let app = new Vue({
 		rows: {
             Query: [],
         },
+        // grid 내 데이터 edit 모드일 때 기존 데이터 유지
+        strBeforeEditData: '',
 	},
     methods: {
         /**
@@ -62,11 +64,17 @@ let app = new Vue({
 
             toastr.warning('전체 삭제');
         },
-        apply: function () {
+        save: function () {
             const vThis = this;
 
             // 현재 edit 상태인 셀 적용 처리
             vThis.mainGrid.blur();
+
+            const eleToastTitle = document.querySelector('#toast-container .toast-title')?.innerText || '';
+            if (eleToastTitle === 'Validation:fail') {
+                toastr.warning('데이터 확인 후 저장해주세요.')
+                return false;
+            } 
 
             // 파라메터 선언
             let params = [];
@@ -95,6 +103,8 @@ let app = new Vue({
                 params.push(getUpdated[i]);
             }
 
+            console.log(params)
+
             if (params.length > 0) {
                 toastr.info('저장.');
             } else {
@@ -107,7 +117,9 @@ let app = new Vue({
 
         },
     },
-    created() {},
+    created() {
+        toastr.options.progressBar = true;
+    },
     mounted() {
         const vThis = this;
 
@@ -117,7 +129,7 @@ let app = new Vue({
         .init() // .init('noSummary')
         .setRowHeaders('rowNum', 'checkbox')
         .header('적재위치(입고)').name('Location').align('left').width(120).whiteSpace().ellipsis().setRow()
-        .header('필번').name('BoxNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
+        .header('필번(Box)').name('BoxNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
         .header('재고수량').name('StockQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('중량(실량)').name('Wight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -135,6 +147,42 @@ let app = new Vue({
         // dialog grid data init
         vThis.rows.Query = [];
         vThis.mainGrid.resetData(vThis.rows.Query);
+
+        // grid editing mode start
+        vThis.mainGrid.on('editingStart', function (e) {
+            // console.log('editingStart', e)
+            // 수정 이전 데이터 가지고 있기
+            if (GX._METHODS_.nvl(e.columnName) === 'Qty' || GX._METHODS_.nvl(e.columnName) === 'Wight' || GX._METHODS_.nvl(e.columnName) === 'Gross' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
+                vThis.strBeforeEditData = e.value || '0';
+            } else {
+                vThis.strBeforeEditData = e.value;
+            }
+        });
+
+        // grid editing mode finish
+        vThis.mainGrid.on('editingFinish', function (e) {
+            // console.log('editingFinish', e)
+            // 숫자인 컬럼 체크
+            if (GX._METHODS_.nvl(e.columnName) === 'Qty' || GX._METHODS_.nvl(e.columnName) === 'Wight' || GX._METHODS_.nvl(e.columnName) === 'Gross' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
+                // 입력한 데이터가 숫자인지 체크
+                if (isNaN(e.value)) {
+                    toastr.warning(vThis.mainGrid.getColumn(e.columnName).header + ' : 숫자만 입력 가능합니다.', 'Validation:fail');
+                    vThis.mainGrid.setValue(e.rowKey, e.columnName, vThis.strBeforeEditData);
+                    return false;
+                } else {
+                    // 마스터 영역의 합계수량과 디테일 영역의 수량 비교
+                    const detailGridQtySum = vThis.mainGrid.getSummaryValues('Qty').sum;
+                    const masterQtySum = GX._METHODS_.nvl(vThis.queryRow.Qty) == '' ? 0 : vThis.queryRow.Qty;
+
+                    if (parseFloat(masterQtySum) < parseFloat(detailGridQtySum)) {
+                        // 마스터 영역의 합계수량 > 디테일 영역의 수량 합계 == 에러 발생
+                        toastr.warning('합계(납품)수량(' + masterQtySum + ')은 포장단위입출고 수량(' + detailGridQtySum + ') 보다 작거나 같아야 합니다.', 'Validation:fail');
+                        vThis.mainGrid.setValue(e.rowKey, 'Qty', vThis.strBeforeEditData);
+                        return false;
+                    }
+                }
+            }
+        });
 
         // when data bound to the grid is changed 
         vThis.mainGrid.on('onGridUpdated', function (e) {
@@ -154,7 +202,7 @@ let app = new Vue({
         if (Object.keys(vThis.queryForm).length > 0 && Object.keys(vThis.queryRow).length > 0) {
             GX.SessionStorage.remove('codehelp_popup-queryForm');
             GX.SessionStorage.remove('codehelp_popup-queryRow');
-            vThis.queryRow.Qty = GX._METHODS_.nvl(vThis.queryRow.Qty.toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,'));
+            vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.Qty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
 
             // 창고 정보로 적재위치 가져오기
             const wh = {

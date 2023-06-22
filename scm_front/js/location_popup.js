@@ -102,7 +102,9 @@ let app = new Vue({
             }
         },
     },
-    created() {},
+    created() {
+        toastr.options.progressBar = true;
+    },
     mounted() {
         const vThis = this;
 

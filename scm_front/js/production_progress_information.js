@@ -390,6 +390,8 @@ let app = new Vue({
     },
 
     created(){
+        toastr.options.progressBar = true;
+        
         let vThis = this;
 
         if(!GX._METHODS_.isLogin()) location.replace('login.html');
@@ -534,22 +536,6 @@ let app = new Vue({
             } else if (GX._METHODS_.nvl(e.columnName) === 'CutQty' || GX._METHODS_.nvl(e.columnName) === 'SewQty' || GX._METHODS_.nvl(e.columnName) === 'FinishQty') {
                 vThis.compareQty(e.rowKey, e.columnName);
             }
-
-            /**
-             * 이 로직이 수행되는 시점이 dom에 데이터가 반영되기 이전이라 원하는 방향으로 구현되지 않음. - 보류
-            // 수정한 행의 edit 가능한 셀들이 모두 데이터가 없다면 (0 || '' || null || undefined 같은) update된 행이 아니라고 처리
-            const targetRowEditCell = document.querySelectorAll('.tui-grid-cell-editable[data-row-key="' + e.rowKey.toString() + '"]');
-            let cnt = 0;
-            for (let i = 0; i < targetRowEditCell.length; i++) {
-                const txt = GX._METHODS_.nvl(targetRowEditCell[i].innerText).replace(/\ /g, '');
-                if (txt.length == 0 || txt == '0') {
-                    cnt++;
-                }
-            }
-            if (cnt === targetRowEditCell.length) {
-                console.log('123123')
-            }
-             */
         })
 
         // 새로고침 수행 시 SessionStorage 삭제

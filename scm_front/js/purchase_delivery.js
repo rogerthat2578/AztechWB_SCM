@@ -206,6 +206,12 @@ let app = new Vue({
             // 현재 edit 상태인 셀 적용 처리
             vThis.mainGrid.blur();
 
+            const eleToastTitle = document.querySelector('#toast-container .toast-title')?.innerText || '';
+            if (eleToastTitle === 'Validation:fail') {
+                toastr.warning('데이터 확인 후 저장해주세요.')
+                return false;
+            }
+
             // 파라메터 선언
             let params1 = [], params2 = [];
 
@@ -393,6 +399,8 @@ let app = new Vue({
         },
     },
     created() {
+        toastr.options.progressBar = true;
+        
         let vThis = this;
 
 		if (!GX._METHODS_.isLogin()) location.replace('login.html');
@@ -517,7 +525,7 @@ let app = new Vue({
             if (GX._METHODS_.nvl(e.columnName) === 'Qty') {
                 // 입력한 데이터가 숫자인지 체크
                 if (isNaN(e.value)) {
-                    toastr.warning('납품수량에 숫자만 입력 가능합니다.');
+                    toastr.warning('납품수량에 숫자만 입력 가능합니다.', 'Validation:fail');
                     vThis.mainGrid.setValue(e.rowKey, 'Qty', vThis.strBeforeEditData);
                     return false;
                 }
@@ -527,7 +535,7 @@ let app = new Vue({
                 
                 if (parseFloat(stdUnitQty) < parseFloat(qty)) {
                     // 발주수량 < 납품수량 == 에러 발생
-                    toastr.warning('발주수량(' + stdUnitQty + ')은 납품수량(' + qty + ') 보다 크거나 같아야 합니다.');
+                    toastr.warning('발주수량(' + stdUnitQty + ')은 납품수량(' + qty + ') 보다 크거나 같아야 합니다.', 'Validation:fail');
                     vThis.mainGrid.setValue(e.rowKey, 'Qty', vThis.strBeforeEditData);
                     return false;
                 } else {
