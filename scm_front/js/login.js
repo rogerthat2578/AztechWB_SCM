@@ -9,11 +9,18 @@ let app = new Vue({
 		userId: '',
 		userPwd: '',
 		isSaveId: [],
-        settingItems: { //아즈텍WB는 따로 환경설정 변경 없이 기본 셋팅
+        settingItems: {
+            // 아즈텍WB는 따로 환경설정 변경 없이 기본 셋팅
 			dsn: 'aztw_oper',
 			work: 'AZTW220704',
 			serverAddr: 'http://222.96.95.26:8080',
 			anotherDsn: 'aztw_bis'
+
+            // 효림세울
+			// dsn: 'hrsw_oper',
+			// work: 'HRSW230622',
+			// serverAddr: 'http://222.96.95.26:8090',
+			// anotherDsn: 'hrsw_bis'
 		},
 	},
     methods: {
