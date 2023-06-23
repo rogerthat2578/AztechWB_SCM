@@ -50,12 +50,7 @@ GX._DATAS_ = {
 		work: 'AZTW220704',
 		serverAddr: 'http://222.96.95.26:8080',
 		anotherDsn: 'aztw_bis'
-
-		// 효림세울
-		// dsn: 'hrsw_oper',
-		// work: 'HRSW230622',
-		// serverAddr: 'http://222.96.95.26:8090',
-		// anotherDsn: 'hrsw_bis'
+		// 효림세울은 SCM 안씀
 	},
 };
 
