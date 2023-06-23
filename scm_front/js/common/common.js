@@ -44,6 +44,19 @@ GX._DATAS_ = {
 		'4': { bindPageUrls1: '2', class: 'menu-04', link: 'outsourcing_purchase_delivery_search.html', icon: 'img/ic_menu_04.png', pageName: '외주납품품목조회' },
 		'5': { bindPageUrls1: '2', class: 'menu-05', link: 'production_progress_information.html', icon: 'img/ic_menu_05.png', pageName: '의류생산진행정보입력' },
 	},
+	settingItems: {
+		// 아즈텍WB는 따로 환경설정 변경 없이 기본 셋팅
+		dsn: 'aztw_oper',
+		work: 'AZTW220704',
+		serverAddr: 'http://222.96.95.26:8080',
+		anotherDsn: 'aztw_bis'
+
+		// 효림세울
+		// dsn: 'hrsw_oper',
+		// work: 'HRSW230622',
+		// serverAddr: 'http://222.96.95.26:8090',
+		// anotherDsn: 'hrsw_bis'
+	},
 };
 
 GX._METHODS_ = {

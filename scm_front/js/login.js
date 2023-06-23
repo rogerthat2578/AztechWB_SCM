@@ -9,19 +9,6 @@ let app = new Vue({
 		userId: '',
 		userPwd: '',
 		isSaveId: [],
-        settingItems: {
-            // 아즈텍WB는 따로 환경설정 변경 없이 기본 셋팅
-			dsn: 'aztw_oper',
-			work: 'AZTW220704',
-			serverAddr: 'http://222.96.95.26:8080',
-			anotherDsn: 'aztw_bis'
-
-            // 효림세울
-			// dsn: 'hrsw_oper',
-			// work: 'HRSW230622',
-			// serverAddr: 'http://222.96.95.26:8090',
-			// anotherDsn: 'hrsw_bis'
-		},
 	},
     methods: {
         /**이벤트 처리 */
@@ -147,10 +134,14 @@ let app = new Vue({
         let vThis = this;
 
         // PDA 처럼 따로 환경 설정하는 것 없이 바로 할 수 있도록
-        for (let i in vThis.settingItems) {
-            if(vThis.settingItems.hasOwnProperty(i)) {
+        for (let i in GX._DATAS_.settingItems) {
+            if(GX._DATAS_.settingItems.hasOwnProperty(i)) {
                 if (!GX.Storage.get('gx_' + i)) {
-                    GX.Storage.set('gx_' + i, vThis.settingItems[i]);
+                    GX.Storage.set('gx_' + i, GX._DATAS_.settingItems[i]);
+                } else {
+                    if (GX._DATAS_.settingItems[i] != GX.Storage.get('gx_' + i)) {
+                        GX.Storage.set('gx_' + i, GX._DATAS_.settingItems[i]);
+                    }
                 }
             }
         }
