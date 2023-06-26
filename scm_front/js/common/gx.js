@@ -686,11 +686,11 @@ GX = {
 			}
 		},
 		show: function () {
-			document.getElementById('loading').style.display = 'block';
+			if (document.getElementById('loading')?.style.display) document.getElementById('loading').style.display = 'block';
 			// this.obj.style.display = "block";
 		},
 		hide: function () {
-			document.getElementById('loading').style.display = 'none';
+			if (document.getElementById('loading')?.style.display) document.getElementById('loading').style.display = 'none';
 			// this.obj.style.display = "none";
 		}
 	},

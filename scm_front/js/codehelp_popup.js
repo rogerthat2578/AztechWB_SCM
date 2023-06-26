@@ -1,7 +1,14 @@
 let app = new Vue({
 	el: '#app',
 	data: {
-        queryForm: {},
+        deptName: '',
+		userName: '',
+        BizUnitList: [], // 사업 단위 리스트
+        queryForm: {
+            CompanySeq: '',
+            BizUnit: '',
+            BizUnitName: '',
+        },
         // 한개 행에 대한 데이터
         queryRow: {},
         /**
@@ -35,6 +42,8 @@ let app = new Vue({
                     else
                         newRowData[k.name] = 0;
                 });
+                newRowData.LocationSeq = vThis.queryForm.LocationSeq
+                newRowData.LocationName = vThis.queryForm.LocationName
 
                 vThis[gridId].appendRow(newRowData, newRowOptions);
             }
@@ -112,13 +121,47 @@ let app = new Vue({
             }
         },
 
-        // 창고코드로 적재위치 가져오기
-        getLocationA1: function () {
+        getFirstLocation: function () {
+            const vThis = this;
 
+            const params = GX.deepCopy(vThis.queryForm);
+
+            params.WHSeq = vThis.queryRow.WHSeq;
+            params.WHName = vThis.queryRow.WHName;
+
+            GX._METHODS_
+            .setMethodId('LocationCodeHelp')
+            .ajax([params], [function (data) {
+                console.log('창고Seq로 Location 가져오기', data)
+                vThis.queryForm.LocationSeq = data[0].LocationSeq;
+                vThis.queryForm.LocationName = data[0].LocationName;
+            }])
+        },
+
+        search: function () {
+           
         },
     },
     created() {
         toastr.options.progressBar = true;
+
+        const vThis = this;
+
+        GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
+
+        /**
+         * Default data setting
+         * 부서명, 사용자명, 사업단위, CompanySeq, CustSeq 세팅
+         * BizUnitList: 사업단위가 여러개일 수 있어 배열로 담기
+         * CustSeq: 구매납품 업체 / 외주가공 업체 구분할 때 사용
+         */
+        vThis.deptName = GX.Cookie.get('DeptName');
+        vThis.userName = GX.Cookie.get('UserName');
+        vThis.BizUnitList = Object.values(JSON.parse(GX.Cookie.get('BizUnit_JsonFormatStringType')));
+        vThis.queryForm.CompanySeq = vThis.BizUnitList[0].CompanySeq;
+        vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
+        vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
+        vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
     },
     mounted() {
         const vThis = this;
@@ -128,7 +171,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init() // .init('noSummary')
         .setRowHeaders('rowNum', 'checkbox')
-        .header('적재위치(입고)').name('Location').align('left').width(120).whiteSpace().ellipsis().setRow()
+        .header('적재위치(입고)').name('LocationName').align('left').width(120).whiteSpace().ellipsis().setRow()
         .header('필번(Box)').name('BoxNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
         .header('재고수량').name('StockQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -203,15 +246,11 @@ let app = new Vue({
             GX.SessionStorage.remove('codehelp_popup-queryForm');
             GX.SessionStorage.remove('codehelp_popup-queryRow');
             vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.Qty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-
-            // 창고 정보로 적재위치 가져오기
-            const wh = {
-                whSeq: vThis.queryRow.WHSeq || 0,
-                whName: vThis.queryRow.WHName || ''
-            }
-            // 무조건 "A1" 적재위치 가져오기. 창고별로 적재위치가 다른데 가능한가
-            vThis.getLocationA1(wh);
         }
+
+        console.log(vThis.queryRow?.WHSeq)
+        // 창고Seq가 있으면 기본 세팅 적재위치 가져오기
+        if (vThis.queryRow?.WHSeq) vThis.getFirstLocation();
         
         // 새로고침 수행 시 SessionStorage 삭제
         let reloadYN = false;
