@@ -148,7 +148,6 @@ let app = new Vue({
             let vThis = this;
 
             let params = GX.deepCopy(vThis.queryForm);
-            
             let paramsList = [];
             for (let i in vThis.jumpDataList) {
                 if (vThis.jumpDataList.hasOwnProperty(i)) {
@@ -166,7 +165,7 @@ let app = new Vue({
                     history.back(-1);
                 } else if(data.length > 0) {
                     vThis.rows.Query = data;
-
+                    
                     // 마스터 영역 데이터 바인딩
                     const masterData = vThis.rows.Query[0];
                     Object.keys(vThis.queryForm).map(k => {
@@ -178,10 +177,12 @@ let app = new Vue({
                                 if (!isNaN(t)) t = t.toString();
 
                                 if (k == j && t.length > 0) {
-                                    if (k === 'DelvDate' && GX._METHODS_.nvl(masterData[j]).length === 8)
+                                    if (k === 'DelvDate' && GX._METHODS_.nvl(masterData[j]).length === 8) {
+                                        vThis.queryForm.DelvDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/-/g, '');
                                         vThis.calendarDelvDate.setDate(new Date(parseInt(vThis.queryForm.DelvDate.substring(0, 4)), parseInt(vThis.queryForm.DelvDate.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvDate.substring(6))))
-                                    else
+                                    } else {
                                         vThis.queryForm[k] = GX._METHODS_.nvl(masterData[j]);
+                                    }
                                 }
                             });
                         }
@@ -463,7 +464,7 @@ let app = new Vue({
         .header('부가세포함').name('IsVAT').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsVAT'}).setRow()
         .header('부가세').name('CurVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('금액계').name('TotCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('LOT-NO').name('packLotNo').align('left').width(100).whiteSpace().ellipsis().setRow()
+        .header('LOT-NO').name('LotNoPackSeq').align('left').width(100).whiteSpace().ellipsis().setRow()
         .header('원화단가').name('DomPrice').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('원화금액').name('DomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('원화부가세').name('DomVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -492,7 +493,7 @@ let app = new Vue({
         vThis.mainGrid.on('dblclick', function(e) {
             // 행 더블 클릭 시 다이이얼로그 띄우기
             if (e.rowKey || e.rowKey === 0) {
-                if (e.columnName === 'packLotNo') {
+                if (e.columnName === 'LotNoPackSeq') {
                     // SessionStorage로 데이터 전달
                     GX.SessionStorage.set('codehelp_popup-queryForm', JSON.stringify(vThis.queryForm))
                     GX.SessionStorage.set('codehelp_popup-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
@@ -580,7 +581,7 @@ let app = new Vue({
         // when data bound to the grid is changed 
         vThis.mainGrid.on('onGridUpdated', function (e) {
             // LOT-NO > 포장단위 다이얼로그 띄울 셀의 색상 변경
-            const fillColor = document.querySelectorAll('.tui-grid-cell-has-input[data-column-name="packLotNo"]');
+            const fillColor = document.querySelectorAll('.tui-grid-cell-has-input[data-column-name="LotNoPackSeq"]');
             if (fillColor.length > 0) {
                 for (let i = 0; i < fillColor.length; i++) {
                     fillColor[i].style.backgroundColor = '#dddddd';

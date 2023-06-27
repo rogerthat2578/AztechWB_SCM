@@ -4,12 +4,13 @@ let app = new Vue({
         deptName: '',
 		userName: '',
         BizUnitList: [], // 사업 단위 리스트
+        // 구매납품입력 화면의 queryForm
         queryForm: {
             CompanySeq: '',
             BizUnit: '',
             BizUnitName: '',
         },
-        // 한개 행에 대한 데이터
+        // 구매납품입력 화면의 더블클릭한 행에 대한 데이터
         queryRow: {},
         /**
          * rows.Query 포장단위입출고입력 다이얼로그 그리드
@@ -19,8 +20,42 @@ let app = new Vue({
         },
         // grid 내 데이터 edit 모드일 때 기존 데이터 유지
         strBeforeEditData: '',
+        /**단축키로 기능 실행 (K-System 참고)
+         * Control + Q = 조회
+         */
+        keyCombi: {
+            isKeyHold: false,
+            Control: false,
+            Q: false,
+        },
 	},
     methods: {
+        /**이벤트 처리 */
+        eventCheck: function() {
+            const vThis = this;
+            const e = event;
+
+            // Key Event
+            if(e.type === 'keyup'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = false; break;
+                    case 'q': vThis.keyCombi.Q = false; break;
+                }
+                vThis.keyCombi.isKeyHold = false;
+            }
+            else if(e.type === 'keydown'){
+                switch(e.key.toLowerCase()){
+                    case 'control': vThis.keyCombi.Control = true; break;
+                    case 'q': vThis.keyCombi.Q = true; break;
+                }
+
+                if (!vThis.keyCombi.isKeyHold && vThis.keyCombi.Control && vThis.keyCombi.Q){
+                    vThis.keyCombi.isKeyHold = true;
+                    vThis.search();
+                }
+            }
+        },
+
         /**
          * @param {String} 생성한 그리드 변수명 (=그리드 id와 맞춰야함)
          */
@@ -48,30 +83,59 @@ let app = new Vue({
                 vThis[gridId].appendRow(newRowData, newRowOptions);
             }
         },
-        delRow: function () {
+
+        /**
+         * 화면 로드 시 해당 창고에 속한 적재위치를 가져와 첫번째 적재위치 가지고 있기
+         * 행 추가 시 가지고있던 적재위치로 세팅
+         */
+        getFirstLocation: function () {
             const vThis = this;
 
-            // 체크된 행만 가져오기
-            let arr = vThis.mainGrid.getCheckedRows();
-            if (arr.length > 0) {
-                if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
-                    // 행 삭제
-                    vThis.mainGrid.removeCheckedRows();
-                    // this.rows.Query 데이터 갱신
-                    vThis.rows.Query = vThis.mainGrid.getData();
-                }
-            } else {
-                if (vThis.mainGrid.getData().length > 0) {
-                    toastr.warning('삭제할 행을 선택해주세요.');
+            const params = GX.deepCopy(vThis.queryForm);
+
+            params.WHSeq = vThis.queryRow.WHSeq;
+            params.WHName = vThis.queryRow.WHName;
+
+            GX._METHODS_
+            .setMethodId('LocationCodeHelp')
+            .ajax([params], [function (data) {
+                console.log('창고Seq로 Location 가져오기', data)
+                if (data.length > 0) {
+                    vThis.queryForm.LocationSeq = data[0].LocationSeq;
+                    vThis.queryForm.LocationName = data[0].LocationName;
                 } else {
-                    toastr.warning('삭제할 데이터가 없습니다. 이전 화면에서 다시 등록 화면으로 넘어와주세요.');
+                    toastr.info('해당 창고에 속한 적재위치가 없습니다.');
                 }
-            }
+            }])
         },
-        del: function () {
-            const vThis = this;
+        
 
-            toastr.warning('전체 삭제');
+        search: function () {
+           const vThis = this;
+
+           let params = GX.deepCopy(vThis.queryForm);
+           params.InOutDate = vThis.queryRow.DelvDate || ''; // (납품)일자
+           params.InOutSeq = vThis.queryRow.DelvSeq || 0; // 입출고내부코드 (DelvSeq)
+           params.InOutSerl = vThis.queryRow.DelvSerl || 0; // 입출고내부순번 (DelvSerl)
+           params.ItemSeq = vThis.queryRow.ItemSeq || 0; // 품목코드
+           params.WHSeq = vThis.queryRow.WHSeq || 0; // 창고코드 (입고창고 고정)
+           params.Seq = vThis.queryRow.LotNoPackSeq || 0; // 내부코드 (포장단위코드) (포장단위 테이블의 내부코드)
+           params.EmpSeq = vThis.queryRow.EmpSeq || 0;
+           params.DeptSeq = vThis.queryRow.DeptSeq || 0;
+
+           console.log(params)
+
+           GX._METHODS_
+            .setMethodId('')
+            .ajax([params], [function (data) {
+                if(data.length > 0){
+                    vThis.rows.Query = data;
+                    toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
+                } else{
+                    vThis.rows.Query = [];
+                    toastr.info('조회 결과가 없습니다.');
+                }
+            }])
         },
         save: function () {
             const vThis = this;
@@ -120,26 +184,30 @@ let app = new Vue({
                 toastr.warning('저장할 데이터가 없습니다.');
             }
         },
-
-        getFirstLocation: function () {
+        delRow: function () {
             const vThis = this;
 
-            const params = GX.deepCopy(vThis.queryForm);
-
-            params.WHSeq = vThis.queryRow.WHSeq;
-            params.WHName = vThis.queryRow.WHName;
-
-            GX._METHODS_
-            .setMethodId('LocationCodeHelp')
-            .ajax([params], [function (data) {
-                console.log('창고Seq로 Location 가져오기', data)
-                vThis.queryForm.LocationSeq = data[0].LocationSeq;
-                vThis.queryForm.LocationName = data[0].LocationName;
-            }])
+            // 체크된 행만 가져오기
+            let arr = vThis.mainGrid.getCheckedRows();
+            if (arr.length > 0) {
+                if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
+                    // 행 삭제
+                    vThis.mainGrid.removeCheckedRows();
+                    // this.rows.Query 데이터 갱신
+                    vThis.rows.Query = vThis.mainGrid.getData();
+                }
+            } else {
+                if (vThis.mainGrid.getData().length > 0) {
+                    toastr.warning('삭제할 행을 선택해주세요.');
+                } else {
+                    toastr.warning('삭제할 데이터가 없습니다. 이전 화면에서 다시 등록 화면으로 넘어와주세요.');
+                }
+            }
         },
+        del: function () {
+            const vThis = this;
 
-        search: function () {
-           
+            toastr.warning('전체 삭제');
         },
     },
     created() {
@@ -148,6 +216,9 @@ let app = new Vue({
         const vThis = this;
 
         GX.SpinnerBootstrap.init('loading', 'loading-wrap', '<div class="loading-container"><img src="img/loading_hourglass.gif" alt=""></div>', 'prepend');
+
+        document.addEventListener('keydown', vThis.eventCheck, false);
+        document.addEventListener('keyup', vThis.eventCheck, false);
 
         /**
          * Default data setting
@@ -248,7 +319,6 @@ let app = new Vue({
             vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.Qty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
         }
 
-        console.log(vThis.queryRow?.WHSeq)
         // 창고Seq가 있으면 기본 세팅 적재위치 가져오기
         if (vThis.queryRow?.WHSeq) vThis.getFirstLocation();
         

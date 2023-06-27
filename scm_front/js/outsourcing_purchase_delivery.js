@@ -152,12 +152,15 @@ let app = new Vue({
                                     if (!isNaN(t)) t = t.toString();
     
                                     if (k == j && t.length > 0) {
-                                        if (k === 'DelvDate' && GX._METHODS_.nvl(masterData[j]).length === 8 && vThis.jumpSetMethodId != 'PDWorkReportJumpQuery')
+                                        if (k === 'DelvDate' && GX._METHODS_.nvl(masterData[j]).length === 8 && vThis.jumpSetMethodId != 'PDWorkReportJumpQuery') {
+                                            vThis.queryForm.DelvDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/-/g, '');
                                             vThis.calendarDelvDate.setDate(new Date(parseInt(vThis.queryForm.DelvDate.substring(0, 4)), parseInt(vThis.queryForm.DelvDate.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvDate.substring(6))));
-                                        else
+                                        } else {
                                             vThis.queryForm[k] = GX._METHODS_.nvl(masterData[j]);
+                                        }
                                     } else if (k === 'DelvDate' && j === 'WorkDate' && GX._METHODS_.nvl(masterData[j]).length === 8 && vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
                                         vThis.queryForm[k] = GX._METHODS_.nvl(masterData[j]);
+                                        vThis.queryForm.DelvDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/-/g, '');
                                         vThis.calendarDelvDate.setDate(new Date(parseInt(vThis.queryForm.DelvDate.substring(0, 4)), parseInt(vThis.queryForm.DelvDate.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvDate.substring(6))))
                                     }
                                 });
