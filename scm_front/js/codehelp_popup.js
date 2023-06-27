@@ -68,7 +68,7 @@ let app = new Vue({
                 let newRowOptions = {
                     at: addIdx, // The index at which new row will be inserted
                     // extendPrevRowSpan: false, // If set to true and the previous row at target index has a rowspan data, the new row will extend the existing rowspan data.
-                    // focus: false, // If set to true, move focus to the new row after appending
+                    focus: true, // If set to true, move focus to the new row after appending
                 };
 
                 vThis[gridId].getColumns().map(k => {
@@ -77,8 +77,8 @@ let app = new Vue({
                     else
                         newRowData[k.name] = 0;
                 });
-                newRowData.LocationSeq = vThis.queryForm.LocationSeq
-                newRowData.LocationName = vThis.queryForm.LocationName
+                newRowData.InLocationSeq = vThis.queryForm.InLocationSeq
+                newRowData.InLocationName = vThis.queryForm.InLocationName
 
                 vThis[gridId].appendRow(newRowData, newRowOptions);
             }
@@ -99,10 +99,10 @@ let app = new Vue({
             GX._METHODS_
             .setMethodId('LocationCodeHelp')
             .ajax([params], [function (data) {
-                console.log('창고Seq로 Location 가져오기', data)
+                // console.log('창고Seq로 Location 가져오기', data)
                 if (data.length > 0) {
-                    vThis.queryForm.LocationSeq = data[0].LocationSeq;
-                    vThis.queryForm.LocationName = data[0].LocationName;
+                    vThis.queryForm.InLocationSeq = data[0].LocationSeq;
+                    vThis.queryForm.InLocationName = data[0].LocationName;
                 } else {
                     toastr.info('해당 창고에 속한 적재위치가 없습니다.');
                 }
@@ -111,22 +111,20 @@ let app = new Vue({
         
 
         search: function () {
-           const vThis = this;
+            const vThis = this;
 
-           let params = GX.deepCopy(vThis.queryForm);
-           params.InOutDate = vThis.queryRow.DelvDate || ''; // (납품)일자
-           params.InOutSeq = vThis.queryRow.DelvSeq || 0; // 입출고내부코드 (DelvSeq)
-           params.InOutSerl = vThis.queryRow.DelvSerl || 0; // 입출고내부순번 (DelvSerl)
-           params.ItemSeq = vThis.queryRow.ItemSeq || 0; // 품목코드
-           params.WHSeq = vThis.queryRow.WHSeq || 0; // 창고코드 (입고창고 고정)
-           params.Seq = vThis.queryRow.LotNoPackSeq || 0; // 내부코드 (포장단위코드) (포장단위 테이블의 내부코드)
-           params.EmpSeq = vThis.queryRow.EmpSeq || 0;
-           params.DeptSeq = vThis.queryRow.DeptSeq || 0;
+            let params = GX.deepCopy(vThis.queryForm);
+            params.InOutDate = vThis.queryRow.DelvDate || ''; // (납품)일자
+            params.InOutSeq = vThis.queryRow.DelvSeq || 0; // 입출고내부코드 (DelvSeq)
+            params.InOutSerl = vThis.queryRow.DelvSerl || 0; // 입출고내부순번 (DelvSerl)
+            params.ItemSeq = vThis.queryRow.ItemSeq || 0; // 품목코드
+            params.WHSeq = vThis.queryRow.WHSeq || 0; // 창고코드 (입고창고 고정)
+            params.Seq = vThis.queryRow.Seq || 0; // 내부코드 (포장단위코드) (포장단위 테이블의 내부코드)
+            params.EmpSeq = vThis.queryRow.EmpSeq || 0;
+            params.DeptSeq = vThis.queryRow.DeptSeq || 0;
 
-           console.log(params)
-
-           GX._METHODS_
-            .setMethodId('')
+            GX._METHODS_
+            .setMethodId('PackingUnitQuery')
             .ajax([params], [function (data) {
                 if(data.length > 0){
                     vThis.rows.Query = data;
@@ -135,6 +133,9 @@ let app = new Vue({
                     vThis.rows.Query = [];
                     toastr.info('조회 결과가 없습니다.');
                 }
+
+                // 그리드에 데이터 바인딩
+                vThis.mainGrid.resetData(vThis.rows.Query);
             }])
         },
         save: function () {
@@ -242,13 +243,13 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init() // .init('noSummary')
         .setRowHeaders('rowNum', 'checkbox')
-        .header('적재위치(입고)').name('LocationName').align('left').width(120).whiteSpace().ellipsis().setRow()
-        .header('필번(Box)').name('BoxNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
-        .header('재고수량').name('StockQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('수량').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('중량(실량)').name('Wight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('재고중량(실량)').name('StockWight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Gross량').name('Gross').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('적재위치(입고)').name('InLocationName').align('left').width(120).whiteSpace().ellipsis().setRow()
+        .header('필번(Box)').name('AddPackNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
+        .header('재고수량').name('StockOkQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('수량').name('OkQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('중량(실량)').name('Weight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('재고중량(실량)').name('StockWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('Gross량').name('GrossQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('Stain').name('Stain').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('Shade').name('Shade').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
         ;
@@ -266,7 +267,7 @@ let app = new Vue({
         vThis.mainGrid.on('editingStart', function (e) {
             // console.log('editingStart', e)
             // 수정 이전 데이터 가지고 있기
-            if (GX._METHODS_.nvl(e.columnName) === 'Qty' || GX._METHODS_.nvl(e.columnName) === 'Wight' || GX._METHODS_.nvl(e.columnName) === 'Gross' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
+            if (GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'GrossQty' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
                 vThis.strBeforeEditData = e.value || '0';
             } else {
                 vThis.strBeforeEditData = e.value;
@@ -277,7 +278,7 @@ let app = new Vue({
         vThis.mainGrid.on('editingFinish', function (e) {
             // console.log('editingFinish', e)
             // 숫자인 컬럼 체크
-            if (GX._METHODS_.nvl(e.columnName) === 'Qty' || GX._METHODS_.nvl(e.columnName) === 'Wight' || GX._METHODS_.nvl(e.columnName) === 'Gross' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
+            if (GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'GrossQty' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
                 // 입력한 데이터가 숫자인지 체크
                 if (isNaN(e.value)) {
                     toastr.warning(vThis.mainGrid.getColumn(e.columnName).header + ' : 숫자만 입력 가능합니다.', 'Validation:fail');
@@ -285,13 +286,14 @@ let app = new Vue({
                     return false;
                 } else {
                     // 마스터 영역의 합계수량과 디테일 영역의 수량 비교
-                    const detailGridQtySum = vThis.mainGrid.getSummaryValues('Qty').sum;
+                    const detailGridQtySum = vThis.mainGrid.getSummaryValues('OkQty').sum;
                     const masterQtySum = GX._METHODS_.nvl(vThis.queryRow.Qty) == '' ? 0 : vThis.queryRow.Qty;
 
-                    if (parseFloat(masterQtySum) < parseFloat(detailGridQtySum)) {
+                    // javascript 숫자 12.1000000000000001 이런거 때문에 2째자리에서 반올림하여 비교하도록 수정
+                    if (parseFloat(masterQtySum).toFixed(2) < parseFloat(detailGridQtySum).toFixed(2)) {
                         // 마스터 영역의 합계수량 > 디테일 영역의 수량 합계 == 에러 발생
                         toastr.warning('합계(납품)수량(' + masterQtySum + ')은 포장단위입출고 수량(' + detailGridQtySum + ') 보다 작거나 같아야 합니다.', 'Validation:fail');
-                        vThis.mainGrid.setValue(e.rowKey, 'Qty', vThis.strBeforeEditData);
+                        vThis.mainGrid.setValue(e.rowKey, 'OkQty', vThis.strBeforeEditData);
                         return false;
                     }
                 }
@@ -341,5 +343,8 @@ let app = new Vue({
                 window.close();
             }
         }
+
+        // 화면 처음 열리면 바로 조회
+        vThis.search();
     }
 });

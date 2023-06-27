@@ -464,7 +464,7 @@ let app = new Vue({
         .header('부가세포함').name('IsVAT').align('center').width(80).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsVAT'}).setRow()
         .header('부가세').name('CurVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('금액계').name('TotCurAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('LOT-NO').name('LotNoPackSeq').align('left').width(100).whiteSpace().ellipsis().setRow()
+        .header('LOT-NO').name('Seq').align('left').width(100).whiteSpace().ellipsis().setRow()
         .header('원화단가').name('DomPrice').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('원화금액').name('DomAmt').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('원화부가세').name('DomVAT').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -493,7 +493,7 @@ let app = new Vue({
         vThis.mainGrid.on('dblclick', function(e) {
             // 행 더블 클릭 시 다이이얼로그 띄우기
             if (e.rowKey || e.rowKey === 0) {
-                if (e.columnName === 'LotNoPackSeq') {
+                if (e.columnName === 'Seq') {
                     // SessionStorage로 데이터 전달
                     GX.SessionStorage.set('codehelp_popup-queryForm', JSON.stringify(vThis.queryForm))
                     GX.SessionStorage.set('codehelp_popup-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
@@ -581,7 +581,7 @@ let app = new Vue({
         // when data bound to the grid is changed 
         vThis.mainGrid.on('onGridUpdated', function (e) {
             // LOT-NO > 포장단위 다이얼로그 띄울 셀의 색상 변경
-            const fillColor = document.querySelectorAll('.tui-grid-cell-has-input[data-column-name="LotNoPackSeq"]');
+            const fillColor = document.querySelectorAll('.tui-grid-cell-has-input[data-column-name="Seq"]');
             if (fillColor.length > 0) {
                 for (let i = 0; i < fillColor.length; i++) {
                     fillColor[i].style.backgroundColor = '#dddddd';
