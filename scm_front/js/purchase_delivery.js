@@ -503,10 +503,22 @@ let app = new Vue({
 
                     let top = Math.floor(screen.availHeight / 4.5);
                     let left = Math.floor(screen.availWidth / 4);
+
+                    // 이미 창이 열려있는지 확인
+                    if (vThis.objWinOpen) {
+                        if (vThis.objWinOpen.name == 'childPopup') {
+                            toastr.info('이미 창이 열려있습니다.');
+                            vThis.objWinOpen.focus();
+                        } else {
+                            vThis.objWinOpen = null;
+                        }
+                    } 
                     
-                    // window.open("open할 window", "자식창 이름", "팝업창 옵션");
-                    vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=570, scrollbars=no, top=' + top + ', left=' + left);
-                    vThis.objWinOpen.focus();
+                    if (!vThis.objWinOpen) {
+                        // window.open("open할 window", "자식창 이름", "팝업창 옵션");
+                        vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=570, scrollbars=no, top=' + top + ', left=' + left);
+                        vThis.objWinOpen.focus();
+                    }
                 }
             }
         });

@@ -63,8 +63,35 @@ let app = new Vue({
             const vThis = this;
 
             if (GX._METHODS_.nvl(gridId).length > 0) {
+                // 행에 컬럼들
+                let newRowData = {
+                    Seq: 0,
+                    Serl: 0,
+                    ItemSeq: 0,
+                    InOutSeq: 0,
+                    InOutSerl: 0,
+                    InOutType: 160,
+                    InWHSeq: 40,
+                    OutWHSeq: 0,
+                    AddPackNo: '',
+                    StockOkQty: 0,
+                    OkQty: 0,
+                    StockWeight: 0,
+                    Weight: 0,
+                    GrossQty: 0,
+                    Stain: '0',
+                    Shade: '',
+                    GradeSeq: 0,
+                    Grade: null,
+                    Remark: '',
+                    InLocationSeq: 12152,
+                    InLocationName: '세울D',
+                    OutLocationSeq: 0,
+                    OutLocationName: ''
+                }
+
                 const addIdx = vThis[gridId].getRowCount();
-                let newRowData = {};
+                // let newRowData = {};
                 let newRowOptions = {
                     at: addIdx, // The index at which new row will be inserted
                     // extendPrevRowSpan: false, // If set to true and the previous row at target index has a rowspan data, the new row will extend the existing rowspan data.
@@ -77,8 +104,12 @@ let app = new Vue({
                     else
                         newRowData[k.name] = 0;
                 });
-                newRowData.InLocationSeq = vThis.queryForm.InLocationSeq
-                newRowData.InLocationName = vThis.queryForm.InLocationName
+                newRowData.InLocationSeq = vThis.queryForm.InLocationSeq || 0;
+                newRowData.InLocationName = vThis.queryForm.InLocationName || '';
+                newRowData.InOutSeq = vThis.queryRow.DelvSeq || 0;
+                newRowData.InOutSerl = vThis.queryRow.DelvSerl || 0;
+                newRowData.Seq = vThis.queryRow.Seq || 0;
+                newRowData.ItemSeq = vThis.queryRow.ItemSeq || 0;
 
                 vThis[gridId].appendRow(newRowData, newRowOptions);
             }
@@ -169,11 +200,19 @@ let app = new Vue({
 
             for (let i = 0; i < getCreated.length; i++) {
                 getCreated[i].WorkingTag = 'A';
+                getCreated[i].BizUnit = vThis.queryRow.BizUnit || 1;
+                getCreated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
+                getCreated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
+                getCreated[i].IDX_NO = getCreated[i].rowKey + 1;
                 params.push(getCreated[i]);
             }
 
             for (let i = 0; i < getUpdated.length; i++) {
                 getUpdated[i].WorkingTag = 'U';
+                getUpdated[i].BizUnit = vThis.queryRow.BizUnit || 1;
+                getUpdated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
+                getUpdated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
+                getUpdated[i].IDX_NO = getUpdated[i].rowKey + 1;
                 params.push(getUpdated[i]);
             }
 
@@ -319,6 +358,9 @@ let app = new Vue({
             GX.SessionStorage.remove('codehelp_popup-queryForm');
             GX.SessionStorage.remove('codehelp_popup-queryRow');
             vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.Qty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+            // 구매납품입력의 입출고유형은 고정 160
+            vThis.queryRow.InOutType = 160;
+            // vThis.queryRow.InOutTypeGubn = 1;
         }
 
         // 창고Seq가 있으면 기본 세팅 적재위치 가져오기
