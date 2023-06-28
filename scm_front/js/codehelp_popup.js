@@ -203,6 +203,7 @@ let app = new Vue({
                 getCreated[i].BizUnit = vThis.queryRow.BizUnit || 1;
                 getCreated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
                 getCreated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
+                getCreated[i].InOutDate = vThis.queryRow.DelvDate || '';
                 getCreated[i].IDX_NO = getCreated[i].rowKey + 1;
                 params.push(getCreated[i]);
             }
@@ -212,6 +213,7 @@ let app = new Vue({
                 getUpdated[i].BizUnit = vThis.queryRow.BizUnit || 1;
                 getUpdated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
                 getUpdated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
+                getUpdated[i].InOutDate = vThis.queryRow.DelvDate || '';
                 getUpdated[i].IDX_NO = getUpdated[i].rowKey + 1;
                 params.push(getUpdated[i]);
             }
