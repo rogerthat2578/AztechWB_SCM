@@ -222,6 +222,21 @@ let app = new Vue({
 
             if (params.length > 0) {
                 toastr.info('저장.');
+return false;
+                GX._METHODS_
+                .setMethodId('')
+                .ajax([], params, [function (data) {
+                    console.log('master return', data)
+                    if (data[0].Status && data[0].Status != 0) {
+                        // 뭔가 문제가 발생했을 때 리턴
+                        toastr.error('저장 실패\n' + data[0].Result);
+                    } else {
+                        toastr.info('저장 성공');
+                        vThis.search();
+                    }
+                }, function (data) {
+                    console.log('detail return', data)
+                }]);
             } else {
                 toastr.warning('저장할 데이터가 없습니다.');
             }
