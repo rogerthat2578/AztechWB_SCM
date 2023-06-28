@@ -218,13 +218,9 @@ let app = new Vue({
                 params.push(getUpdated[i]);
             }
 
-            console.log(params)
-
             if (params.length > 0) {
-                toastr.info('저장.');
-return false;
                 GX._METHODS_
-                .setMethodId('')
+                .setMethodId('PackingUnitSave')
                 .ajax([], params, [function (data) {
                     console.log('master return', data)
                     if (data[0].Status && data[0].Status != 0) {
