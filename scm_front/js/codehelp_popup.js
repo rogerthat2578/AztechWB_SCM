@@ -139,9 +139,49 @@ let app = new Vue({
                 }
             }])
         },
-        
 
-        search: function () {
+        /**
+         * 부모창에 값 전달
+         */
+        transSeqToParent: function () {
+            const vThis = this;
+
+            if (vThis.rows.Query.length > 0) {
+                let transDataRowKey = vThis.queryRow.rowKey;
+                let transDataSeq = vThis.rows.Query[0].Seq || 0;
+
+                if (window.opener.name == 'parentPopup') {
+                    if (window.opener.document.getElementById('transDataRowKey')) {
+                        window.opener.document.getElementById('transDataRowKey').value = transDataRowKey;
+                    } else {
+                        let element = window.opener.document.createElement('input');
+                        element.setAttribute('type', 'hidden');
+                        element.setAttribute('id', 'transDataRowKey');
+                        element.setAttribute('value', transDataRowKey);
+                        window.opener.document.body.appendChild(element);
+                    }
+
+                    if (window.opener.document.getElementById('transDataSeq')) {
+                        window.opener.document.getElementById('transDataSeq').value = transDataSeq;
+                    } else {
+                        let element = window.opener.document.createElement('input');
+                        element = window.opener.document.createElement('input');
+                        element.setAttribute('type', 'hidden');
+                        element.setAttribute('id', 'transDataSeq');
+                        element.setAttribute('value', transDataSeq);
+                        window.opener.document.body.appendChild(element);
+                    }
+
+                    if (!window.opener.document.getElementById('btnTransData')) {
+                        let btnElement = window.opener.document.createElement('button');
+                        btnElement.setAttribute('id', 'btnTransData');
+                        window.opener.document.body.appendChild(btnElement);
+                    }
+                }
+            }
+        },
+
+        search: function (callback) {
             const vThis = this;
 
             let params = GX.deepCopy(vThis.queryForm);
@@ -167,6 +207,9 @@ let app = new Vue({
 
                 // 그리드에 데이터 바인딩
                 vThis.mainGrid.resetData(vThis.rows.Query);
+
+                // 콜백 실행
+                if (typeof callback === 'function') callback();
             }])
         },
         save: function () {
@@ -222,16 +265,14 @@ let app = new Vue({
                 GX._METHODS_
                 .setMethodId('PackingUnitSave')
                 .ajax([], params, [function (data) {
-                    console.log('master return', data)
                     if (data[0].Status && data[0].Status != 0) {
                         // 뭔가 문제가 발생했을 때 리턴
-                        toastr.error('저장 실패\n' + data[0].Result);
+                        toastr.error('저장 실패 : ' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.search();
+                        vThis.search(vThis.transSeqToParent());
                     }
                 }, function (data) {
-                    console.log('detail return', data)
                 }]);
             } else {
                 toastr.warning('저장할 데이터가 없습니다.');
@@ -247,7 +288,7 @@ let app = new Vue({
                 if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
                     // 선택한 행 중 테이블에 존재하는 데이터인지 아닌지에 따라 로직 다르게
                     let delRowsServer = []; // SP로 던질거
-                    let delRowsClinet = []; // 화면에서 삭제할거
+                    let delRowsClient = []; // 화면에서 삭제할거
 
                     for (let i = 0; i < arr.length; i++) {
                         if (arr[i].Serl != 0) {
@@ -258,7 +299,7 @@ let app = new Vue({
                             // 실테이블에 존재하는 데이터는 SP로 삭제를 해야하기에 체크만 해제
                             vThis.mainGrid.uncheck(arr[i].rowKey);
                         } else {
-                            delRowsClinet.push(arr[i]);
+                            delRowsClient.push(arr[i]);
                         }
                     }
 
@@ -269,20 +310,20 @@ let app = new Vue({
                         .ajax([], delRowsServer, [function (data) {
                             if (data[0].Status && data[0].Status != 0) {
                                 // 뭔가 문제가 발생했을 때 리턴
-                                toastr.error('삭제 실패\n' + data[0].Result);
+                                toastr.error('삭제 실패 : ' + data[0].Result);
                             } else {
                                 // 화면에서 지울거
-                                if (delRowsClinet.length > 0) {
+                                if (delRowsClient.length > 0) {
                                     // 행 삭제 - 현재 화면에 남아있는 체크는 실테이블에 없는 데이터라 화면에서 바로 삭제
                                     vThis.mainGrid.removeCheckedRows();
                                 }
                                 toastr.info('삭제 성공');
                                 // 재조회
-                                vThis.search();
+                                vThis.search(vThis.transSeqToParent());
                             }
                         }, function (data) {
                         }]);
-                    } else if (delRowsServer.length == 0 && delRowsClinet.length > 0) {
+                    } else if (delRowsServer.length == 0 && delRowsClient.length > 0) {
                         // 화면에서 지울거
                         // 행 삭제 - 현재 화면에 남아있는 체크는 실테이블에 없는 데이터라 화면에서 바로 삭제
                         vThis.mainGrid.removeCheckedRows();
@@ -309,6 +350,24 @@ let app = new Vue({
             const vThis = this;
 
             if (confirm('전체 삭제하시겠습니까?')) {
+                // 전체 체크
+                vThis.mainGrid.checkAll();
+                let arr = vThis.mainGrid.getCheckedRows();
+                let chkClient = 0;
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i].Serl == 0) {
+                        chkClient++;
+                    }
+                }
+
+                if (chkClient == vThis.mainGrid.getRowCount()) {
+                    vThis.mainGrid.removeCheckedRows();
+                    vThis.rows.Query = [];
+                    vThis.mainGrid.resetData(vThis.rows.Query);
+                    toastr.info('삭제 성공');
+                    return false;
+                }
+
                 let delMaster = vThis.mainGrid.getRow(0);
                 delMaster.WorkingTag = 'D';
 
@@ -317,12 +376,11 @@ let app = new Vue({
                 .ajax([delMaster], [], [function (data) {
                     if (data[0].Status && data[0].Status != 0) {
                         // 뭔가 문제가 발생했을 때 리턴
-                        toastr.error('삭제 실패\n' + data[0].Result);
+                        toastr.error('삭제 실패 : ' + data[0].Result);
                     } else {
-
                         toastr.info('삭제 성공');
                         // 재조회
-                        vThis.search();
+                        vThis.search(vThis.transSeqToParent());
                     }
                 }, function (data) {
                 }]);
@@ -338,6 +396,11 @@ let app = new Vue({
 
         document.addEventListener('keydown', vThis.eventCheck, false);
         document.addEventListener('keyup', vThis.eventCheck, false);
+
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            window.opener.document.getElementById('btnTransData').click();
+        });
 
         /**
          * Default data setting

@@ -76,6 +76,10 @@ let app = new Vue({
                 vThis.mainGrid.finishEditing(); // 수정한 데이터 적용된 상태로 종료. 반대는 cancelEditing()
             }
 
+            if (e.type === 'click' && e.target.getAttribute('id') === 'btnTransData') {
+                vThis.popupClosed();
+            }
+
             // Key Event
             else if(e.type === 'keyup'){
                 switch(e.key.toLowerCase()){
@@ -119,6 +123,24 @@ let app = new Vue({
             vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
         },
+        
+        /**
+         * 팝업 닫을 때 데이터 전달
+         */
+        popupClosed: function () {
+            const vThis = this;
+
+            let transDataRowKey = document.getElementById('transDataRowKey').value;
+            let transDataSeq = document.getElementById('transDataSeq').value;
+            if (document.getElementById('transDataRowKey')) document.getElementById('transDataRowKey').remove();
+            if (document.getElementById('transDataSeq')) document.getElementById('transDataSeq').remove();
+            if (document.getElementById('btnTransData')) document.getElementById('btnTransData').remove();
+
+            if (transDataRowKey != null && transDataRowKey != 'null' && transDataSeq > 0) {
+                vThis.mainGrid.setValue(transDataRowKey, 'Seq', transDataSeq);
+            }
+        },
+
         /**마스터 영역 금액 계산 */
         calSum: function () {
             let vThis = this;
@@ -425,7 +447,6 @@ let app = new Vue({
             vThis.queryForm.BizUnit = vThis.BizUnitList[0].BizUnit;
             vThis.queryForm.BizUnitName = vThis.BizUnitList[0].BizUnitName;
 			vThis.queryForm.CustSeq = GX.Cookie.get('CustSeq');
-
         }
     },
     mounted() {
