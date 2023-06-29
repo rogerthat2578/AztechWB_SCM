@@ -192,7 +192,10 @@ GX._METHODS_ = {
 							}
 						}
 
-						if(isMessage && msg.length > 0) alert(msg);
+						if(isMessage && msg.length > 0) {
+							// alert(msg);
+							console.log('isMessage, msg.length', msg)
+						}
 
 						GX.SpinnerBootstrap.hide();
 					}
