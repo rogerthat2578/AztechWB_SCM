@@ -242,14 +242,62 @@ let app = new Vue({
 
             // 체크된 행만 가져오기
             let arr = vThis.mainGrid.getCheckedRows();
-            if (arr.length > 0) {
+            if (arr.length > 0 && arr.length != vThis.mainGrid.getRowCount()) {
+                // 전체가 아닌 행 삭제
                 if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
-                    // 행 삭제
-                    vThis.mainGrid.removeCheckedRows();
+                    // 선택한 행 중 테이블에 존재하는 데이터인지 아닌지에 따라 로직 다르게
+                    let delRowsServer = []; // SP로 던질거
+                    let delRowsClinet = []; // 화면에서 삭제할거
+
+                    for (let i = 0; i < arr.length; i++) {
+                        if (arr[i].Serl != 0) {
+                            // 삭제 : WorkingTag = 'D'
+                            arr[i].WorkingTag = 'D';
+                            // 실테이블에 존재하는 데이터는 SP로 삭제를 해야하기에 담아두기
+                            delRowsServer.push(arr[i]);
+                            // 실테이블에 존재하는 데이터는 SP로 삭제를 해야하기에 체크만 해제
+                            vThis.mainGrid.uncheck(arr[i].rowKey);
+                        } else {
+                            delRowsClinet.push(arr[i]);
+                        }
+                    }
+
+                    if (delRowsServer.length > 0) {
+                        // SP로 던질거
+                        GX._METHODS_
+                        .setMethodId('PackingUnitSave')
+                        .ajax([], delRowsServer, [function (data) {
+                            if (data[0].Status && data[0].Status != 0) {
+                                // 뭔가 문제가 발생했을 때 리턴
+                                toastr.error('삭제 실패\n' + data[0].Result);
+                            } else {
+                                // 화면에서 지울거
+                                if (delRowsClinet.length > 0) {
+                                    // 행 삭제 - 현재 화면에 남아있는 체크는 실테이블에 없는 데이터라 화면에서 바로 삭제
+                                    vThis.mainGrid.removeCheckedRows();
+                                }
+                                toastr.info('삭제 성공');
+                                // 재조회
+                                vThis.search();
+                            }
+                        }, function (data) {
+                        }]);
+                    } else if (delRowsServer.length == 0 && delRowsClinet.length > 0) {
+                        // 화면에서 지울거
+                        // 행 삭제 - 현재 화면에 남아있는 체크는 실테이블에 없는 데이터라 화면에서 바로 삭제
+                        vThis.mainGrid.removeCheckedRows();
+                    } else {
+                        toastr.warning('삭제할 데이터가 없습니다.');
+                    }
+
                     // this.rows.Query 데이터 갱신
                     vThis.rows.Query = vThis.mainGrid.getData();
                 }
+            } else if (arr.length > 0 && arr.length == vThis.mainGrid.getRowCount()) {
+                // 전체 체크해서 행 삭제 클릭 시 = 전체 삭제
+                vThis.del();
             } else {
+                // 삭제할 행 없음
                 if (vThis.mainGrid.getData().length > 0) {
                     toastr.warning('삭제할 행을 선택해주세요.');
                 } else {
@@ -260,7 +308,25 @@ let app = new Vue({
         del: function () {
             const vThis = this;
 
-            toastr.warning('전체 삭제');
+            if (confirm('전체 삭제하시겠습니까?')) {
+                let delMaster = vThis.mainGrid.getRow(0);
+                delMaster.WorkingTag = 'D';
+
+                GX._METHODS_
+                .setMethodId('PackingUnitSave')
+                .ajax([delMaster], [], [function (data) {
+                    if (data[0].Status && data[0].Status != 0) {
+                        // 뭔가 문제가 발생했을 때 리턴
+                        toastr.error('삭제 실패\n' + data[0].Result);
+                    } else {
+
+                        toastr.info('삭제 성공');
+                        // 재조회
+                        vThis.search();
+                    }
+                }, function (data) {
+                }]);
+            }
         },
     },
     created() {
