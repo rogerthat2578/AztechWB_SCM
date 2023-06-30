@@ -218,11 +218,30 @@ let app = new Vue({
             // 현재 edit 상태인 셀 적용 처리
             vThis.mainGrid.blur();
 
+            /**
+             * 필수값 체크
+             * 필번(Box)
+             */
+            const arrValidation = vThis.mainGrid.validate();
+            if (arrValidation.length > 0) {
+                let strMsg = '';
+                for (let i = 0; i < arrValidation.length; i++) {
+                    strMsg += arrValidation[i].rowKey.toString() + '행'
+                    if (i != arrValidation.length - 1) strMsg += ', ';
+                    else if (i == arrValidation.length - 1) {
+                        const colName = vThis.mainGrid.getColumn(arrValidation[i].errors[0].columnName);
+                        strMsg += ' ' + colName.header + ' :: ' + '필수값을 입력해주세요.';
+                    }
+                }
+                toastr.warning(strMsg);
+                return false;
+            }
+
             const eleToastTitle = document.querySelector('#toast-container .toast-title')?.innerText || '';
             if (eleToastTitle === 'Validation:fail') {
                 toastr.warning('데이터 확인 후 저장해주세요.')
                 return false;
-            } 
+            }
 
             // 파라메터 선언
             let params = [];
@@ -425,7 +444,7 @@ let app = new Vue({
         .init() // .init('noSummary')
         .setRowHeaders('rowNum', 'checkbox')
         .header('적재위치(입고)').name('InLocationName').align('left').width(120).whiteSpace().ellipsis().setRow()
-        .header('필번(Box)').name('AddPackNo').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
+        .header('필번(Box)').name('AddPackNo').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
         .header('재고수량').name('StockOkQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('수량').name('OkQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('중량(실량)').name('Weight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()

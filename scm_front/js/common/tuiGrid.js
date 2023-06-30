@@ -105,6 +105,12 @@ ToastUIGrid = {
             position: 'top',
             columnContent: {}
         },
+        validation: function () {
+            this.options.validation = {
+                required: true,
+            }
+            return this;
+        },
         setRowHeaders: function (...arg) {
             if (arg.length > 0) {
                 this.rowHeaders = [];
