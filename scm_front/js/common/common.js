@@ -61,7 +61,10 @@ GX._METHODS_ = {
 	 * Return: boolean type. true or false
 	 */
 	isLogin: function(){
-		return (GX.Cookie.get('UserSeq') != null && GX.Cookie.get('UserSeq').length > 0 && GX.Cookie.get('CompanySeq') != null && GX.Cookie.get('CompanySeq').length > 0)
+		return (
+			GX.Cookie.get('UserSeq') != null && GX.Cookie.get('UserSeq').length > 0 && GX.Cookie.get('CompanySeq') != null && GX.Cookie.get('CompanySeq').length > 0
+			&& GX.Cookie.get('CustKind1') != '' && GX.Cookie.get('CustKind2') != ''
+		)
 	},
 	setSecurityProperty: function(key, value){
 		let re = new RegExp('([,\{])' + key + ':[^:,\}]+');
