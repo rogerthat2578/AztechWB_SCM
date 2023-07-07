@@ -54,6 +54,11 @@ let app = new Vue({
         },
         // grid 내 데이터 edit 모드일 때 기존 데이터 유지
         strBeforeEditData: '',
+        // 모바일웹에서 더블클릭 처럼 동작하기위함
+        objDblClick: {
+            click: false,
+            time: 0,
+        },
         // 팝업(window.open)에 접근하기 위함
         objWinOpen: null,
 	},
@@ -510,37 +515,56 @@ let app = new Vue({
             }
         });
 
-        // grid dblclick event
-        vThis.mainGrid.on('dblclick', function(e) {
-            // 행 더블 클릭 시 다이이얼로그 띄우기
-            if (e.rowKey || e.rowKey === 0) {
-                if (e.columnName === 'Seq') {
-                    // SessionStorage로 데이터 전달
-                    GX.SessionStorage.set('codehelp_popup-queryForm', JSON.stringify(vThis.queryForm))
-                    GX.SessionStorage.set('codehelp_popup-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
+        // grid click event
+        vThis.mainGrid.on('click', function(e) {
+            // 행 더블 클릭 시 다이이얼로그 띄우기 - 모바일 웹에선 그리드 더블클릭 이벤트가 동작하지 않음
+            const clickInterval = 600; // ms
+            if (vThis.objDblClick.click) {
+                if (new Date().getTime() - vThis.objDblClick.time <= clickInterval) {
+                    if (e.rowKey || e.rowKey === 0) {
+                        if (e.columnName === 'Seq') {
+                            if(!GX._METHODS_.isLogin()) {
+                                alert('로그인 정보가 만료되었습니다. 다시 로그인 후 진행해주세요.');
+                                location.replace('login.html');
+                            }
 
-                    // window.name = "부모창 이름";
-                    window.name = 'parentPopup';
+                            // SessionStorage로 데이터 전달
+                            GX.SessionStorage.set('codehelp_popup-queryForm', JSON.stringify(vThis.queryForm))
+                            GX.SessionStorage.set('codehelp_popup-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
 
-                    let top = Math.floor(screen.availHeight / 4.5);
-                    let left = Math.floor(screen.availWidth / 4);
+                            // window.name = "부모창 이름";
+                            window.name = 'parentPopup';
 
-                    // 이미 창이 열려있는지 확인
-                    if (vThis.objWinOpen) {
-                        if (vThis.objWinOpen.name == 'childPopup') {
-                            toastr.info('이미 창이 열려있습니다.');
-                            vThis.objWinOpen.focus();
-                        } else {
-                            vThis.objWinOpen = null;
+                            let top = Math.floor(screen.availHeight / 4.5);
+                            let left = Math.floor(screen.availWidth / 4);
+
+                            // 이미 창이 열려있는지 확인
+                            if (vThis.objWinOpen?.closed) {
+                                if (vThis.objWinOpen.name == 'childPopup') {
+                                    toastr.info('이미 창이 열려있습니다.');
+                                    vThis.objWinOpen.focus();
+                                } else {
+                                    vThis.objWinOpen = null;
+                                }
+                            } 
+                            
+                            if (!vThis.objWinOpen) {
+                                // window.open("open할 window", "자식창 이름", "팝업창 옵션");
+                                vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=570, scrollbars=no, top=' + top + ', left=' + left);
+                                vThis.objWinOpen.focus();
+                            }
                         }
-                    } 
-                    
-                    if (!vThis.objWinOpen) {
-                        // window.open("open할 window", "자식창 이름", "팝업창 옵션");
-                        vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=570, scrollbars=no, top=' + top + ', left=' + left);
-                        vThis.objWinOpen.focus();
                     }
                 }
+            }
+            if (e.rowKey || e.rowKey === 0) {
+                vThis.objDblClick.click = true;
+                vThis.objDblClick.time = new Date().getTime();
+                
+                setTimeout(() => {
+                    vThis.objDblClick.click = false;
+                    vThis.objDblClick.time = 0;
+                }, clickInterval)
             }
         });
 

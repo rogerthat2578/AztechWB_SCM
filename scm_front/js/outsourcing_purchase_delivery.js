@@ -35,6 +35,13 @@ let app = new Vue({
         },
         // grid 내 데이터 edit 모드일 때 기존 데이터 유지
         strBeforeEditData: '',
+        // 모바일웹에서 더블클릭 처럼 동작하기위함
+        objDblClick: {
+            click: false,
+            time: 0,
+        },
+        // 팝업(window.open)에 접근하기 위함
+        objWinOpen: null,
     },
     methods:{
         eventCheck: function(){
@@ -439,6 +446,7 @@ let app = new Vue({
         .header('생산수량').name('ProdQty').align('right').width(80).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         // .header('양품수량').name('OKQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         // .header('불량수량').name('BadQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('중량').name('Weight').align('right').width(80).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('입고창고').name('InWHName').align('center').width(100).whiteSpace().ellipsis().sortable(true).setRow()
         .header('비고').name('Remark').align('left').width(140).whiteSpace().ellipsis().editor().setRow()
         .header('완료여부').name('IsEnd').align('center').width(90).whiteSpace().ellipsis().formatter('checkbox', {colKey: 'IsEnd', attrName: 'AttrNameIsEnd'}).setRow()
@@ -536,6 +544,73 @@ let app = new Vue({
                 
                 // 마스터 영역 합계 계산
                 vThis.calSum();
+            }
+        });
+
+        // when data bound to the grid is changed 
+        vThis.mainGrid.on('onGridUpdated', function (e) {
+            // InWHName > 입고창고 다이얼로그 띄울 셀의 색상 변경
+            const fillColor = document.querySelectorAll('.tui-grid-cell-has-input[data-column-name="InWHName"]');
+            if (fillColor.length > 0) {
+                for (let i = 0; i < fillColor.length; i++) {
+                    fillColor[i].style.backgroundColor = '#dddddd';
+                }
+            }
+        });
+
+        // grid click event
+        vThis.mainGrid.on('click', function(e) {
+            // 행 더블 클릭 시 점프 - 모바일 웹에선 그리드 더블클릭 이벤트가 동작하지 않음
+            const clickInterval = 600; // ms
+            if (vThis.objDblClick.click) {
+                if (new Date().getTime() - vThis.objDblClick.time <= clickInterval) {
+                    if (e.rowKey || e.rowKey === 0) {
+                        vThis.objDblClick.click = false;
+                        vThis.objDblClick.time = 0;
+                        // 입고창고 컬럼만
+                        if (e.columnName == 'InWHName') {
+                            if(!GX._METHODS_.isLogin()) {
+                                alert('로그인 정보가 만료되었습니다. 다시 로그인 후 진행해주세요.');
+                                location.replace('login.html');
+                            }
+
+                            // SessionStorage로 데이터 전달
+                            GX.SessionStorage.set('codehelp_popup_wh-queryForm', JSON.stringify(vThis.queryForm))
+                            GX.SessionStorage.set('codehelp_popup_wh-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
+
+                            // window.name = "부모창 이름";
+                            window.name = 'parentPopup';
+
+                            let top = Math.floor(screen.availHeight / 4.5);
+                            let left = Math.floor(screen.availWidth / 4);
+
+                            // 이미 창이 열려있는지 확인
+                            if (vThis.objWinOpen?.closed) {
+                                if (vThis.objWinOpen.name == 'childPopup') {
+                                    toastr.info('이미 창이 열려있습니다.');
+                                    vThis.objWinOpen.focus();
+                                } else {
+                                    vThis.objWinOpen = null;
+                                }
+                            } 
+                            
+                            if (!vThis.objWinOpen) {
+                                // window.open("open할 window", "자식창 이름", "팝업창 옵션");
+                                vThis.objWinOpen = window.open('codehelp_popup_wh.html', 'childPopup', 'width=700, height=470, scrollbars=no, top=' + top + ', left=' + left);
+                                vThis.objWinOpen.focus();
+                            }
+                        }
+                    }
+                }
+            }
+            if (e.rowKey || e.rowKey === 0) {
+                vThis.objDblClick.click = true;
+                vThis.objDblClick.time = new Date().getTime();
+                
+                setTimeout(() => {
+                    vThis.objDblClick.click = false;
+                    vThis.objDblClick.time = 0;
+                }, clickInterval)
             }
         });
 

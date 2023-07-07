@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>코드도움</title>
+	<link rel="stylesheet" href="css/setup.css">
+	<link rel="stylesheet" href="css/scm_style.css">
+	<link rel="stylesheet" href="css/date_picker.css">
+	<link rel="stylesheet" href="css/toastr.css">
+	<!-- tui-grid -->
+	<link rel="stylesheet" href="css/tui-date-picker.css">
+	<link rel="stylesheet" href="css/tui-grid.css">
+	<style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body style="min-width: auto;">
+	<div v-cloak id="app">
+		<main>
+            <div style="display: flex; justify-content: space-between; margin: 5px 15px;">
+                <h1>창고</h1>
+                <button class="btn-stlye-06" onclick="window.close();">닫기</button>
+            </div>
+
+            <div class="top-data-wrap">
+                <div class="data-row-wrap">
+                    <div class="data-row">
+                        <ul class="input-wrap" style="margin-right: 20px; justify-content: flex-start;">
+                            <li class="name" style="width: 80px;">
+                                <label>창고명</label>
+                            </li>
+                            <li class="txt">
+                                <input type="text" style="width: 220px;" v-model="queryRow.WHName">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-data-wrap">
+                <div class="btn-row">
+                    <div>
+                        <button class="btn-stlye-01" @click="search()">
+                            <img src="img/ic_04.png" alt="조회버튼이미지">
+                            <span class="web">조회</span>
+                        </button>
+                    </div>
+            
+                    <button class="btn-stlye-03" @click="apply">
+                        <img src="img/ic_06.png" alt="저장버튼이미지">
+                        <span>적용</span>
+                    </button>
+                </div>
+
+                <div class="data-table dialog" id="mainGrid"></div>
+            </div>
+		</main>
+	</div>
+
+	<script src="js/common/app.js?v=1665537373142"></script>
+</body>
+
+</html>
