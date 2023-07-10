@@ -33,6 +33,7 @@ let app = new Vue({
             click: false,
             time: 0,
         },
+        selectedRowKey: 0,
 	},
     methods: {
         /**이벤트 처리 */
@@ -62,73 +63,15 @@ let app = new Vue({
         },
 
         /**
-         * @param {String} 생성한 그리드 변수명 (=그리드 id와 맞춰야함)
-         */
-        gridAppendRow: function (gridId = '') {
-            const vThis = this;
-
-            if (GX._METHODS_.nvl(gridId).length > 0) {
-                // 행에 컬럼들
-                let newRowData = {
-                    Seq: 0,
-                    Serl: 0,
-                    ItemSeq: 0,
-                    InOutSeq: 0,
-                    InOutSerl: 0,
-                    InOutType: 160,
-                    InWHSeq: 40,
-                    OutWHSeq: 0,
-                    AddPackNo: '',
-                    StockOkQty: 0,
-                    OkQty: 0,
-                    StockWeight: 0,
-                    Weight: 0,
-                    GrossQty: 0,
-                    Stain: '0',
-                    Shade: '',
-                    GradeSeq: 0,
-                    Grade: null,
-                    Remark: '',
-                    InLocationSeq: 12152,
-                    InLocationName: '세울D',
-                    OutLocationSeq: 0,
-                    OutLocationName: ''
-                }
-
-                const addIdx = vThis[gridId].getRowCount();
-                // let newRowData = {};
-                let newRowOptions = {
-                    at: addIdx, // The index at which new row will be inserted
-                    // extendPrevRowSpan: false, // If set to true and the previous row at target index has a rowspan data, the new row will extend the existing rowspan data.
-                    focus: true, // If set to true, move focus to the new row after appending
-                };
-
-                vThis[gridId].getColumns().map(k => {
-                    if (typeof k.formatter === undefined || typeof k.formatter === 'undefined')
-                        newRowData[k.name] = '';
-                    else
-                        newRowData[k.name] = 0;
-                });
-                newRowData.InLocationSeq = vThis.queryForm.InLocationSeq || 0;
-                newRowData.InLocationName = vThis.queryForm.InLocationName || '';
-                newRowData.InOutSeq = vThis.queryRow.DelvSeq || 0;
-                newRowData.InOutSerl = vThis.queryRow.DelvSerl || 0;
-                newRowData.Seq = vThis.queryRow.Seq || 0;
-                newRowData.ItemSeq = vThis.queryRow.ItemSeq || 0;
-
-                vThis[gridId].appendRow(newRowData, newRowOptions);
-            }
-        },
-
-        /**
          * 부모창에 값 전달
          */
-        transSeqToParent: function () {
+        transDataToParent: function () {
             const vThis = this;
 
             if (vThis.rows.Query.length > 0) {
                 let transDataRowKey = vThis.queryRow.rowKey;
-                let transDataSeq = vThis.rows.Query[0].Seq || 0;
+                let transDataSeq = vThis.rows.Query[vThis.selectedRowKey].WHSeq || 0;
+                let transDataValue = vThis.rows.Query[vThis.selectedRowKey].WHName || '';
 
                 if (window.opener.name == 'parentPopup') {
                     if (window.opener.document.getElementById('transDataRowKey')) {
@@ -141,15 +84,23 @@ let app = new Vue({
                         window.opener.document.body.appendChild(element);
                     }
 
-                    if (window.opener.document.getElementById('transDataSeq')) {
+                    if (window.opener.document.getElementById('transDataSeq') && window.opener.document.getElementById('transDataValue')) {
                         window.opener.document.getElementById('transDataSeq').value = transDataSeq;
+                        window.opener.document.getElementById('transDataValue').value = transDataValue;
                     } else {
-                        let element = window.opener.document.createElement('input');
-                        element = window.opener.document.createElement('input');
-                        element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataSeq');
-                        element.setAttribute('value', transDataSeq);
-                        window.opener.document.body.appendChild(element);
+                        let element1 = window.opener.document.createElement('input');
+                        element1 = window.opener.document.createElement('input');
+                        element1.setAttribute('type', 'hidden');
+                        element1.setAttribute('id', 'transDataSeq');
+                        element1.setAttribute('value', transDataSeq);
+                        window.opener.document.body.appendChild(element1);
+
+                        let element2 = window.opener.document.createElement('input');
+                        element2 = window.opener.document.createElement('input');
+                        element2.setAttribute('type', 'hidden');
+                        element2.setAttribute('id', 'transDataValue');
+                        element2.setAttribute('value', transDataValue);
+                        window.opener.document.body.appendChild(element2);
                     }
 
                     if (!window.opener.document.getElementById('btnTransData')) {
@@ -158,6 +109,10 @@ let app = new Vue({
                         window.opener.document.body.appendChild(btnElement);
                     }
                 }
+
+                window.close();
+            } else {
+                toastr.warning('적용할 행이 없습니다.');
             }
         },
 
@@ -172,7 +127,8 @@ let app = new Vue({
             let params = GX.deepCopy(vThis.queryForm);
             params.EmpSeq = vThis.queryRow.EmpSeq || 0;
             params.DeptSeq = vThis.queryRow.DeptSeq || 0;
-            params.WHName = vThis.queryRow.WHSeq == '생지창고' ? '' : vThis.queryRow.WHName; // 생지창고 = WHSeq: 15
+            // params.WHName = vThis.queryRow.WHSeq == '생지창고' ? '' : vThis.queryRow.WHName; // 생지창고 = WHSeq: 15
+            params.WHName = vThis.queryRow.WHName; // 조회조건의 창고 input의 model은 queryRow.WHName과 연결되어있음
 
             GX._METHODS_
             .setMethodId('WHCodeHelp')
@@ -193,8 +149,13 @@ let app = new Vue({
             }])
         },
 
+        /**
+         * @param {int} 선택한 행의 index
+         */
         apply: function () {
-            console.log('입고창고 변경')
+            const vThis = this;
+
+            vThis.transDataToParent();
         },
     },
     created() {
@@ -233,7 +194,7 @@ let app = new Vue({
         // init grid columns, set grid columns
         ToastUIGrid.setColumns
         .init('noSummary') //.init()
-        .setRowHeaders('rowNum', 'checkbox')
+        .setRowHeaders('rowNum')
         .header('창고명').name('WHName').align('left').width(200).whiteSpace().ellipsis().setRow()
         .header('창고Seq').name('WHSeq').align('left').width(80).whiteSpace().ellipsis().setRow()
         ;
@@ -302,20 +263,22 @@ let app = new Vue({
         if (Object.keys(vThis.queryForm).length > 0 && Object.keys(vThis.queryRow).length > 0) {
             GX.SessionStorage.remove('codehelp_popup_wh-queryForm');
             GX.SessionStorage.remove('codehelp_popup_wh-queryRow');
-            vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.Qty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-            // 구매납품입력의 입출고유형은 고정 160
-            vThis.queryRow.InOutType = 160;
-            // vThis.queryRow.InOutTypeGubn = 1;
+            // 해당 행에서 가지고 있던 입고창고 세팅
+            vThis.queryRow.WHSeq = vThis.queryRow.InWHSeq
+            vThis.queryRow.WHName = vThis.queryRow.InWHName
         }
 
         // grid click event
         vThis.mainGrid.on('click', function(e) {
+            vThis.selectedRowKey = e.rowKey || 0;
+
             // 행 더블 클릭 시 점프 - 모바일 웹에선 그리드 더블클릭 이벤트가 동작하지 않음
             const clickInterval = 600; // ms
             if (vThis.objDblClick.click) {
                 if (new Date().getTime() - vThis.objDblClick.time <= clickInterval) {
                     if (e.rowKey || e.rowKey === 0) {
-                        console.log('123123')
+                        vThis.selectedRowKey = e.rowKey;
+                        vThis.apply();
                     }
                 }
             }

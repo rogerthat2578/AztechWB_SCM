@@ -539,7 +539,7 @@ let app = new Vue({
                             let left = Math.floor(screen.availWidth / 4);
 
                             // 이미 창이 열려있는지 확인
-                            if (vThis.objWinOpen?.closed) {
+                            if (vThis.objWinOpen) {
                                 if (vThis.objWinOpen.name == 'childPopup') {
                                     toastr.info('이미 창이 열려있습니다.');
                                     vThis.objWinOpen.focus();

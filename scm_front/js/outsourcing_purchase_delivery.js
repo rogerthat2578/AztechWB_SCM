@@ -73,6 +73,10 @@ let app = new Vue({
                 vThis.mainGrid.setValue([...e.target.parentElement.children].indexOf(e.target), 'IsEnd', boolCurChecked ? '1' : '0');
             }
 
+            if (e.type === 'click' && e.target.getAttribute('id') === 'btnTransData') {
+                vThis.popupClosed();
+            }
+
             // Key Event
             else if(e.type === 'keyup'){
                 switch(e.key.toLowerCase()){
@@ -100,6 +104,27 @@ let app = new Vue({
             vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
         },
+
+        /**
+         * 팝업 닫을 때 데이터 전달
+         */
+        popupClosed: function () {
+            const vThis = this;
+
+            let transDataRowKey = document.getElementById('transDataRowKey').value;
+            let transDataSeq = document.getElementById('transDataSeq').value;
+            let transDataValue = document.getElementById('transDataValue').value;
+            if (document.getElementById('transDataRowKey')) document.getElementById('transDataRowKey').remove();
+            if (document.getElementById('transDataSeq')) document.getElementById('transDataSeq').remove();
+            if (document.getElementById('transDataValue')) document.getElementById('transDataValue').remove();
+            if (document.getElementById('btnTransData')) document.getElementById('btnTransData').remove();
+
+            if (transDataRowKey != null && transDataRowKey != 'null' && transDataSeq > 0 && transDataValue != '') {
+                vThis.mainGrid.setValue(transDataRowKey, 'InWHSeq', transDataSeq);
+                vThis.mainGrid.setValue(transDataRowKey, 'InWHName', transDataValue);
+            }
+        },
+
         /**마스터 영역 금액 계산 */
         calSum: function () {
             let vThis = this;
@@ -585,15 +610,15 @@ let app = new Vue({
                             let left = Math.floor(screen.availWidth / 4);
 
                             // 이미 창이 열려있는지 확인
-                            if (vThis.objWinOpen?.closed) {
+                            if (vThis.objWinOpen) {
                                 if (vThis.objWinOpen.name == 'childPopup') {
                                     toastr.info('이미 창이 열려있습니다.');
                                     vThis.objWinOpen.focus();
                                 } else {
                                     vThis.objWinOpen = null;
                                 }
-                            } 
-                            
+                            }
+
                             if (!vThis.objWinOpen) {
                                 // window.open("open할 window", "자식창 이름", "팝업창 옵션");
                                 vThis.objWinOpen = window.open('codehelp_popup_wh.html', 'childPopup', 'width=700, height=470, scrollbars=no, top=' + top + ', left=' + left);
