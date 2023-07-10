@@ -166,6 +166,22 @@
 							</li>
 						</ul> -->
 					</div>
+
+					<div class="data-row">
+						<ul class="input-wrap">
+							<li class="name">
+								<label>완료구분</label>
+							</li>
+							<li class="txt">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="Dummy2Name" v-model="queryForm.Dummy2Name" @click="openCloseDropBox('Dummy2Name')" @input="likeSelect2('Dummy2')">
+									<ul class="drop-box">
+										<li v-for="item in Dummy2NameList" @click="openCloseDropBox('Dummy2Name')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</div>
 				</div>
 				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>
 			</div>

@@ -35,6 +35,8 @@ let app = new Vue({
             EmpName: '전체',
             OrderItemNo: '',
             BuyerNo: '',
+            Dummy2: '2',
+            Dummy2Name: '전체',
         },
         SMCurrStatusList: [],
         isCheckList: [],
@@ -46,6 +48,18 @@ let app = new Vue({
         EmpNameList: [],
         // 담당자 리스트 (퇴사 제외)
         KeepEmpNameList: [],
+        // (납품)완료구분 리스트
+        Dummy2NameList: [
+            {key: 2, val: '전체'},
+            {key: 0, val: '납품중'},
+            {key: 1, val: '납품완료'}
+        ],
+        // (납품)완료구분 리스트
+        KeepDummy2NameList: [
+            {key: 2, val: '전체'},
+            {key: 0, val: '납품중'},
+            {key: 1, val: '납품완료'}
+        ],
         /**단축키로 기능 실행 (K-System 참고)
          * Control + Q = 조회
          */
@@ -53,6 +67,11 @@ let app = new Vue({
             isKeyHold: false,
             Control: false,
             Q: false,
+        },
+        // 모바일웹에서 더블클릭 처럼 동작하기위함
+        objDblClick: {
+            click: false,
+            time: 0,
         },
 	},
     // 변경 감시
@@ -117,10 +136,11 @@ let app = new Vue({
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
 
-                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block' || document.getElementsByClassName('drop-box')[2].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block' || document.getElementsByClassName('drop-box')[2].style.display === 'block' || document.getElementsByClassName('drop-box')[3].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
                     document.getElementsByClassName('drop-box')[1].style.display = 'none';
                     document.getElementsByClassName('drop-box')[2].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[3].style.display = 'none';
                     // 부서 Select Box 초기화
                     if ((vThis.DeptNameList.length == 1 && (vThis.DeptNameList[0].val == '전체' || vThis.DeptNameList[0].val == '')) || vThis.queryForm.DeptName.replace(/\ /g, '') == '') {
                         vThis.DeptNameList = vThis.KeepDeptNameList;
@@ -132,6 +152,12 @@ let app = new Vue({
                         vThis.EmpNameList = vThis.KeepEmpNameList;
                         vThis.queryForm.Emp = vThis.KeepEmpNameList[0].key;
                         vThis.queryForm.EmpName = vThis.KeepEmpNameList[0].val;
+                    }
+                    // (납품)완료구분 리스트 Select Box 초기화
+                    if ((vThis.Dummy2NameList.length == 1 && (vThis.Dummy2NameList[0].val == '전체' || vThis.Dummy2NameList[0].val == '')) || vThis.queryForm.Dummy2Name.replace(/\ /g, '') == '') {
+                        vThis.Dummy2NameList = vThis.KeepDummy2NameList;
+                        vThis.queryForm.Dummy2 = vThis.KeepDummy2NameList[0].key;
+                        vThis.queryForm.Dummy2Name = vThis.KeepDummy2NameList[0].val;
                     }
                 }
             }
@@ -159,7 +185,7 @@ let app = new Vue({
         /**조회 조건의 진행상태 열기/닫기 */
         openCloseDropBox: function(inputEleName = '') {
             let e = event;
-            
+
             if (e.target.nodeName.toUpperCase() === 'LI') {
                 if (inputEleName.length == 0) inputEleName = e.target.parentNode.previousElementSibling.name;
                 this.queryForm[inputEleName.replace('Name', '')] = e.target.value;
@@ -324,7 +350,7 @@ let app = new Vue({
                         }
                     }
                     // Select Box 검색 기능 로직에서 원본 데이터를 따로 담아둘 배열이 하나 더 존재함.
-                    if (typeof vThis['Keep' +k] === 'object') vThis['Keep' + k] = vThis[k];
+                    if (typeof vThis['Keep' + k] === 'object') vThis['Keep' + k] = vThis[k];
                 }]);
             });
 
@@ -369,6 +395,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum')
+        .header('납품완료구분').name('Dummy2').align('center').width(100).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'Dummy2'}).sortable().setRow()
         .header('입고진행상태').name('SMDelvInTypeName').align('center').width(110).whiteSpace().ellipsis().sortable(true).setRow()
         .header('납품일').name('DelvDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('발주일').name('PODate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
@@ -418,20 +445,44 @@ let app = new Vue({
             }
         });
 
-        // grid dblclick event
-        vThis.mainGrid.on('dblclick', function(e) {
-            // 행 더블 클릭 시 점프
-            if (e.rowKey || e.rowKey === 0) {
-                if (confirm('입력 화면으로 이동하시겠습니까?')) {
-                    let arr = [];
-                    arr.push(vThis.rows.Query[e.rowKey])
-                    if (arr.length > 0) {
-                        GX.SessionStorage.set('jumpData', JSON.stringify(arr));
-                        GX.SessionStorage.set('jumpSetMethodId', 'DelvItemListJump');
-                        location.href = 'purchase_delivery.html';
-                    } else 
-                        toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+        // grid click event
+        vThis.mainGrid.on('click', function(e) {
+            // 행 더블 클릭 시 점프 - 모바일 웹에선 그리드 더블클릭 이벤트가 동작하지 않음
+            const clickInterval = 600; // ms
+            if (vThis.objDblClick.click) {
+                if (new Date().getTime() - vThis.objDblClick.time <= clickInterval) {
+                    if (e.rowKey || e.rowKey === 0) {
+                        vThis.objDblClick.click = false;
+                        vThis.objDblClick.time = 0;
+
+                        const Dummy2Value = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'Dummy2'));
+
+                        if (Dummy2Value == 1) {
+                            toastr.warning('납품완료 상태는 수정, 삭제할 수 없습니다.');
+                            return false;
+                        }
+
+                        if (confirm('입력 화면으로 이동하시겠습니까?')) {
+                            let arr = [];
+                            arr.push(vThis.rows.Query[e.rowKey])
+                            if (arr.length > 0) {
+                                GX.SessionStorage.set('jumpData', JSON.stringify(arr));
+                                GX.SessionStorage.set('jumpSetMethodId', 'DelvItemListJump');
+                                location.href = 'purchase_delivery.html';
+                            } else 
+                                toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
+                        }
+                    }
                 }
+            }
+            if (e.rowKey || e.rowKey === 0) {
+                vThis.objDblClick.click = true;
+                vThis.objDblClick.time = new Date().getTime();
+                
+                setTimeout(() => {
+                    vThis.objDblClick.click = false;
+                    vThis.objDblClick.time = 0;
+                }, clickInterval)
             }
         });
 
