@@ -150,7 +150,7 @@ let app = new Vue({
         },
 
         /**
-         * @param {int} 선택한 행의 index
+         * 적용 버튼 클릭, 행 더블클릭
          */
         apply: function () {
             const vThis = this;
