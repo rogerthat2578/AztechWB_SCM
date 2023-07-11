@@ -121,6 +121,20 @@
 								<input type="text" name="BuyerNo" v-model="queryForm.BuyerNo">
 							</li>
 						</ul>
+
+						<ul class="input-wrap">
+							<li class="name">
+								<label>완료구분</label>
+							</li>
+							<li class="txt">
+								<div class="select">
+									<input type="text" class="drop-box-input" name="WorkCond8Name" v-model="queryForm.WorkCond8Name" @click="openCloseDropBox('WorkCond8Name')" @input="likeSelect2('WorkCond8')">
+									<ul class="drop-box">
+										<li v-for="item in WorkCond8NameList" @click="openCloseDropBox('WorkCond8Name')" :value="item.key">{{item.val}}</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
 					</div>
 				</div>
 				<button class="btn-hide mo" onclick="GX._METHODS_.hide()"></button>

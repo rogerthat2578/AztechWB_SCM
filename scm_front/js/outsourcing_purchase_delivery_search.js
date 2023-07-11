@@ -22,6 +22,8 @@ let app = new Vue({
             ProcessName: '전체',
             Dept: 0,
             DeptName: '전체',
+            WorkCond8: '2',
+            WorkCond8Name: '전체',
         },
         // 공정 리스트
         ProcessNameList: [],
@@ -31,6 +33,18 @@ let app = new Vue({
         DeptNameList: [],
         // 부서 리스트
         KeepDeptNameList: [],
+        // (납품)완료구분 리스트
+        WorkCond8NameList: [
+            {key: 2, val: '전체'},
+            {key: 0, val: '납품중'},
+            {key: 1, val: '납품완료'}
+        ],
+        // (납품)완료구분 리스트
+        KeepWorkCond8NameList: [
+            {key: 2, val: '전체'},
+            {key: 0, val: '납품중'},
+            {key: 1, val: '납품완료'}
+        ],
         /**단축키로 기능 실행 (K-System 참고)
          * Control + Q = 조회
          */
@@ -121,6 +135,12 @@ let app = new Vue({
                         vThis.DeptNameList = vThis.KeepDeptNameList;
                         vThis.queryForm.Dept = vThis.KeepDeptNameList[0].key;
                         vThis.queryForm.DeptName = vThis.KeepDeptNameList[0].val;
+                    }
+                    // (납품)완료구분 리스트 Select Box 초기화
+                    if ((vThis.WorkCond8NameList.length == 1 && (vThis.WorkCond8NameList[0].val == '전체' || vThis.WorkCond8NameList[0].val == '')) || vThis.queryForm.WorkCond8Name.replace(/\ /g, '') == '') {
+                        vThis.WorkCond8NameList = vThis.KeepWorkCond8NameList;
+                        vThis.queryForm.WorkCond8 = vThis.KeepWorkCond8NameList[0].key;
+                        vThis.queryForm.WorkCond8Name = vThis.KeepWorkCond8NameList[0].val;
                     }
                 }
             }
@@ -383,6 +403,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum')
+        .header('납품완료구분').name('WorkCond8').align('center').width(100).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'WorkCond8'}).sortable().setRow()
         .header('작업일').name('WorkDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('품번').name('GoodItemNo').align('left').width(140).whiteSpace().ellipsis().sortable(true).setRow()
         .header('품명').name('GoodItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
@@ -435,23 +456,6 @@ let app = new Vue({
             }
         });
 
-        // grid dblclick event
-        // vThis.mainGrid.on('dblclick', function(e) {
-        //     // 행 더블 클릭 시 점프
-        //     if (e.rowKey || e.rowKey === 0) {
-        //         if (confirm('입력 화면으로 이동하시겠습니까?')) {
-        //             let arr = [];
-        //             arr.push(vThis.rows.Query[e.rowKey])
-        //             if (arr.length > 0) {
-        //                 GX.SessionStorage.set('jumpData', JSON.stringify(arr));
-        //                 GX.SessionStorage.set('jumpSetMethodId', 'PDWorkReportJumpQuery');
-        //                 location.href = 'outsourcing_purchase_delivery.html';
-        //             } else 
-        //                 toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
-        //         }
-        //     }
-        // });
-
         vThis.mainGrid.on('click', function(e) {
             // 행 더블 클릭 시 점프 - 모바일 웹에선 그리드 더블클릭 이벤트가 동작하지 않음
             const clickInterval = 600; // ms
@@ -460,6 +464,14 @@ let app = new Vue({
                     if (e.rowKey || e.rowKey === 0) {
                         vThis.objDblClick.click = false;
                         vThis.objDblClick.time = 0;
+
+                        const WorkCond8Value = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'WorkCond8'));
+
+                        if (WorkCond8Value == 1) {
+                            toastr.warning('납품완료 상태는 수정, 삭제할 수 없습니다.');
+                            return false;
+                        }
+
                         if (confirm('입력 화면으로 이동하시겠습니까?')) {
                             let arr = [];
                             arr.push(vThis.rows.Query[e.rowKey])
