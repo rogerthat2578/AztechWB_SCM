@@ -121,9 +121,10 @@ let app = new Vue({
                     document.getElementsByClassName('left-menu')[0].style.display = 'none';
                 }
 
-                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
+                if((document.getElementsByClassName('drop-box')[0].style.display === 'block' || document.getElementsByClassName('drop-box')[1].style.display === 'block' || document.getElementsByClassName('drop-box')[2].style.display === 'block') && e.target.getAttribute('class') !== 'drop-box-input'){
                     document.getElementsByClassName('drop-box')[0].style.display = 'none';
                     document.getElementsByClassName('drop-box')[1].style.display = 'none';
+                    document.getElementsByClassName('drop-box')[2].style.display = 'none';
                     // 공정 Select Box 초기화
                     if ((vThis.ProcessNameList.length == 1 && (vThis.ProcessNameList[0].val == '전체' || vThis.ProcessNameList[0].val == '')) || vThis.queryForm.ProcessName.replace(/\ /g, '') == '') {
                         vThis.ProcessNameList = vThis.KeepProcessNameList;
@@ -403,7 +404,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum')
-        .header('납품완료구분').name('WorkCond8').align('center').width(100).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'WorkCond8'}).sortable().setRow()
+        .header('납품구분').name('WorkCond8').align('center').width(65).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'WorkCond8'}).sortable().setRow()
         .header('작업일').name('WorkDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('품번').name('GoodItemNo').align('left').width(140).whiteSpace().ellipsis().sortable(true).setRow()
         .header('품명').name('GoodItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()

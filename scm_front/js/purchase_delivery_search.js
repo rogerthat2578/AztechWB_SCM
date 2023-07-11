@@ -395,7 +395,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum')
-        .header('납품완료구분').name('Dummy2').align('center').width(100).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'Dummy2'}).sortable().setRow()
+        .header('납품구분').name('Dummy2').align('center').width(65).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'Dummy2'}).sortable().setRow()
         .header('입고진행상태').name('SMDelvInTypeName').align('center').width(110).whiteSpace().ellipsis().sortable(true).setRow()
         .header('납품일').name('DelvDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('발주일').name('PODate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
