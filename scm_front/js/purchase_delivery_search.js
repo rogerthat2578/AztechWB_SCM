@@ -35,8 +35,8 @@ let app = new Vue({
             EmpName: '전체',
             OrderItemNo: '',
             BuyerNo: '',
-            Dummy2: '2',
-            Dummy2Name: '전체',
+            IsCompDelvIn: '2',
+            IsCompDelvInName: '전체',
         },
         SMCurrStatusList: [],
         isCheckList: [],
@@ -49,13 +49,13 @@ let app = new Vue({
         // 담당자 리스트 (퇴사 제외)
         KeepEmpNameList: [],
         // (납품)완료구분 리스트
-        Dummy2NameList: [
+        IsCompDelvInNameList: [
             {key: 2, val: '전체'},
             {key: 0, val: '납품중'},
             {key: 1, val: '납품완료'}
         ],
         // (납품)완료구분 리스트
-        KeepDummy2NameList: [
+        KeepIsCompDelvInNameList: [
             {key: 2, val: '전체'},
             {key: 0, val: '납품중'},
             {key: 1, val: '납품완료'}
@@ -154,10 +154,10 @@ let app = new Vue({
                         vThis.queryForm.EmpName = vThis.KeepEmpNameList[0].val;
                     }
                     // (납품)완료구분 리스트 Select Box 초기화
-                    if ((vThis.Dummy2NameList.length == 1 && (vThis.Dummy2NameList[0].val == '전체' || vThis.Dummy2NameList[0].val == '')) || vThis.queryForm.Dummy2Name.replace(/\ /g, '') == '') {
-                        vThis.Dummy2NameList = vThis.KeepDummy2NameList;
-                        vThis.queryForm.Dummy2 = vThis.KeepDummy2NameList[0].key;
-                        vThis.queryForm.Dummy2Name = vThis.KeepDummy2NameList[0].val;
+                    if ((vThis.IsCompDelvInNameList.length == 1 && (vThis.IsCompDelvInNameList[0].val == '전체' || vThis.IsCompDelvInNameList[0].val == '')) || vThis.queryForm.IsCompDelvInName.replace(/\ /g, '') == '') {
+                        vThis.IsCompDelvInNameList = vThis.KeepIsCompDelvInNameList;
+                        vThis.queryForm.IsCompDelvIn = vThis.KeepIsCompDelvInNameList[0].key;
+                        vThis.queryForm.IsCompDelvInName = vThis.KeepIsCompDelvInNameList[0].val;
                     }
                 }
             }
@@ -268,7 +268,7 @@ let app = new Vue({
                     while (i < data.length) {
                         // 납품예정일에 데이터가 없을 경우 납기일 기본 세팅
                         if (GX._METHODS_.nvl(data[i].WorkPlanDate).length !== 8) {
-                            data[i].WorkPlanDate = data[i].WorkDate;
+                            data[i].WorkPlanDate = GX._METHODS_.nvl(data[i].WorkDate) != '' ? data[i].WorkDate : '';
                         }
                         i++;
                     }
@@ -395,7 +395,7 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init()
         .setRowHeaders('rowNum')
-        .header('납품구분').name('Dummy2').align('center').width(65).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'Dummy2'}).sortable().setRow()
+        .header('납품구분').name('IsCompDelvIn').align('center').width(65).whiteSpace().ellipsis().formatter('checkbox', {attrDisabled: 'disabled', colKey: 'IsCompDelvIn'}).sortable().setRow()
         .header('입고진행상태').name('SMDelvInTypeName').align('center').width(110).whiteSpace().ellipsis().sortable(true).setRow()
         .header('납품일').name('DelvDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('발주일').name('PODate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
@@ -455,9 +455,9 @@ let app = new Vue({
                         vThis.objDblClick.click = false;
                         vThis.objDblClick.time = 0;
 
-                        const Dummy2Value = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'Dummy2'));
+                        const IsCompDelvInValue = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'IsCompDelvIn'));
 
-                        if (Dummy2Value == 1) {
+                        if (IsCompDelvInValue == 1) {
                             toastr.warning('납품완료 상태는 수정, 삭제할 수 없습니다.');
                             return false;
                         }
