@@ -67,6 +67,11 @@ let app = new Vue({
                 .setMethodId('LoginTest')
                 .ajax([{ QryType: 'LoginCheck', CompansySeq: vThis.companySeq, UserId: vThis.userId, UserPwd: vThis.userPwd }], [function (data) {
                     if (data[0] != null && data[0].UserSeq != null) {
+                        if (data[0]?.Status) {
+                            let resultMsg = data[0]?.Result || '';
+                            alert('로그인 실패 : ' + resultMsg);
+                            return false;
+                        }
                         /**CustKind 우선 세팅 */
                         // master 계정은 CustKind1, CustKind2 둘다 없음.
                         if (vThis.userId == 'master' || data[0].EmpSeq > 0) { // data[0].CustKind1 == null && data[0].CustKind2 == null && 
@@ -120,6 +125,12 @@ let app = new Vue({
                         });
                         GX.Cookie.set('BizUnit_JsonFormatStringType', JSON.stringify(objBizUnitList), 1);
                         location.href = 'main.html';
+                    } else {
+                        if (data[0]?.Status) {
+                            let resultMsg = data[0]?.Result || '';
+                            alert('로그인 실패 : ' + resultMsg);
+                            return false;
+                        }
                     }
                 }], true);
             } else {

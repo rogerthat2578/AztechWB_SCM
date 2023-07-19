@@ -63,7 +63,7 @@ GX._METHODS_ = {
 	isLogin: function(){
 		return (
 			GX.Cookie.get('UserSeq') != null && GX.Cookie.get('UserSeq').length > 0 && GX.Cookie.get('CompanySeq') != null && GX.Cookie.get('CompanySeq').length > 0
-			&& GX.Cookie.get('CustKind1') != '' && GX.Cookie.get('CustKind2') != ''
+			&& (GX.Cookie.get('CustKind1') != '' || GX.Cookie.get('CustKind2') != '')
 		)
 	},
 	setSecurityProperty: function(key, value){
