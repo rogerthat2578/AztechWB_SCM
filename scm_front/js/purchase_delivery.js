@@ -137,12 +137,17 @@ let app = new Vue({
 
             let transDataRowKey = document.getElementById('transDataRowKey').value;
             let transDataSeq = document.getElementById('transDataSeq').value;
+            let transDataSumQty = document.getElementById('transDataSumQty').value;
             if (document.getElementById('transDataRowKey')) document.getElementById('transDataRowKey').remove();
             if (document.getElementById('transDataSeq')) document.getElementById('transDataSeq').remove();
+            if (document.getElementById('transDataSumQty')) document.getElementById('transDataSumQty').remove();
             if (document.getElementById('btnTransData')) document.getElementById('btnTransData').remove();
 
             if (transDataRowKey != null && transDataRowKey != 'null' && transDataSeq > 0) {
                 vThis.mainGrid.setValue(transDataRowKey, 'Seq', transDataSeq);
+            }
+            if (transDataSumQty != undefined && transDataSumQty != null && transDataSumQty != 'null') {
+                vThis.mainGrid.setValue(transDataRowKey, 'Qty', transDataSumQty);
             }
         },
 
@@ -205,7 +210,7 @@ let app = new Vue({
 
                                 if (k == j && t.length > 0) {
                                     if (k === 'DelvDate' && GX._METHODS_.nvl(masterData[j]).length === 8) {
-                                        vThis.queryForm.DelvDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/-/g, '');
+                                        vThis.queryForm.DelvDate = GX._METHODS_.nvl(masterData.DelvDate).replace(/-/g, '');
                                         vThis.calendarDelvDate.setDate(new Date(parseInt(vThis.queryForm.DelvDate.substring(0, 4)), parseInt(vThis.queryForm.DelvDate.substring(4, 6)) - 1, parseInt(vThis.queryForm.DelvDate.substring(6))))
                                     } else {
                                         vThis.queryForm[k] = GX._METHODS_.nvl(masterData[j]);
@@ -535,7 +540,7 @@ let app = new Vue({
                             // window.name = "부모창 이름";
                             window.name = 'parentPopup';
 
-                            let top = Math.floor(screen.availHeight / 4.5);
+                            let top = Math.floor(screen.availHeight / 17);
                             let left = Math.floor(screen.availWidth / 4);
 
                             // 이미 창이 열려있는지 확인
@@ -550,7 +555,7 @@ let app = new Vue({
                             
                             if (!vThis.objWinOpen) {
                                 // window.open("open할 window", "자식창 이름", "팝업창 옵션");
-                                vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=570, scrollbars=no, top=' + top + ', left=' + left);
+                                vThis.objWinOpen = window.open('codehelp_popup.html', 'childPopup', 'width=1000, height=800, scrollbars=no, top=' + top + ', left=' + left);
                                 vThis.objWinOpen.focus();
                             }
                         }

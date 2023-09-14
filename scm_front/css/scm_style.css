@@ -690,7 +690,8 @@ main {
   border: 1px solid #5A669A;
 }
 .data-table.dialog {
-  height: 50vh;
+  /* height: 50vh; */
+  height: 530px;
 }
 .data-table table .click {
   background-color: #E6E9F8;
