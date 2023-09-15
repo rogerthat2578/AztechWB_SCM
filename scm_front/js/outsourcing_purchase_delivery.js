@@ -606,8 +606,8 @@ let app = new Vue({
                             // window.name = "부모창 이름";
                             window.name = 'parentPopup';
 
-                            let top = Math.floor(screen.availHeight / 4.5);
-                            let left = Math.floor(screen.availWidth / 4);
+                            let top = Math.floor(screen.availHeight / 17);
+                            let left = Math.floor(screen.availWidth / 3);
 
                             // 이미 창이 열려있는지 확인
                             if (vThis.objWinOpen) {
@@ -621,9 +621,11 @@ let app = new Vue({
 
                             if (!vThis.objWinOpen) {
                                 // window.open("open할 window", "자식창 이름", "팝업창 옵션");
-                                vThis.objWinOpen = window.open('codehelp_popup_wh.html', 'childPopup', 'width=700, height=470, scrollbars=no, top=' + top + ', left=' + left);
+                                vThis.objWinOpen = window.open('codehelp_popup_wh.html', 'childPopup', 'width=700, height=760, scrollbars=no, top=' + top + ', left=' + left);
                                 vThis.objWinOpen.focus();
                             }
+                        } else {
+                            console.log(e)
                         }
                     }
                 }

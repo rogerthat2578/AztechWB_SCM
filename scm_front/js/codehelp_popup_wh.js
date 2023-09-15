@@ -202,7 +202,7 @@ let app = new Vue({
         // create dialog grid
         vThis.mainGrid = ToastUIGrid.initGrid('mainGrid');
 
-        vThis.mainGrid.setBodyHeight(200);
+        vThis.mainGrid.setBodyHeight(485);
 
         // dialog grid data init
         vThis.rows.Query = [];

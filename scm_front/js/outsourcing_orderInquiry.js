@@ -416,17 +416,18 @@ let app = new Vue({
                     
                     // 공정 기본 값 = 52:입고(의류)로 세팅
                     // 20230612 req 박태근 이사님 - 공정 기본값 입고(의류), 생지정포, 전체만 나오게 수정. 기본 세팅 = 전체
+                    // 20230915 req 박태근 이사님 - 공정 기본값 입고(의류), 생지정포, 합연, 전체만 나오게 수정. 기본 세팅 = 전체
                     if (k === 'ProcessNameList') {
                         const tempList = vThis.ProcessNameList;
                         vThis.ProcessNameList = [];
                         for (let i = 0; i < tempList.length; i++) {
                             if ((tempList[i].val.indexOf('입고') > -1 && tempList[i].val.indexOf('의류') > -1)
                             || (tempList[i].val.indexOf('생지') > -1 && tempList[i].val.indexOf('정포') > -1)
-                            || (tempList[i].val.indexOf('전체') > -1)) {
+                            || (tempList[i].val.indexOf('합연') > -1) || (tempList[i].val.indexOf('전체') > -1)) {
                                 vThis.ProcessNameList.push(tempList[i]);
                             }
-                            // 공정은 3개만 나오게함. 전체, 입고(의류), 생지정포
-                            if (vThis.ProcessNameList.length === 3) break;
+                            // 공정은 4개만 나오게함. 전체, 입고(의류), 생지정포, 합연
+                            if (vThis.ProcessNameList.length === 4) break;
                         }
                         /*
                         for (let i = 0; i < vThis.ProcessNameList.length; i++) {
