@@ -462,9 +462,9 @@ let app = new Vue({
         // .header('적재위치(입고)').name('InLocationName').align('left').width(120).whiteSpace().ellipsis().setRow()
         .header('적재위치(입고)').name('InLocationName').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
         .header('필번(Box)').name('AddPackNo').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
-        .header('재고수량').name('StockOkQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('수량').name('OkQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('중량(실량)').name('Weight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('재고수량').name('StockOkQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('재고중량(실량)').name('StockWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('Gross량').name('GrossQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('Stain').name('Stain').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
@@ -501,8 +501,9 @@ let app = new Vue({
                     toastr.warning(vThis.mainGrid.getColumn(e.columnName).header + ' : 숫자만 입력 가능합니다.', 'Validation:fail');
                     vThis.mainGrid.setValue(e.rowKey, e.columnName, vThis.strBeforeEditData);
                     return false;
-                } else {
-                    /* 20230914 수량비교 제거 (박태근이사 요청)
+                }
+                /* 20230914 수량비교 제거 (박태근이사 요청)
+                else {
                     // 마스터 영역의 합계수량과 디테일 영역의 수량 비교
                     const detailGridQtySum = vThis.mainGrid.getSummaryValues('OkQty').sum;
                     const masterQtySum = GX._METHODS_.nvl(vThis.queryRow.Qty) == '' ? 0 : vThis.queryRow.Qty;
@@ -514,8 +515,8 @@ let app = new Vue({
                         vThis.mainGrid.setValue(e.rowKey, 'OkQty', vThis.strBeforeEditData);
                         return false;
                     }
-                    */
                 }
+                */
             } else if (GX._METHODS_.nvl(e.columnName) === 'InLocationName') {
                 // 적재위치(입고) 명칭으로 조회
                 let params = {};
@@ -568,15 +569,9 @@ let app = new Vue({
                 // 붙여넣기 발생 시
                 // 붙여넣기 발생한 행의 행index, 컬럼, 이전 데이터, 현재 데이터
                 let arrChanges = e.changes;
-                let strLocationSeq = 0;
-                let strLocationName = '';
                 for (let i = 0; i < arrChanges.length; i++) {
                     let getRow = GX.deepCopy(vThis.mainGrid.getRow(arrChanges[i].rowKey));
                     Object.keys(vThis.newRowData).map((k) => {
-                        if (k == 'InLocationName') {
-                            console.log(getRow)
-                        }
-                        
                         if (GX._METHODS_.nvl(getRow[k]).length == 0) {
                             // 추가된 행에 없는 컬럼, 데이터 추가
                             if (arrChanges[i].columnName == k && arrChanges[i].columnName == 'AddPackNo') {
@@ -584,55 +579,7 @@ let app = new Vue({
                                 getRow[k] = arrChanges[i].value;
                             } else if (arrChanges[i].columnName == k && arrChanges[i].columnName == 'InLocationName') {
                                 // 적재위치(입고) 컬럼에 붙여넣기 발생 시 붙여넣을 데이터 그대로 넣기
-                                if (strLocationName.length == 0) {
-                                    // 적재위치 명칭으로 조회
-                                    let params = {};
-                                    params.BizUnit = vThis.queryForm.BizUnit || 0;
-                                    params.WHSeq = vThis.queryRow.WHSeq || 0;
-                                    params.LocationName = arrChanges[i].value || '';
-                                    if (params.BizUnit == 0) {
-                                        toastr.error('BizUnit이 올바르지 않습니다.');
-                                        return false;
-                                    } else if (params.WHSeq == 0) {
-                                        toastr.error('창고가 올바르지 않습니다.');
-                                        return false;
-                                    } else if (params.LocationName == '') {
-                                        toastr.warning(arrChanges[i].rowKey + 1 + '번 행의 적재위치명이 없습니다.');
-                                    }
-
-                                    GX._METHODS_
-                                    .setMethodId('LocationCodeHelp')
-                                    .ajax([params], [function (data) {
-                                        if (data.length == 1) {
-                                            strLocationSeq = data[0].LocationSeq
-                                            strLocationName = data[0].LocationName;
-                                            getRow[k] = strLocationName;
-                                            getRow.InLocationSeq = strLocationSeq
-                                            // vThis.mainGrid.setValue(arrChanges[i].rowKey, 'InLocationSeq', data[0].LocationSeq);
-                                            // vThis.mainGrid.setValue(arrChanges[i].rowKey, 'InLocationName', data[0].LocationName);
-                                        } else if (data.length > 1) {
-                                            toastr.warning('조회 결과가 다수입니다. 첫번째 적재위치를 세팅합니다.');
-                                            strLocationSeq = data[0].LocationSeq
-                                            strLocationName = data[0].LocationName;
-                                            getRow[k] = strLocationName;
-                                            getRow.InLocationSeq = strLocationSeq
-                                            // vThis.mainGrid.setValue(arrChanges[i].rowKey, 'InLocationSeq', data[0].LocationSeq);
-                                            // vThis.mainGrid.setValue(arrChanges[i].rowKey, 'InLocationName', data[0].LocationName);
-                                        } else if (data.length == 0) {
-                                            toastr.warning('조회 결과가 없습니다.');
-                                            strLocationSeq = 0
-                                            strLocationName = '';
-                                            getRow[k] = strLocationName;
-                                            getRow.InLocationSeq = strLocationSeq
-                                            // vThis.mainGrid.setValue(arrChanges[i].rowKey, 'InLocationSeq', 0);
-                                            // vThis.mainGrid.setValue(arrChanges[i].rowKey, 'InLocationName', '');
-                                        }
-                                    }]);
-                                } else {
-                                    getRow[k] = strLocationName;
-                                    getRow.InLocationSeq = strLocationSeq
-                                }
-                                
+                                getRow[k] = arrChanges[i].value;
                             } else {
                                 getRow[k] = vThis.newRowData[k];
                             }
@@ -641,6 +588,56 @@ let app = new Vue({
 
                     vThis.mainGrid.setRow(arrChanges[i].rowKey, getRow);
                 }
+                
+                // 적재위치 명칭으로 조회. 이전의 적재위치 명칭과 같을 경우 조회 안함.
+                let tempLocaName = '';
+                let tempLocaSeq = 0;
+                vThis.mainGrid.getData().map((r) => {
+                    let params = {};
+                    params.BizUnit = vThis.queryForm.BizUnit || 0;
+                    params.WHSeq = vThis.queryRow.WHSeq || 0;
+                    params.LocationName = r.InLocationName || '';
+                    if (params.BizUnit == 0) {
+                        toastr.error('BizUnit이 올바르지 않습니다.');
+                        return false;
+                    } else if (params.WHSeq == 0) {
+                        toastr.error('창고가 올바르지 않습니다.');
+                        return false;
+                    } else if (params.LocationName == '') {
+                        toastr.warning(r.rowKey + 1 + '번 행의 적재위치명이 없습니다.');
+                    } else {
+                        if (params.LocationName != tempLocaName) {
+                            // 이전의 적재위치 명칭과 다른 경우 조회
+                            GX._METHODS_
+                            .setMethodId('LocationCodeHelp')
+                            .ajax([params], [function (data) {
+                                if (data.length == 1) {
+                                    tempLocaSeq = data[0].LocationSeq;
+                                    tempLocaName = data[0].LocationName;
+                                    vThis.mainGrid.setValue(r.rowKey, 'InLocationSeq', tempLocaSeq);
+                                    vThis.mainGrid.setValue(r.rowKey, 'InLocationName', tempLocaName);
+                                } else if (data.length > 1) {
+                                    toastr.warning(r.rowKey + 1 + '번 행의 적재위치 조회 결과가 다수입니다. 첫번째 적재위치를 세팅합니다.');
+                                    tempLocaSeq = data[0].LocationSeq;
+                                    tempLocaName = data[0].LocationName;
+                                    vThis.mainGrid.setValue(r.rowKey, 'InLocationSeq', tempLocaSeq);
+                                    vThis.mainGrid.setValue(r.rowKey, 'InLocationName', tempLocaName);
+                                } else if (data.length == 0) {
+                                    toastr.warning(r.rowKey + 1 + '번 행의 적재위치 조회 결과가 없습니다.');
+                                    tempLocaSeq = 0;
+                                    tempLocaName = '';
+                                    vThis.mainGrid.setValue(r.rowKey, 'InLocationSeq', 0);
+                                    vThis.mainGrid.setValue(r.rowKey, 'InLocationName', '');
+                                }
+                            }]);
+                        } else {
+                            // 이전의 적재위치 명칭과 같을 경우 조회 안하고 이전 적재위치 명칭과 Seq를 세팅
+                            vThis.mainGrid.setValue(r.rowKey, 'InLocationSeq', tempLocaSeq);
+                            vThis.mainGrid.setValue(r.rowKey, 'InLocationName', tempLocaName);
+                        }
+                    }
+                });
+
                 console.log(vThis.mainGrid.getData())
             }
         });
