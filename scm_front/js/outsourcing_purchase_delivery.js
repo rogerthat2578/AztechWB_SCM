@@ -489,6 +489,7 @@ let app = new Vue({
         // .header('공정품규격').name('AssyItemSpec').align('left').width(100).whiteSpace().ellipsis().setRow()
         // .header('생산계획번호').name('ProdPlanNo').align('left').width(100).whiteSpace().ellipsis().setRow()
         .header('작업지시번호').name('WorkOrderNo').align('center').width(120).whiteSpace().ellipsis().setRow()
+        .header('포장단위작업실적Seq').name('Seq').align('center').hidden(true).setRow() // hidden(true) : 컬럼 안보이게, default = false
         ;
 
         // create grid
@@ -592,11 +593,13 @@ let app = new Vue({
                     if (e.rowKey || e.rowKey === 0) {
                         vThis.objDblClick.click = false;
                         vThis.objDblClick.time = 0;
-                        // 입고창고 컬럼만
+                        
                         if (e.columnName == 'InWHName') {
+                            // 입고창고 컬럼
                             if(!GX._METHODS_.isLogin()) {
                                 alert('로그인 정보가 만료되었습니다. 다시 로그인 후 진행해주세요.');
                                 location.replace('login.html');
+                                return false;
                             }
 
                             // SessionStorage로 데이터 전달
@@ -611,7 +614,7 @@ let app = new Vue({
 
                             // 이미 창이 열려있는지 확인
                             if (vThis.objWinOpen) {
-                                if (vThis.objWinOpen.name == 'childPopup') {
+                                if (vThis.objWinOpen.name == 'childPopup_wh') {
                                     toastr.info('이미 창이 열려있습니다.');
                                     vThis.objWinOpen.focus();
                                 } else {
@@ -621,11 +624,42 @@ let app = new Vue({
 
                             if (!vThis.objWinOpen) {
                                 // window.open("open할 window", "자식창 이름", "팝업창 옵션");
-                                vThis.objWinOpen = window.open('codehelp_popup_wh.html', 'childPopup', 'width=700, height=760, scrollbars=no, top=' + top + ', left=' + left);
+                                vThis.objWinOpen = window.open('codehelp_popup_wh.html', 'childPopup_wh', 'width=700, height=760, scrollbars=no, top=' + top + ', left=' + left);
                                 vThis.objWinOpen.focus();
                             }
-                        } else {
-                            console.log(e)
+                        } else if (e.columnName != 'InWHName' && e.columnName != 'ProdQty' && e.columnName != 'Weight' && e.columnName != 'Remark' && e.columnName != 'IsEnd') {
+                            // 입력/수정이 가능한 컬럼을 제외한 나머지
+                            if(!GX._METHODS_.isLogin()) {
+                                alert('로그인 정보가 만료되었습니다. 다시 로그인 후 진행해주세요.');
+                                location.replace('login.html');
+                                return false;
+                            }
+
+                            // SessionStorage로 데이터 전달
+                            GX.SessionStorage.set('codehelp_popup_pd-queryForm', JSON.stringify(vThis.queryForm))
+                            GX.SessionStorage.set('codehelp_popup_pd-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
+
+                            // window.name = "부모창 이름";
+                            window.name = 'parentPopup';
+
+                            let top = Math.floor(screen.availHeight / 17);
+                            let left = Math.floor(screen.availWidth / 3);
+
+                            // 이미 창이 열려있는지 확인
+                            if (vThis.objWinOpen) {
+                                if (vThis.objWinOpen.name == 'childPopup_pd') {
+                                    toastr.info('이미 창이 열려있습니다.');
+                                    vThis.objWinOpen.focus();
+                                } else {
+                                    vThis.objWinOpen = null;
+                                }
+                            }
+
+                            if (!vThis.objWinOpen) {
+                                // window.open("open할 window", "자식창 이름", "팝업창 옵션");
+                                vThis.objWinOpen = window.open('codehelp_popup_pd.html', 'childPopup_pd', 'width=1000, height=800, scrollbars=no, top=' + top + ', left=' + left);
+                                vThis.objWinOpen.focus();
+                            }
                         }
                     }
                 }

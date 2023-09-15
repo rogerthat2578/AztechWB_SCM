@@ -459,16 +459,14 @@ let app = new Vue({
         ToastUIGrid.setColumns
         .init() // .init('noSummary')
         .setRowHeaders('rowNum', 'checkbox')
-        // .header('적재위치(입고)').name('InLocationName').align('left').width(120).whiteSpace().ellipsis().setRow()
         .header('적재위치(입고)').name('InLocationName').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
         .header('필번(Box)').name('AddPackNo').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
-        .header('수량').name('OkQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('중량(실량)').name('Weight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('재고수량').name('StockOkQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('재고중량(실량)').name('StockWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Gross량').name('GrossQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Stain').name('Stain').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('Shade').name('Shade').align('left').width(100).whiteSpace().ellipsis().editor().setRow()
+        .header('실량(G.W)').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('정량(G.W)').name('RealQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('콘수').name('ConQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('BOX중량').name('BoxWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('콘중량').name('ConWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('비고').name('Remark').align('left').width(140).whiteSpace().ellipsis().editor().setRow()
         ;
 
         // create dialog grid
@@ -521,7 +519,7 @@ let app = new Vue({
                 // 적재위치(입고) 명칭으로 조회
                 let params = {};
                 params.BizUnit = vThis.queryForm.BizUnit || 0;
-                params.WHSeq = vThis.queryRow.WHSeq || 0;
+                params.WHSeq = vThis.queryRow.InWHSeq || 0;
                 params.LocationName = e.value || '';
                 if (params.BizUnit == 0) {
                     toastr.error('BizUnit이 올바르지 않습니다.');
@@ -653,17 +651,19 @@ let app = new Vue({
         });
 
         // SessionStorage에 있는거 꺼내오기
-        vThis.queryForm = GX.SessionStorage.get('codehelp_popup-queryForm') != null ? JSON.parse(GX.SessionStorage.get('codehelp_popup-queryForm')) : {};
-        vThis.queryRow = GX.SessionStorage.get('codehelp_popup-queryRow') != null ? JSON.parse(GX.SessionStorage.get('codehelp_popup-queryRow')) : {};
+        vThis.queryForm = GX.SessionStorage.get('codehelp_popup_pd-queryForm') != null ? JSON.parse(GX.SessionStorage.get('codehelp_popup_pd-queryForm')) : {};
+        vThis.queryRow = GX.SessionStorage.get('codehelp_popup_pd-queryRow') != null ? JSON.parse(GX.SessionStorage.get('codehelp_popup_pd-queryRow')) : {};
         // 정상적으로 담았으면 SessionStorage 삭제
         if (Object.keys(vThis.queryForm).length > 0 && Object.keys(vThis.queryRow).length > 0) {
-            GX.SessionStorage.remove('codehelp_popup-queryForm');
-            GX.SessionStorage.remove('codehelp_popup-queryRow');
-            vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.Qty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+            GX.SessionStorage.remove('codehelp_popup_pd-queryForm');
+            GX.SessionStorage.remove('codehelp_popup_pd-queryRow');
+            vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.ProdQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
             // 구매납품입력의 입출고유형은 고정 160
             vThis.queryRow.InOutType = 160;
             // vThis.queryRow.InOutTypeGubn = 1;
         }
+        console.log("vThis.queryForm", vThis.queryForm)
+        console.log("vThis.queryRow", vThis.queryRow)
 
         // 창고Seq가 있으면 기본 세팅 적재위치 가져오기
         // if (vThis.queryRow?.WHSeq) vThis.getFirstLocation();
@@ -679,8 +679,8 @@ let app = new Vue({
         }
         if (reloadYN) {
             try {
-                GX.SessionStorage.remove('codehelp_popup-queryForm');
-                GX.SessionStorage.remove('codehelp_popup-queryRow');
+                GX.SessionStorage.remove('codehelp_popup_pd-queryForm');
+                GX.SessionStorage.remove('codehelp_popup_pd-queryRow');
             } catch (e) {
                 console.log('SessionStorage 삭제 중 에러 발생', e);
             } finally {

@@ -111,6 +111,11 @@ ToastUIGrid = {
             }
             return this;
         },
+        hidden: function (bool) {
+            if (bool == undefined || bool == null)  bool = false;
+            this.options.hidden = bool;
+            return this;
+        },
         setRowHeaders: function (...arg) {
             if (arg.length > 0) {
                 this.rowHeaders = [];

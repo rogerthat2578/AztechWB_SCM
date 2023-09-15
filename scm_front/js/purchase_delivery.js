@@ -531,6 +531,7 @@ let app = new Vue({
                             if(!GX._METHODS_.isLogin()) {
                                 alert('로그인 정보가 만료되었습니다. 다시 로그인 후 진행해주세요.');
                                 location.replace('login.html');
+                                return false;
                             }
 
                             // SessionStorage로 데이터 전달
