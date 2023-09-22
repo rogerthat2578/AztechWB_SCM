@@ -148,12 +148,12 @@ let app = new Vue({
          */
         transSeqToParent: function () {
             const vThis = this;
-
+            
             if (vThis.rows.Query.length > 0) {
                 let transDataRowKey = vThis.queryRow.rowKey;
                 let transDataSeq = vThis.rows.Query[0].Seq || 0;
                 let transDataSumQty = vThis.mainGrid.getSummaryValues('OkQty').sum;
-
+                
                 if (window.opener.name == 'parentPopup') {
                     if (window.opener.document.getElementById('transDataRowKey')) {
                         window.opener.document.getElementById('transDataRowKey').value = transDataRowKey;
@@ -214,6 +214,7 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if(data.length > 0){
                     vThis.rows.Query = data;
+                    console.log('search ', vThis.rows.Query)
                     toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                 } else{
                     vThis.rows.Query = [];
@@ -305,7 +306,8 @@ let app = new Vue({
                         toastr.error('저장 실패 : ' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.search(vThis.transSeqToParent());
+                        vThis.queryRow.Seq = data[0].Seq || 0;
+                        vThis.search(vThis.transSeqToParent);
                     }
                 }, function (data) {
                 }]);
@@ -354,7 +356,7 @@ let app = new Vue({
                                 }
                                 toastr.info('삭제 성공');
                                 // 재조회
-                                vThis.search(vThis.transSeqToParent());
+                                vThis.search(vThis.transSeqToParent);
                             }
                         }, function (data) {
                         }]);
@@ -415,7 +417,7 @@ let app = new Vue({
                     } else {
                         toastr.info('삭제 성공');
                         // 재조회
-                        vThis.search(vThis.transSeqToParent());
+                        vThis.search(vThis.transSeqToParent);
                     }
                 }, function (data) {
                 }]);

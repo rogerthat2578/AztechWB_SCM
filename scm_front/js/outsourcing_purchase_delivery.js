@@ -266,7 +266,7 @@ let app = new Vue({
                         toastr.error('저장 실패\n' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.search(vThis.calSum());
+                        vThis.search(vThis.calSum);
                     }
                 }]);
 
@@ -309,7 +309,7 @@ let app = new Vue({
                                     toastr.error('삭제 실패\n' + data[0].Result);
                                 } else {
                                     toastr.info('삭제 성공');
-                                    vThis.search(vThis.calSum());
+                                    vThis.search(vThis.calSum);
                                 }
                             }]);
                         } else {
@@ -352,7 +352,7 @@ let app = new Vue({
                                     toastr.error('삭제 실패\n' + data[0].Result);
                                 } else {
                                     toastr.info('삭제 성공');
-                                    vThis.search(vThis.calSum());
+                                    vThis.search(vThis.calSum);
                                 }
                             }, function (data) {
                             }]);
@@ -395,7 +395,7 @@ let app = new Vue({
                                 toastr.error('삭제 실패\n' + data[0].Result);
                             } else {
                                 toastr.info('삭제 성공');
-                                vThis.search(vThis.calSum());
+                                vThis.search(vThis.calSum);
                             }
                         }]);
                     } else {

@@ -305,7 +305,7 @@ let app = new Vue({
                         toastr.error('저장 실패 : ' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.search(vThis.transSeqToParent());
+                        vThis.search(vThis.transSeqToParent);
                     }
                 }, function (data) {
                 }]);
@@ -354,7 +354,7 @@ let app = new Vue({
                                 }
                                 toastr.info('삭제 성공');
                                 // 재조회
-                                vThis.search(vThis.transSeqToParent());
+                                vThis.search(vThis.transSeqToParent);
                             }
                         }, function (data) {
                         }]);
@@ -415,7 +415,7 @@ let app = new Vue({
                     } else {
                         toastr.info('삭제 성공');
                         // 재조회
-                        vThis.search(vThis.transSeqToParent());
+                        vThis.search(vThis.transSeqToParent);
                     }
                 }, function (data) {
                 }]);
