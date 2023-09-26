@@ -464,8 +464,8 @@ let app = new Vue({
         .header('실량(G.W)').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('정량(G.W)').name('RealQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('콘수').name('ConQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('BOX중량').name('BoxWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('콘중량').name('ConWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        // .header('BOX중량').name('BoxWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        // .header('콘중량').name('ConWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('비고').name('Remark').align('left').width(140).whiteSpace().ellipsis().editor().setRow()
         ;
 

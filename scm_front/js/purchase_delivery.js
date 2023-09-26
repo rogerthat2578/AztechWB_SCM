@@ -267,7 +267,7 @@ let app = new Vue({
 
             // master
             params1 = [vThis.queryForm];
-            params1[0].IDX_NO = getModiData[i].IDX_NO;
+            params1[0].IDX_NO = getModiData[0].IDX_NO;
             params1[0].UserId = GX.Cookie.get('UserId');
             params1[0].DelvDate = params1[0].DelvDate.indexOf('-') > -1 ? params1[0].DelvDate.replace(/\-/g, "") : params1[0].DelvDate;
 
