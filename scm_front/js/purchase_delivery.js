@@ -123,10 +123,21 @@ let app = new Vue({
         },
         init: function () {
             let vThis = this;
-            vThis.rows.Query = [];
+            Object.keys(vThis.queryForm).map(k => {
+                if (typeof vThis.queryForm[k] == 'string') {
+                    vThis.queryForm[k] = '';
+                } else if (typeof vThis.queryForm[k] == 'number') {
+                    vThis.queryForm[k] = 0;
+                } else {
+                    vThis.queryForm[k] = null;
+                }
+            });
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
+            
+            vThis.rows.Query = [];
+            vThis.mainGrid.resetData(vThis.rows.Query);
         },
         
         /**
@@ -254,12 +265,19 @@ let app = new Vue({
             // detail 공통 파라메터 세팅, 날짜 하이푼(-) 제거
             for (let i = 0; i < getModiData.length; i++) {
                 getModiData[i].IDX_NO = parseInt(getModiData[i].rowKey) + 1;
-                if (vThis.jumpSetMethodId == 'DelvItemListJump') {
+                if (vThis.jumpSetMethodId == 'DelvItemListJump') { 
                     // 구매납품현황 Jump
                     getModiData[i].WorkingTag = 'U';
                 } else if (vThis.jumpSetMethodId == 'PUORDPOJump') {
+                    /* 20230926 req 박태근이사님 구매발주에서 넘어오더라도 수정,삭제 가능하게 해달라.
                     // 구매발주조회 Jump
                     getModiData[i].WorkingTag = 'A';
+                    */
+                    if (getModiData[i].DelvSeq != 0 && getModiData[i].DelvSerl != 0) {
+                        getModiData[i].WorkingTag = 'U';
+                    } else {
+                        getModiData[i].WorkingTag = 'A';
+                    }
                 }
                 getModiData[i].DelvDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/\-/g, "");
             }
@@ -275,8 +293,16 @@ let app = new Vue({
                 // 구매납품현황 Jump
                 params1[0].WorkingTag = 'U';
             } else if (vThis.jumpSetMethodId == 'PUORDPOJump') {
+                /* 20230926 req 박태근이사님 구매발주에서 넘어오더라도 수정,삭제 가능하게 해달라.
                 // 구매발주조회 Jump
                 params1[0].WorkingTag = 'A';
+                */
+                if (getModiData[0].DelvSeq != 0 && getModiData[0].DelvSerl != 0) {
+                    params1[0].WorkingTag = 'U';
+                    params1[0].DelvSeq = getModiData[0].DelvSeq;
+                } else {
+                    params1[0].WorkingTag = 'A';
+                }
             }
 
             if (params1.length > 0 && params2.length > 0) {
@@ -288,9 +314,59 @@ let app = new Vue({
                         toastr.error('저장 실패\n' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.search(vThis.calSum);
+                        // 재조회를 하는게 아닌 데이터만 갱신
+                        // vThis.search(vThis.calSum);
                     }
                 }, function (data) {
+                    if (vThis.jumpSetMethodId == 'PUORDPOJump') {
+                        // 구매발주조회 Jump
+                        if (data.length > 0) {
+                            // 20230926 req 박태근이사님 구매발주에서 넘어오더라도 수정,삭제 가능하게 해달라.
+                            // 재조회를 하는게 아닌 데이터만 갱신
+                            let chk = true;
+                            for (let i = 0; i < data.length; i++) {
+                                if (data[i].DelvSeq == 0 || data[i].DelvSerl == 0) {
+                                    chk = false;
+                                }
+                            }
+    
+                            if (chk) {
+                                let renewArrIdx = [];
+                                for (let i = 0; i < data.length; i++) {
+                                    // SourceSeq = POSeq 발주Seq, SourceSerl = POSerl 발주Serl
+                                    for (let j = 0; j < vThis.rows.Query.length; j++) {
+                                        if (data[i].SourceSeq == vThis.rows.Query[i].POSeq && data[i].SourceSerl == vThis.rows.Query[i].POSerl) {
+                                            vThis.rows.Query[i].DelvSeq = data[i].DelvSeq;
+                                            vThis.rows.Query[i].DelvSerl = data[i].DelvSerl;
+                                            vThis.rows.Query[i].Seq = data[i].Seq;
+                                            vThis.rows.Query[i].Qty = data[i].Qty;
+                                        } else {
+                                            renewArrIdx.push(j);
+                                        }
+                                    }
+                                }
+
+                                // this.rows.Query 배열의 데이터도 삭제하기위한 index 확인
+                                if (renewArrIdx.length > 0) {
+                                    // index를 담아둔 배열 내림차순 정렬
+                                    renewArrIdx.sort((a, b) => {
+                                        return b - a;
+                                    });
+                                    // 배열 요소 삭제
+                                    for (let i in vThis.rows.Query) {
+                                        vThis.rows.Query[i].splice(i, 1);
+                                    }
+                                }
+                                
+                                // 그리드에 데이터 바인딩
+                                vThis.mainGrid.resetData(vThis.rows.Query);
+                            }
+                        }
+                    } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
+                        // 구매납품현황 Jump
+
+                        vThis.search(vThis.calSum);
+                    }
                 }]);
             } else {
                 toastr.warning('저장할 데이터가 없습니다.');
@@ -298,109 +374,17 @@ let app = new Vue({
         },
         delRow: function () {
             let vThis = this;
-            
+
             // 체크된 행만 가져오기
-            let arr = vThis.mainGrid.getCheckedRows();
+	        let arr = vThis.mainGrid.getCheckedRows();
+
             if (arr.length > 0) {
                 if (vThis.mainGrid.getData().length == arr.length) {
                     // 행 전체 선택 시
-                    if (vThis.jumpSetMethodId == 'PUORDPOJump') {
-                        // 구매발주품목조회에서 넘어온 데이터 전체 삭제 불가능
-                        toastr.warning('"구매발주품목조회" 화면에서 넘어온 데이터는 "전체 삭제"가 불가능합니다.');
-                    } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
-                        // 구매납품품목조회에서 넘어와 전체 행 선택 삭제(=전체 삭제)
-                        // 파라메터 선언
-                        let params1 = [], params2 = [];
-
-                        // detail 공통 파레메터 세팅
-                        for (let i = 0; i < arr.length; i++) {
-                            arr[i].WorkingTag = 'D';
-                        }
-                        params2 = arr;
-
-                        // master
-                        params1 = [params2[0]]
-
-                        if (params1.length > 0 && params2.length > 0) {
-                            GX._METHODS_
-                            .setMethodId('PUDelvSave')
-                            .ajax(params1, params2, [function (data) {
-                                if (data[0].Status && data[0].Status != 0) {
-                                    // 뭔가 문제가 발생했을 때 리턴
-                                    toastr.error('삭제 실패\n' + data[0].Result);
-                                } else {
-                                    toastr.info('삭제 성공');
-                                    vThis.search(vThis.calSum);
-                                }
-                            }, function (data) {
-                            }]);
-                        } else {
-                            toastr.warning('삭제할 데이터가 없습니다.');
-                        }
-                    }
+                    vThis.del();
                 } else {
-                    // 행 삭제 (전체 선택 삭제 아닐 경우)
-                    if (vThis.jumpSetMethodId == 'PUORDPOJump') {
-                        // 구매발주조회에서 넘어온 데이터
-                        if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
-                            // 행 삭제
-                            vThis.mainGrid.removeCheckedRows();
-                            // this.rows.Query 데이터 갱신
-                            vThis.rows.Query = vThis.mainGrid.getData();
-
-                            // 마스터 영역 합계 계산
-                            vThis.calSum();
-                        }
-                    } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
-                        // 구매납품조회에서 넘어온 데이터
-                        // 파라메터 선언
-                        let params1 = [], params2 = [];
-
-                        // detail 공통 파레메터 세팅
-                        for (let i = 0; i < arr.length; i++) {
-                            arr[i].WorkingTag = 'D';
-                        }
-                        params2 = arr;
-                        
-                        // master
-                        // params1 = [params2[0]] // 마스터 데이터는 넘겨줄 필요없다고함
-
-                        GX._METHODS_
-                        .setMethodId('PUDelvSave')
-                        .ajax(params1, params2, [function (data) {
-                            if (data[0].Status && data[0].Status != 0) {
-                                // 뭔가 문제가 발생했을 때 리턴
-                                toastr.error('삭제 실패\n' + data[0].Result);
-                            } else {
-                                toastr.info('삭제 성공');
-                                vThis.search(vThis.calSum);
-                            }
-                        }, function (data) {
-                        }]);
-                    }
-                }
-            } else {
-                if (vThis.mainGrid.getData().length > 0) {
-                    toastr.warning('삭제할 행을 선택해주세요.');
-                } else {
-                    toastr.warning('삭제할 데이터가 없습니다. 이전 화면에서 다시 등록 화면으로 넘어와주세요.');
-                }
-            }
-        },
-        del: function () {
-            let vThis = this;
-
-            if (confirm('전체 삭제하시겟습니까?')) {
-                if (vThis.jumpSetMethodId == 'PUORDPOJump') {
-                    // 구매발주품목조회에서 넘어온 데이터 전체 삭제 불가능
-                    toastr.warning('"구매발주품목조회" 화면에서 넘어온 데이터는 "전체 삭제"가 불가능합니다.');
-                } else if (vThis.jumpSetMethodId == 'DelvItemListJump') {
-                    // 구매납품조회에서 넘어온 데이터 전체 삭제
                     // 파라메터 선언
                     let params1 = [], params2 = [];
-
-                    // 전체 삭제 버튼을 클릭했기에 그리드에 있는 모든 데이터 가져오기
-                    let arr = vThis.mainGrid.getData();
 
                     // detail 공통 파레메터 세팅
                     for (let i = 0; i < arr.length; i++) {
@@ -420,13 +404,60 @@ let app = new Vue({
                                 toastr.error('삭제 실패\n' + data[0].Result);
                             } else {
                                 toastr.info('삭제 성공');
-                                vThis.search(vThis.calSum);
+                                // 재조회 제거
+                                // vThis.search(vThis.calSum);
+                                vThis.mainGrid.removeCheckedRows(false);
                             }
                         }, function (data) {
                         }]);
                     } else {
                         toastr.warning('삭제할 데이터가 없습니다.');
                     }
+                }
+            } else {
+                if (vThis.mainGrid.getData().length > 0) {
+                    toastr.warning('삭제할 행을 선택해주세요.');
+                } else {
+                    toastr.warning('삭제할 데이터가 없습니다. 이전 화면에서 다시 등록 화면으로 넘어와주세요.');
+                }
+            }
+        },
+        del: function () {
+            let vThis = this;
+
+            if (confirm('전체 삭제하시겟습니까?')) {
+                // 파라메터 선언
+                let params1 = [], params2 = [];
+
+                // 전체 삭제 버튼을 클릭했기에 그리드에 있는 모든 데이터 가져오기
+                let arr = vThis.mainGrid.getData();
+
+                // detail 공통 파레메터 세팅
+                for (let i = 0; i < arr.length; i++) {
+                    arr[i].WorkingTag = 'D';
+                }
+                params2 = arr;
+
+                // master
+                params1 = [params2[0]]
+
+                if (params1.length > 0 && params2.length > 0) {
+                    GX._METHODS_
+                    .setMethodId('PUDelvSave')
+                    .ajax(params1, params2, [function (data) {
+                        if (data[0].Status && data[0].Status != 0) {
+                            // 뭔가 문제가 발생했을 때 리턴
+                            toastr.error('삭제 실패\n' + data[0].Result);
+                        } else {
+                            toastr.info('삭제 성공');
+                            // 재조회 제거
+                            // vThis.search(vThis.calSum);
+                            vThis.init();
+                        }
+                    }, function (data) {
+                    }]);
+                } else {
+                    toastr.warning('삭제할 데이터가 없습니다.');
                 }
             }
         },
