@@ -214,11 +214,10 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if(data.length > 0){
                     vThis.rows.Query = data;
-                    console.log('search ', vThis.rows.Query)
-                    toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
+                    // toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                 } else{
                     vThis.rows.Query = [];
-                    toastr.info('조회 결과가 없습니다.');
+                    // toastr.info('조회 결과가 없습니다.');
                 }
 
                 // 그리드에 데이터 바인딩

@@ -69,43 +69,43 @@ let app = new Vue({
             const vThis = this;
 
             if (vThis.rows.Query.length > 0) {
-                let transDataRowKey = vThis.queryRow.rowKey;
-                let transDataSeq = vThis.rows.Query[vThis.selectedRowKey].WHSeq || 0;
-                let transDataValue = vThis.rows.Query[vThis.selectedRowKey].WHName || '';
+                let transDataRowKey_wh = vThis.queryRow.rowKey;
+                let transDataSeq_wh = vThis.rows.Query[vThis.selectedRowKey].WHSeq || 0;
+                let transDataValue_wh = vThis.rows.Query[vThis.selectedRowKey].WHName || '';
 
-                if (window.opener.name == 'parentPopup') {
-                    if (window.opener.document.getElementById('transDataRowKey')) {
-                        window.opener.document.getElementById('transDataRowKey').value = transDataRowKey;
+                if (window.opener.name == 'parentPopup_wh') {
+                    if (window.opener.document.getElementById('transDataRowKey_wh')) {
+                        window.opener.document.getElementById('transDataRowKey_wh').value = transDataRowKey_wh;
                     } else {
                         let element = window.opener.document.createElement('input');
                         element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataRowKey');
-                        element.setAttribute('value', transDataRowKey);
+                        element.setAttribute('id', 'transDataRowKey_wh');
+                        element.setAttribute('value', transDataRowKey_wh);
                         window.opener.document.body.appendChild(element);
                     }
 
-                    if (window.opener.document.getElementById('transDataSeq') && window.opener.document.getElementById('transDataValue')) {
-                        window.opener.document.getElementById('transDataSeq').value = transDataSeq;
-                        window.opener.document.getElementById('transDataValue').value = transDataValue;
+                    if (window.opener.document.getElementById('transDataSeq_wh') && window.opener.document.getElementById('transDataValue_wh')) {
+                        window.opener.document.getElementById('transDataSeq_wh').value = transDataSeq_wh;
+                        window.opener.document.getElementById('transDataValue_wh').value = transDataValue_wh;
                     } else {
                         let element1 = window.opener.document.createElement('input');
                         element1 = window.opener.document.createElement('input');
                         element1.setAttribute('type', 'hidden');
-                        element1.setAttribute('id', 'transDataSeq');
-                        element1.setAttribute('value', transDataSeq);
+                        element1.setAttribute('id', 'transDataSeq_wh');
+                        element1.setAttribute('value', transDataSeq_wh);
                         window.opener.document.body.appendChild(element1);
 
                         let element2 = window.opener.document.createElement('input');
                         element2 = window.opener.document.createElement('input');
                         element2.setAttribute('type', 'hidden');
-                        element2.setAttribute('id', 'transDataValue');
-                        element2.setAttribute('value', transDataValue);
+                        element2.setAttribute('id', 'transDataValue_wh');
+                        element2.setAttribute('value', transDataValue_wh);
                         window.opener.document.body.appendChild(element2);
                     }
 
-                    if (!window.opener.document.getElementById('btnTransData')) {
+                    if (!window.opener.document.getElementById('btnTransData_wh')) {
                         let btnElement = window.opener.document.createElement('button');
-                        btnElement.setAttribute('id', 'btnTransData');
+                        btnElement.setAttribute('id', 'btnTransData_wh');
                         window.opener.document.body.appendChild(btnElement);
                     }
                 }
@@ -135,10 +135,10 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if(data.length > 0){
                     vThis.rows.Query = data;
-                    toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
+                    // toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                 } else{
                     vThis.rows.Query = [];
-                    toastr.info('조회 결과가 없습니다.');
+                    // toastr.info('조회 결과가 없습니다.');
                 }
 
                 // 그리드에 데이터 바인딩
@@ -170,7 +170,7 @@ let app = new Vue({
 
         window.addEventListener('beforeunload', function (e) {
             e.preventDefault();
-            window.opener.document.getElementById('btnTransData').click();
+            window.opener.document.getElementById('btnTransData_wh').click();
         });
 
         /**

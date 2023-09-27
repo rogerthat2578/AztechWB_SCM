@@ -35,7 +35,7 @@ let app = new Vue({
             ItemSeq: 0,
             InOutSeq: 0,
             InOutSerl: 0,
-            InOutType: 160,
+            InOutType: 190,
             InWHSeq: 0,
             OutWHSeq: 0,
             AddPackNo: '',
@@ -126,8 +126,8 @@ let app = new Vue({
 
             const params = GX.deepCopy(vThis.queryForm);
 
-            params.WHSeq = vThis.queryRow.WHSeq;
-            params.WHName = vThis.queryRow.WHName;
+            params.InWHSeq = vThis.queryRow.InWHSeq;
+            params.InWHName = vThis.queryRow.InWHName;
 
             GX._METHODS_
             .setMethodId('LocationCodeHelp')
@@ -150,46 +150,58 @@ let app = new Vue({
             const vThis = this;
 
             if (vThis.rows.Query.length > 0) {
-                let transDataRowKey = vThis.queryRow.rowKey;
-                let transDataSeq = vThis.rows.Query[0].Seq || 0;
-                let transDataSumQty = vThis.mainGrid.getSummaryValues('OkQty').sum;
+                let transDataRowKey_pd = vThis.queryRow.rowKey;
+                let transDataSeq_pd = vThis.rows.Query[0].Seq || 0;
+                let transDataSumOkQty_pd = vThis.mainGrid.getSummaryValues('OkQty').sum;
+                let transDataSumWeight_pd = vThis.mainGrid.getSummaryValues('Weight').sum;
 
-                if (window.opener.name == 'parentPopup') {
-                    if (window.opener.document.getElementById('transDataRowKey')) {
-                        window.opener.document.getElementById('transDataRowKey').value = transDataRowKey;
+                if (window.opener.name == 'parentPopup_pd') {
+                    if (window.opener.document.getElementById('transDataRowKey_pd')) {
+                        window.opener.document.getElementById('transDataRowKey_pd').value = transDataRowKey_pd;
                     } else {
                         let element = window.opener.document.createElement('input');
                         element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataRowKey');
-                        element.setAttribute('value', transDataRowKey);
+                        element.setAttribute('id', 'transDataRowKey_pd');
+                        element.setAttribute('value', transDataRowKey_pd);
                         window.opener.document.body.appendChild(element);
                     }
 
-                    if (window.opener.document.getElementById('transDataSeq')) {
-                        window.opener.document.getElementById('transDataSeq').value = transDataSeq;
-                    } else {
-                        let element = window.opener.document.createElement('input');
-                        element = window.opener.document.createElement('input');
-                        element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataSeq');
-                        element.setAttribute('value', transDataSeq);
-                        window.opener.document.body.appendChild(element);
-                    }
-
-                    if (window.opener.document.getElementById('transDataSumQty')) {
-                        window.opener.document.getElementById('transDataSumQty').value = transDataSumQty;
+                    if (window.opener.document.getElementById('transDataSeq_pd')) {
+                        window.opener.document.getElementById('transDataSeq_pd').value = transDataSeq_pd;
                     } else {
                         let element = window.opener.document.createElement('input');
                         element = window.opener.document.createElement('input');
                         element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataSumQty');
-                        element.setAttribute('value', transDataSumQty);
+                        element.setAttribute('id', 'transDataSeq_pd');
+                        element.setAttribute('value', transDataSeq_pd);
                         window.opener.document.body.appendChild(element);
                     }
 
-                    if (!window.opener.document.getElementById('btnTransData')) {
+                    if (window.opener.document.getElementById('transDataSumOkQty_pd')) {
+                        window.opener.document.getElementById('transDataSumOkQty_pd').value = transDataSumOkQty_pd;
+                    } else {
+                        let element = window.opener.document.createElement('input');
+                        element = window.opener.document.createElement('input');
+                        element.setAttribute('type', 'hidden');
+                        element.setAttribute('id', 'transDataSumOkQty_pd');
+                        element.setAttribute('value', transDataSumOkQty_pd);
+                        window.opener.document.body.appendChild(element);
+                    }
+
+                    if (window.opener.document.getElementById('transDataSumWeight_pd')) {
+                        window.opener.document.getElementById('transDataSumWeight_pd').value = transDataSumWeight_pd;
+                    } else {
+                        let element = window.opener.document.createElement('input');
+                        element = window.opener.document.createElement('input');
+                        element.setAttribute('type', 'hidden');
+                        element.setAttribute('id', 'transDataSumWeight_pd');
+                        element.setAttribute('value', transDataSumWeight_pd);
+                        window.opener.document.body.appendChild(element);
+                    }
+
+                    if (!window.opener.document.getElementById('btnTransData_pd')) {
                         let btnElement = window.opener.document.createElement('button');
-                        btnElement.setAttribute('id', 'btnTransData');
+                        btnElement.setAttribute('id', 'btnTransData_pd');
                         window.opener.document.body.appendChild(btnElement);
                     }
                 }
@@ -203,8 +215,8 @@ let app = new Vue({
             params.InOutDate = vThis.queryRow.DelvDate || ''; // (납품)일자
             params.InOutSeq = vThis.queryRow.DelvSeq || 0; // 입출고내부코드 (DelvSeq)
             params.InOutSerl = vThis.queryRow.DelvSerl || 0; // 입출고내부순번 (DelvSerl)
-            params.ItemSeq = vThis.queryRow.ItemSeq || 0; // 품목코드
-            params.WHSeq = vThis.queryRow.WHSeq || 0; // 창고코드 (입고창고 고정)
+            params.ItemSeq = vThis.queryRow.GoodItemSeq || 0; // 품목코드
+            params.InWHSeq = vThis.queryRow.InWHSeq || 0; // 창고코드 (입고창고 고정)
             params.Seq = vThis.queryRow.Seq || 0; // 내부코드 (포장단위코드) (포장단위 테이블의 내부코드)
             params.EmpSeq = vThis.queryRow.EmpSeq || 0;
             params.DeptSeq = vThis.queryRow.DeptSeq || 0;
@@ -214,10 +226,10 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if(data.length > 0){
                     vThis.rows.Query = data;
-                    toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
+                    // toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                 } else{
                     vThis.rows.Query = [];
-                    toastr.info('조회 결과가 없습니다.');
+                    // toastr.info('조회 결과가 없습니다.');
                 }
 
                 // 그리드에 데이터 바인딩
@@ -305,6 +317,7 @@ let app = new Vue({
                         toastr.error('저장 실패 : ' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
+                        vThis.queryRow.Seq = data[0].Seq || 0;
                         vThis.search(vThis.transSeqToParent);
                     }
                 }, function (data) {
@@ -434,7 +447,7 @@ let app = new Vue({
 
         window.addEventListener('beforeunload', function (e) {
             e.preventDefault();
-            window.opener.document.getElementById('btnTransData').click();
+            window.opener.document.getElementById('btnTransData_pd').click();
         });
 
         /**
@@ -461,11 +474,9 @@ let app = new Vue({
         .setRowHeaders('rowNum', 'checkbox')
         .header('적재위치(입고)').name('InLocationName').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
         .header('필번(Box)').name('AddPackNo').align('left').width(100).whiteSpace().ellipsis().editor().validation().setRow()
-        .header('실량(G.W)').name('Qty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('정량(G.W)').name('RealQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
-        .header('콘수').name('ConQty').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        // .header('BOX중량').name('BoxWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
-        // .header('콘중량').name('ConWeight').align('right').width(100).whiteSpace().ellipsis().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('실량(G.W)').name('Weight').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('정량(G.W)').name('OkQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
+        .header('콘수').name('KonQty').align('right').width(100).whiteSpace().ellipsis().editor().formatter('addCommaThreeNumbers').setSummary().setRow()
         .header('비고').name('Remark').align('left').width(140).whiteSpace().ellipsis().editor().setRow()
         ;
 
@@ -482,7 +493,7 @@ let app = new Vue({
         vThis.mainGrid.on('editingStart', function (e) {
             // console.log('editingStart', e)
             // 수정 이전 데이터 가지고 있기
-            if (GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'GrossQty' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
+            if (GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'KonQty') {
                 vThis.strBeforeEditData = e.value || '0';
             } else {
                 vThis.strBeforeEditData = e.value;
@@ -493,7 +504,7 @@ let app = new Vue({
         vThis.mainGrid.on('editingFinish', function (e) {
             // console.log('editingFinish', e)
             // 숫자인 컬럼 체크
-            if (GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'GrossQty' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
+            if (GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'KonQty') {
                 // 입력한 데이터가 숫자인지 체크
                 if (isNaN(e.value)) {
                     toastr.warning(vThis.mainGrid.getColumn(e.columnName).header + ' : 숫자만 입력 가능합니다.', 'Validation:fail');
@@ -603,7 +614,7 @@ let app = new Vue({
                         if (arrRowKeys.length > 0 && arrRowKeys.some((v) => v == r.rowKey)) {
                             let params = {};
                             params.BizUnit = vThis.queryForm.BizUnit || 0;
-                            params.WHSeq = vThis.queryRow.WHSeq || 0;
+                            params.WHSeq = vThis.queryRow.InWHSeq || 0;
                             params.LocationName = r.InLocationName || '';
                             if (params.BizUnit == 0) {
                                 toastr.error('BizUnit이 올바르지 않습니다.');
@@ -658,15 +669,13 @@ let app = new Vue({
             GX.SessionStorage.remove('codehelp_popup_pd-queryForm');
             GX.SessionStorage.remove('codehelp_popup_pd-queryRow');
             vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.ProdQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-            // 구매납품입력의 입출고유형은 고정 160
-            vThis.queryRow.InOutType = 160;
+            // 외주납품입력의 입출고유형은 고정 190
+            vThis.queryRow.InOutType = 190;
             // vThis.queryRow.InOutTypeGubn = 1;
         }
-        console.log("vThis.queryForm", vThis.queryForm)
-        console.log("vThis.queryRow", vThis.queryRow)
 
         // 창고Seq가 있으면 기본 세팅 적재위치 가져오기
-        // if (vThis.queryRow?.WHSeq) vThis.getFirstLocation();
+        // if (vThis.queryRow?.InWHSeq) vThis.getFirstLocation();
         
         // 새로고침 수행 시 SessionStorage 삭제
         let reloadYN = false;

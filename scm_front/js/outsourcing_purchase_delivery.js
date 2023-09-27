@@ -73,8 +73,12 @@ let app = new Vue({
                 vThis.mainGrid.setValue([...e.target.parentElement.children].indexOf(e.target), 'IsEnd', boolCurChecked ? '1' : '0');
             }
 
-            if (e.type === 'click' && e.target.getAttribute('id') === 'btnTransData') {
-                vThis.popupClosed();
+            if (e.type === 'click' && e.target.getAttribute('id') === 'btnTransData_wh') {
+                vThis.popupClosed_wh();
+            }
+
+            if (e.type === 'click' && e.target.getAttribute('id') === 'btnTransData_pd') {
+                vThis.popupClosed_pd();
             }
 
             // Key Event
@@ -99,29 +103,64 @@ let app = new Vue({
         },
         init: function(){
             let vThis = this;
-            vThis.rows.Query = [];
+            Object.keys(vThis.queryForm).map(k => {
+                if (typeof vThis.queryForm[k] == 'string') {
+                    vThis.queryForm[k] = '';
+                } else if (typeof vThis.queryForm[k] == 'number') {
+                    vThis.queryForm[k] = 0;
+                } else {
+                    vThis.queryForm[k] = null;
+                }
+            });
             vThis.queryForm.CompanySeq = GX.Cookie.get('CompanySeq');
             vThis.queryForm.DelvDate = new Date().toLocaleDateString('ko-kr', {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\./g, "").replace(/\ /g, "-"), // datepicker 데이터 담기. 기본 오늘 날짜 세팅
             vThis.queryForm.BizUnit = '1';
+            
+            vThis.rows.Query = [];
+            vThis.mainGrid.resetData(vThis.rows.Query);
         },
 
         /**
          * 팝업 닫을 때 데이터 전달
          */
-        popupClosed: function () {
+        popupClosed_wh: function () {
             const vThis = this;
 
-            let transDataRowKey = document.getElementById('transDataRowKey').value;
-            let transDataSeq = document.getElementById('transDataSeq').value;
-            let transDataValue = document.getElementById('transDataValue').value;
-            if (document.getElementById('transDataRowKey')) document.getElementById('transDataRowKey').remove();
-            if (document.getElementById('transDataSeq')) document.getElementById('transDataSeq').remove();
-            if (document.getElementById('transDataValue')) document.getElementById('transDataValue').remove();
-            if (document.getElementById('btnTransData')) document.getElementById('btnTransData').remove();
+            let transDataRowKey_wh = document.getElementById('transDataRowKey_wh').value;
+            let transDataSeq_wh = document.getElementById('transDataSeq_wh').value;
+            let transDataValue_wh = document.getElementById('transDataValue_wh').value;
+            if (document.getElementById('transDataRowKey_wh')) document.getElementById('transDataRowKey_wh').remove();
+            if (document.getElementById('transDataSeq_wh')) document.getElementById('transDataSeq_wh').remove();
+            if (document.getElementById('transDataValue_wh')) document.getElementById('transDataValue_wh').remove();
+            if (document.getElementById('btnTransData_wh')) document.getElementById('btnTransData_wh').remove();
+            if (transDataRowKey_wh != null && transDataRowKey_wh != 'null' && transDataSeq_wh > 0 && transDataValue_wh != '') {
+                vThis.mainGrid.setValue(transDataRowKey_wh, 'InWHSeq', transDataSeq_wh);
+                vThis.mainGrid.setValue(transDataRowKey_wh, 'InWHName', transDataValue_wh);
+            }
+        },
 
-            if (transDataRowKey != null && transDataRowKey != 'null' && transDataSeq > 0 && transDataValue != '') {
-                vThis.mainGrid.setValue(transDataRowKey, 'InWHSeq', transDataSeq);
-                vThis.mainGrid.setValue(transDataRowKey, 'InWHName', transDataValue);
+        /**
+         * 팝업 닫을 때 데이터 전달
+         */
+        popupClosed_pd: function () {
+            const vThis = this;
+
+            let transDataRowKey_pd = document.getElementById('transDataRowKey_pd').value;
+            let transDataSeq_pd = document.getElementById('transDataSeq_pd').value;
+            let transDataSumOkQty_pd = document.getElementById('transDataSumOkQty_pd').value;
+            let transDataSumWeight_pd = document.getElementById('transDataSumWeight_pd').value;
+            if (document.getElementById('transDataRowKey_pd')) document.getElementById('transDataRowKey_pd').remove();
+            if (document.getElementById('transDataSeq_pd')) document.getElementById('transDataSeq_pd').remove();
+            if (document.getElementById('transDataSumOkQty_pd')) document.getElementById('transDataSumOkQty_pd').remove();
+            if (document.getElementById('transDataSumWeight_pd')) document.getElementById('transDataSumWeight_pd').remove();
+            if (document.getElementById('btnTransData_pd')) document.getElementById('btnTransData_pd').remove();
+            
+            if (transDataRowKey_pd != null && transDataRowKey_pd != 'null' && transDataSumOkQty_pd > 0 && transDataSumWeight_pd > 0) {
+                vThis.mainGrid.setValue(transDataRowKey_pd, 'ProdQty', transDataSumOkQty_pd);
+                vThis.mainGrid.setValue(transDataRowKey_pd, 'Weight', transDataSumWeight_pd);
+            }
+            if (transDataRowKey_pd != null && transDataRowKey_pd != 'null' && transDataSeq_pd > 0) {
+                vThis.mainGrid.setValue(transDataRowKey_pd, 'Seq', transDataSeq_pd);
             }
         },
 
@@ -158,8 +197,9 @@ let app = new Vue({
             let paramsList = [];
 
             for(let i in vThis.jumpDataList){
-                if(vThis.jumpDataList.hasOwnProperty(i))
+                if(vThis.jumpDataList.hasOwnProperty(i)) {
                     paramsList.push(Object.assign(GX.deepCopy(params), vThis.jumpDataList[i]));
+                }
             }
 
             vThis.rows.Query = [];
@@ -249,8 +289,15 @@ let app = new Vue({
                     // 외주납품품목조회 Jump
                     getModiData[i].WorkingTag = 'U';
                 } else if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
+                    /* 20230926 req 박태근이사님 구매발주에서 넘어오더라도 수정,삭제 가능하게 해달라.
                     // 외주발주품목조회 Jump
                     getModiData[i].WorkingTag = 'A';
+                    */
+                    if (getModiData[i].WorkReportSeq && getModiData[i].WorkReportSeq != 0) { // && getModiData[i].DelvSerl != 0
+                        getModiData[i].WorkingTag = 'U';
+                    } else {
+                        getModiData[i].WorkingTag = 'A';
+                    }
                 }
                 getModiData[i].DelvDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/\-/g, "");
                 getModiData[i].WorkDate = GX._METHODS_.nvl(vThis.queryForm.DelvDate).replace(/\-/g, "");
@@ -266,7 +313,8 @@ let app = new Vue({
                         toastr.error('저장 실패\n' + data[0].Result);
                     } else {
                         toastr.info('저장 성공');
-                        vThis.search(vThis.calSum);
+                        // 재조회를 하는게 아닌 데이터만 갱신
+                        // vThis.search(vThis.calSum);
                     }
                 }]);
 
@@ -277,105 +325,17 @@ let app = new Vue({
 
         delRow: function(){
             let vThis = this;
-            
+
             // 체크된 행만 가져오기
-            let arr = vThis.mainGrid.getCheckedRows();
+	        let arr = vThis.mainGrid.getCheckedRows();
+
             if (arr.length > 0) {
                 if (vThis.mainGrid.getData().length == arr.length) {
                     // 행 전체 선택 시
-                    if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
-                        // 외주발주품목조회에서 넘어온 데이터 전체 삭제 불가능
-                        toastr.warning('"외주발주품목조회" 화면에서 넘어온 데이터는 "전체 삭제"가 불가능합니다.');
-                    } else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
-                        // 외주납품품목조회에서 넘어와 전체 행 선택 삭제(=전체 삭제)
-                        // 파라메터 선언
-                        let params1 = [], params2 = [];
-
-                        // detail 공통 파레메터 세팅
-                        for (let i = 0; i < arr.length; i++) {
-                            arr[i].WorkingTag = 'D';
-                        }
-                        params2 = arr;
-
-                        // master
-                        // params1 = [params2[0]]; // 마스터 필요없다고함
-
-                        if (params2.length > 0) {
-                            GX._METHODS_
-                            .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
-                            .ajax(params2, [], [function (data){
-                                if (data[0].Status && data[0].Status != 0) {
-                                    // 뭔가 문제가 발생했을 때 리턴
-                                    toastr.error('삭제 실패\n' + data[0].Result);
-                                } else {
-                                    toastr.info('삭제 성공');
-                                    vThis.search(vThis.calSum);
-                                }
-                            }]);
-                        } else {
-                            toastr.warning('삭제할 데이터가 없습니다.');
-                        }
-                    }
+                    vThis.del();
                 } else {
-                    // 행 삭제 (전체 선택 삭제 아닐 경우)
-                    if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
-                        // 외주발주조회에서 넘어온 데이터
-                        if (confirm('선택한 ' + vThis.mainGrid.getCheckedRowKeys().length + '개 행을 삭제하시겠습니까?')) {
-                            // 행 삭제
-                            vThis.mainGrid.removeCheckedRows();
-                            // this.rows.Query 데이터 갱신
-                            vThis.rows.Query = vThis.mainGrid.getData();
-
-                            // 마스터 영역 합계 계산
-                            vThis.calSum();
-                        }
-                    } else if(vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
-                        // 외주납품조회에서 넘어온 데이터
-                        // 파라메터 선언
-                        let params1 = [], params2 = [];
-
-                        // detail 공통 파레메터 세팅
-                        for (let i = 0; i < arr.length; i++) {
-                            arr[i].WorkingTag = 'D';
-                        }
-                        params2 = arr;
-                        
-                        // master
-                        // params1 = [params2[0]] // 마스터 데이터는 넘겨줄 필요없다고함
-
-                        if (params2.length > 0) {
-                            GX._METHODS_
-                            .setMethodId('PDWorkReportSave')
-                            .ajax([], params2, [function (data) {
-                                if (data[0].Status && data[0].Status != 0) {
-                                    // 뭔가 문제가 발생했을 때 리턴
-                                    toastr.error('삭제 실패\n' + data[0].Result);
-                                } else {
-                                    toastr.info('삭제 성공');
-                                    vThis.search(vThis.calSum);
-                                }
-                            }, function (data) {
-                            }]);
-                        }
-                    }
-                }
-            }
-        },
-
-        del: function(){
-            let vThis = this;
-
-            if (confirm('전체 삭제하시겟습니까?')) {
-                if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
-                    // 외주발주품목조회에서 넘어온 데이터 전체 삭제 불가능
-                    toastr.warning('"외주발주품목조회" 화면에서 넘어온 데이터는 "전체 삭제"가 불가능합니다.');
-                } else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
-                    // 외주납품조회에서 넘어온 데이터 전체 삭제
                     // 파라메터 선언
                     let params1 = [], params2 = [];
-
-                    // 전체 삭제 버튼을 클릭했기에 그리드에 있는 모든 데이터 가져오기
-                    let arr = vThis.mainGrid.getData();
 
                     // detail 공통 파레메터 세팅
                     for (let i = 0; i < arr.length; i++) {
@@ -384,23 +344,70 @@ let app = new Vue({
                     params2 = arr;
 
                     // master
-                    // params1 = [params2[0]]
+                    // params1 = [params2[0]]; // 마스터 필요없다고함
 
                     if (params2.length > 0) {
                         GX._METHODS_
-                        .setMethodId('PDWorkReportSave')
-                        .ajax(params2, [function (data) {
+                        .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
+                        .ajax(params2, [], [function (data){
                             if (data[0].Status && data[0].Status != 0) {
                                 // 뭔가 문제가 발생했을 때 리턴
                                 toastr.error('삭제 실패\n' + data[0].Result);
                             } else {
                                 toastr.info('삭제 성공');
-                                vThis.search(vThis.calSum);
+                                // 재조회 제거
+                                // vThis.search(vThis.calSum);
+                                vThis.mainGrid.removeCheckedRows(false);
                             }
                         }]);
                     } else {
                         toastr.warning('삭제할 데이터가 없습니다.');
                     }
+                }
+            } else {
+                if (vThis.mainGrid.getData().length > 0) {
+                    toastr.warning('삭제할 행을 선택해주세요.');
+                } else {
+                    toastr.warning('삭제할 데이터가 없습니다. 이전 화면에서 다시 등록 화면으로 넘어와주세요.');
+                }
+            }
+        },
+
+        del: function(){
+            let vThis = this;
+
+            if (confirm('전체 삭제하시겟습니까?')) {
+                // 파라메터 선언
+                let params1 = [], params2 = [];
+
+                // 전체 삭제 버튼을 클릭했기에 그리드에 있는 모든 데이터 가져오기
+                let arr = vThis.mainGrid.getData();
+
+                // detail 공통 파레메터 세팅
+                for (let i = 0; i < arr.length; i++) {
+                    arr[i].WorkingTag = 'D';
+                }
+                params2 = arr;
+
+                // master
+                // params1 = [params2[0]]
+
+                if (params2.length > 0) {
+                    GX._METHODS_
+                    .setMethodId('PDWorkReportSave')
+                    .ajax(params2, [function (data) {
+                        if (data[0].Status && data[0].Status != 0) {
+                            // 뭔가 문제가 발생했을 때 리턴
+                            toastr.error('삭제 실패\n' + data[0].Result);
+                        } else {
+                            toastr.info('삭제 성공');
+                            // 재조회 제거
+                            // vThis.search(vThis.calSum);
+                            vThis.init();
+                        }
+                    }]);
+                } else {
+                    toastr.warning('삭제할 데이터가 없습니다.');
                 }
             }
         }
@@ -607,7 +614,7 @@ let app = new Vue({
                             GX.SessionStorage.set('codehelp_popup_wh-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
 
                             // window.name = "부모창 이름";
-                            window.name = 'parentPopup';
+                            window.name = 'parentPopup_wh';
 
                             let top = Math.floor(screen.availHeight / 17);
                             let left = Math.floor(screen.availWidth / 3);
@@ -640,7 +647,7 @@ let app = new Vue({
                             GX.SessionStorage.set('codehelp_popup_pd-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
 
                             // window.name = "부모창 이름";
-                            window.name = 'parentPopup';
+                            window.name = 'parentPopup_pd';
 
                             let top = Math.floor(screen.availHeight / 17);
                             let left = Math.floor(screen.availWidth / 3);

@@ -273,7 +273,7 @@ let app = new Vue({
                     // 구매발주조회 Jump
                     getModiData[i].WorkingTag = 'A';
                     */
-                    if (getModiData[i].DelvSeq != 0 && getModiData[i].DelvSerl != 0) {
+                    if (getModiData[i].DelvSeq && getModiData[i].DelvSerl && getModiData[i].DelvSeq != 0 && getModiData[i].DelvSerl != 0) {
                         getModiData[i].WorkingTag = 'U';
                     } else {
                         getModiData[i].WorkingTag = 'A';
@@ -297,7 +297,7 @@ let app = new Vue({
                 // 구매발주조회 Jump
                 params1[0].WorkingTag = 'A';
                 */
-                if (getModiData[0].DelvSeq != 0 && getModiData[0].DelvSerl != 0) {
+                if (getModiData[0].DelvSeq && getModiData[0].DelvSerl && getModiData[0].DelvSeq != 0 && getModiData[0].DelvSerl != 0) {
                     params1[0].WorkingTag = 'U';
                     params1[0].DelvSeq = getModiData[0].DelvSeq;
                 } else {
