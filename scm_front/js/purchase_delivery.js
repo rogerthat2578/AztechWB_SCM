@@ -318,6 +318,7 @@ let app = new Vue({
                         // vThis.search(vThis.calSum);
                     }
                 }, function (data) {
+                    // DelvSeq, DelvSerl (납품Seq, 납품Serl)이 2번째 응답에 담겨옴
                     if (vThis.jumpSetMethodId == 'PUORDPOJump') {
                         // 구매발주조회 Jump
                         if (data.length > 0) {

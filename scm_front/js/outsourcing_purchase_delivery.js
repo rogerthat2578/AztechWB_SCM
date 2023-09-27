@@ -293,7 +293,7 @@ let app = new Vue({
                     // 외주발주품목조회 Jump
                     getModiData[i].WorkingTag = 'A';
                     */
-                    if (getModiData[i].WorkReportSeq && getModiData[i].WorkReportSeq != 0) { // && getModiData[i].DelvSerl != 0
+                    if (getModiData[i].WorkReportSeq && getModiData[i].WorkReportSeq != 0 && getModiData[i].WorkReportSerl && getModiData[i].WorkReportSerl != 0) {
                         getModiData[i].WorkingTag = 'U';
                     } else {
                         getModiData[i].WorkingTag = 'A';
@@ -308,6 +308,7 @@ let app = new Vue({
                 GX._METHODS_
                 .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
                 .ajax(params2, [], [function (data) {
+                    // WorkReportSeq, WorkReportSerl (실적Seq, 실적Serl)이 1번째 응답에 담겨옴
                     if (data[0].Status && data[0].Status != 0) {
                         // 뭔가 문제가 발생했을 때 리턴
                         toastr.error('저장 실패\n' + data[0].Result);
@@ -315,6 +316,56 @@ let app = new Vue({
                         toastr.info('저장 성공');
                         // 재조회를 하는게 아닌 데이터만 갱신
                         // vThis.search(vThis.calSum);
+
+                        if (vThis.jumpSetMethodId == 'OSPWorkOrderJump') {
+                            // 외주발주조회 Jump
+                            if (data.length > 0) {
+                                // 20230926 req 박태근이사님 외주발주에서 넘어오더라도 수정,삭제 가능하게 해달라.
+                                let chk = true;
+                                for (let i = 0; i < data.length; i++) {
+                                    if (data[i].WorkReportSeq == 0 || data[i].WorkReportSerl == 0) {
+                                        chk = false;
+                                    }
+                                }
+
+                                if (chk) {
+                                    let renewArrIdx = [];
+                                    for (let i = 0; i < data.length; i++) {
+                                        // WorkOrderSeq = WorkOrderSeq 발주Seq, WorkOrderSerl = WorkOrderSerl 발주Serl
+                                        for (let j = 0; j < vThis.rows.Query.length; j++) {
+                                            if (data[i].WorkOrderSeq == vThis.rows.Query[i].WorkOrderSeq && data[i].WorkOrderSerl == vThis.rows.Query[i].WorkOrderSerl) {
+                                                vThis.rows.Query[i].WorkReportSeq = data[i].WorkReportSeq;
+                                                vThis.rows.Query[i].WorkReportSerl = data[i].WorkReportSerl;
+                                                vThis.rows.Query[i].Seq = data[i].Seq;
+                                                vThis.rows.Query[i].ProdQty = data[i].ProdQty;
+                                                vThis.rows.Query[i].Weight = data[i].Weight;
+                                            } else {
+                                                renewArrIdx.push(j);
+                                            }
+                                        }
+                                    }
+
+                                    // this.rows.Query 배열의 데이터도 삭제하기위한 index 확인
+                                    if (renewArrIdx.length > 0) {
+                                        // index를 담아둔 배열 내림차순 정렬
+                                        renewArrIdx.sort((a, b) => {
+                                            return b - a;
+                                        });
+                                        // 배열 요소 삭제
+                                        for (let i in vThis.rows.Query) {
+                                            vThis.rows.Query[i].splice(i, 1);
+                                        }
+                                    }
+                                    
+                                    // 그리드에 데이터 바인딩
+                                    vThis.mainGrid.resetData(vThis.rows.Query);
+                                }
+                            }
+                        } else if (vThis.jumpSetMethodId == 'PDWorkReportJumpQuery') {
+                            // 외주납품현황 Jump
+    
+                            vThis.search(vThis.calSum);
+                        }
                     }
                 }]);
 
