@@ -107,8 +107,8 @@ let app = new Vue({
                 });
                 newRowData.InLocationSeq = vThis.queryForm.InLocationSeq || 0;
                 newRowData.InLocationName = vThis.queryForm.InLocationName || '';
-                newRowData.InOutSeq = vThis.queryRow.DelvSeq || 0;
-                newRowData.InOutSerl = vThis.queryRow.DelvSerl || 0;
+                newRowData.InOutSeq = vThis.queryRow.WorkReportSeq || 0;
+                // newRowData.InOutSerl = vThis.queryRow.DelvSerl || 0;
                 newRowData.Seq = vThis.queryRow.Seq || 0;
                 newRowData.ItemSeq = vThis.queryRow.ItemSeq || 0;
 
@@ -213,8 +213,8 @@ let app = new Vue({
 
             let params = GX.deepCopy(vThis.queryForm);
             params.InOutDate = vThis.queryRow.DelvDate || ''; // (납품)일자
-            params.InOutSeq = vThis.queryRow.DelvSeq || 0; // 입출고내부코드 (DelvSeq)
-            params.InOutSerl = vThis.queryRow.DelvSerl || 0; // 입출고내부순번 (DelvSerl)
+            params.InOutSeq = vThis.queryRow.WorkReportSeq || 0; // 입출고내부코드 (DelvSeq)
+            // params.InOutSerl = vThis.queryRow.DelvSerl || 0; // 입출고내부순번 (DelvSerl)
             params.ItemSeq = vThis.queryRow.GoodItemSeq || 0; // 품목코드
             params.InWHSeq = vThis.queryRow.InWHSeq || 0; // 창고코드 (입고창고 고정)
             params.Seq = vThis.queryRow.Seq || 0; // 내부코드 (포장단위코드) (포장단위 테이블의 내부코드)

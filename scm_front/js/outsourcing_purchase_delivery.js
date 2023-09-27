@@ -293,7 +293,7 @@ let app = new Vue({
                     // 외주발주품목조회 Jump
                     getModiData[i].WorkingTag = 'A';
                     */
-                    if (getModiData[i].WorkReportSeq && getModiData[i].WorkReportSeq != 0 && getModiData[i].WorkReportSerl && getModiData[i].WorkReportSerl != 0) {
+                    if (getModiData[i].WorkReportSeq && getModiData[i].WorkReportSeq != 0) {
                         getModiData[i].WorkingTag = 'U';
                     } else {
                         getModiData[i].WorkingTag = 'A';
@@ -308,7 +308,7 @@ let app = new Vue({
                 GX._METHODS_
                 .setMethodId('PDWorkReportSave')    // 여기에 API 키 입력
                 .ajax(params2, [], [function (data) {
-                    // WorkReportSeq, WorkReportSerl (실적Seq, 실적Serl)이 1번째 응답에 담겨옴
+                    // WorkReportSeq (실적Seq)이 1번째 응답에 담겨옴 (Serl은 없음)
                     if (data[0].Status && data[0].Status != 0) {
                         // 뭔가 문제가 발생했을 때 리턴
                         toastr.error('저장 실패\n' + data[0].Result);
@@ -323,7 +323,7 @@ let app = new Vue({
                                 // 20230926 req 박태근이사님 외주발주에서 넘어오더라도 수정,삭제 가능하게 해달라.
                                 let chk = true;
                                 for (let i = 0; i < data.length; i++) {
-                                    if (data[i].WorkReportSeq == 0 || data[i].WorkReportSerl == 0) {
+                                    if (data[i].WorkReportSeq == 0) {
                                         chk = false;
                                     }
                                 }
@@ -335,7 +335,6 @@ let app = new Vue({
                                         for (let j = 0; j < vThis.rows.Query.length; j++) {
                                             if (data[i].WorkOrderSeq == vThis.rows.Query[i].WorkOrderSeq && data[i].WorkOrderSerl == vThis.rows.Query[i].WorkOrderSerl) {
                                                 vThis.rows.Query[i].WorkReportSeq = data[i].WorkReportSeq;
-                                                vThis.rows.Query[i].WorkReportSerl = data[i].WorkReportSerl;
                                                 vThis.rows.Query[i].Seq = data[i].Seq;
                                                 vThis.rows.Query[i].ProdQty = data[i].ProdQty;
                                                 vThis.rows.Query[i].Weight = data[i].Weight;
