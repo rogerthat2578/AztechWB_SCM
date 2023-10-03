@@ -496,6 +496,7 @@ let app = new Vue({
         .header('납기일').name('WorkDate').align('center').width(100).whiteSpace().ellipsis().formatter('addHyphen8length').sortable(true).setRow()
         .header('납품예정일').name('WorkPlanDate').align('center').width(100).whiteSpace().ellipsis().editor('date').formatter('addHyphen8length').sortable(true).setRow()
         .header('의뢰부서').name('DeptName').align('center').width(120).whiteSpace().ellipsis().sortable(true).setRow()
+        .header('진행상태Seq').name('ProgStatus').align('center').hidden(true).setRow()
         .header('진행상태').name('ProgStatusName').align('center').width(80).whiteSpace().ellipsis().sortable(true).setRow()
         .header('공정').name('ProcName').align('center').width(80).whiteSpace().ellipsis().sortable(true).setRow()
         .header('제품명').name('GoodItemName').align('left').width(120).whiteSpace().ellipsis().sortable(true).setRow()
@@ -542,9 +543,24 @@ let app = new Vue({
                                 let arr = [];
                                 arr.push(vThis.rows.Query[e.rowKey])
                                 if (arr.length > 0) {
-                                    GX.SessionStorage.set('jumpData', JSON.stringify(arr));
-                                    GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
-                                    location.href = 'outsourcing_purchase_delivery.html';
+                                    // 진행상태가 확정, 완료인 데이터는 점프 불가
+                                    let boolBreak = false;
+                                    for (let i = 0; i < arr.length; i++) {
+                                        let procStatusSeq = arr[i].ProgStatus;
+                                        let procStatusName = arr[i].ProgStatusName;
+                                        if (procStatusSeq == 6036002 || procStatusName == '확정' || procStatusSeq == 6036004 || procStatusName == '완료') {
+                                            boolBreak = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (boolBreak) {
+                                        toastr.error('진행상태가 "확정", "완료"인 데이터는 발주품목조회에서 납품입력으로 이동하지 못합니다.');
+                                    } else {
+                                        GX.SessionStorage.set('jumpData', JSON.stringify(arr));
+                                        GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
+                                        location.href = 'outsourcing_purchase_delivery.html';
+                                    }
                                 } else 
                                     toastr.error('선택한 행의 데이터가 이상합니다. 다시 시도해주세요.');
                             }
