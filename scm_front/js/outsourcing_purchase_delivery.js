@@ -593,6 +593,9 @@ let app = new Vue({
                 }
                 
                 const qty = e.value || 0; // 생산수량 - 수정한거
+
+                // 생산수량 수정 시 양품수량도 변경되도록 추가
+                vThis.mainGrid.setValue(e.rowKey, 'OKQty', qty);
                 
                 // 해당 행 금액, 부가세, 금액계, 원화금액, 원화부가세, 원화금액계 계산하여 갱신
                 const price = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.rowKey, 'OSPPrice')) || 0; // 단가
