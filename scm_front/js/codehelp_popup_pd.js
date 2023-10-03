@@ -307,7 +307,7 @@ let app = new Vue({
                 getUpdated[i].IDX_NO = getUpdated[i].rowKey + 1;
                 params.push(getUpdated[i]);
             }
-console.log(params)
+
             if (params.length > 0) {
                 GX._METHODS_
                 .setMethodId('PackingUnitSave')

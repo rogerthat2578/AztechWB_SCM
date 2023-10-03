@@ -691,7 +691,7 @@ let app = new Vue({
                                 location.replace('login.html');
                                 return false;
                             }
-console.log(vThis.mainGrid.getRow(e.rowKey))
+
                             // SessionStorage로 데이터 전달
                             GX.SessionStorage.set('codehelp_popup_pd-queryForm', JSON.stringify(vThis.queryForm))
                             GX.SessionStorage.set('codehelp_popup_pd-queryRow', JSON.stringify(vThis.mainGrid.getRow(e.rowKey)))
