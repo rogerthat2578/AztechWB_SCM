@@ -35,7 +35,7 @@ let app = new Vue({
             ItemSeq: 0,
             InOutSeq: 0,
             InOutSerl: 0,
-            InOutType: 190,
+            InOutType: 130,
             InWHSeq: 0,
             OutWHSeq: 0,
             AddPackNo: '',
@@ -669,8 +669,8 @@ let app = new Vue({
             GX.SessionStorage.remove('codehelp_popup_pd-queryForm');
             GX.SessionStorage.remove('codehelp_popup_pd-queryRow');
             vThis.queryRow.MasterQty = GX._METHODS_.nvl(vThis.queryRow.ProdQty).toString().replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-            // 외주납품입력의 입출고유형은 고정 190
-            vThis.queryRow.InOutType = 190;
+            // 외주납품입력의 입출고유형은 고정 130
+            vThis.queryRow.InOutType = 130;
             // vThis.queryRow.InOutTypeGubn = 1;
         }
 
