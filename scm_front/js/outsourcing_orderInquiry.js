@@ -344,9 +344,26 @@ let app = new Vue({
             let arr = vThis.mainGrid.getCheckedRows();
 
             if (arr.length > 0) {
-                GX.SessionStorage.set('jumpData', JSON.stringify(arr));
-                GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
-                location.href = 'outsourcing_purchase_delivery.html';
+                // 진행상태가 확정, 완료인 데이터는 점프 불가
+                let boolBreak = false;
+                let strRowKey = '';
+                for (let i = 0; i < arr.length; i++) {
+                    let procStatusSeq = arr[i].ProgStatus;
+                    let procStatusName = arr[i].ProgStatusName;
+                    if (procStatusSeq == 6036002 || procStatusName == '확정' || procStatusSeq == 6036004 || procStatusName == '완료') {
+                        strRowKey += arr[i].rowKey + 1 + '행 ';
+                        if (!boolBreak) boolBreak = true;
+                        // break;
+                    }
+                }
+                
+                if (boolBreak) {
+                    toastr.error('진행상태가 "확정", "완료"인 데이터는 발주품목조회에서 납품입력으로 이동하지 못합니다. ' + strRowKey);
+                } else {
+                    GX.SessionStorage.set('jumpData', JSON.stringify(arr));
+                    GX.SessionStorage.set('jumpSetMethodId', 'OSPWorkOrderJump');
+                    location.href = 'outsourcing_purchase_delivery.html';
+                }
             } else{
                 toastr.warning("선택된 데이터가 없습니다.");
             }
@@ -534,7 +551,7 @@ let app = new Vue({
             const clickInterval = 600; // ms
             if (vThis.objDblClick.click) {
                 if (new Date().getTime() - vThis.objDblClick.time <= clickInterval) {
-                    if (e.rowKey || e.rowKey === 0) {
+                    if ((e.rowKey || e.rowKey === 0) && e.columnName.indexOf('check') == -1) {
                         vThis.objDblClick.click = false;
                         vThis.objDblClick.time = 0;
                         // 입력 받는 컬럼은 제외
