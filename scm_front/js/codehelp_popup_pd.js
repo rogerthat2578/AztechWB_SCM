@@ -559,6 +559,25 @@ let app = new Vue({
                         vThis.mainGrid.setValue(e.rowKey, 'InLocationName', '');
                     }
                 }]);
+            } else if (GX._METHODS_.nvl(e.columnName) === 'AddPackNo') {
+                // 필번 중복 체크
+                // 같은 필번이 있는지
+                let boolSame = false;
+                vThis.mainGrid.getData().some(r1 => {
+                    if (e.rowKey != r1.rowKey) {
+                        // 현재 비교할 필번의 행은 제외
+                        if (GX._METHODS_.nvl(e.value) == r1.AddPackNo && GX._METHODS_.nvl(e.value) != '') {
+                            // 빈값은 비교 제외, 같은 필번 있는지
+                            vThis.mainGrid.setValue(e.rowKey, e.columnName, '');
+                            boolSame = true;
+                            return boolSame;
+                        }
+                    }
+                });
+
+                if (boolSame) {
+                    toastr.warning('필번이 중복 입력되어 삭제하였습니다.');
+                }
             }
         });
 
@@ -657,6 +676,32 @@ let app = new Vue({
                             }
                         }
                     });
+                }
+
+                let arrWarningMsg = [];
+                // 필번 중복 체크
+                vThis.mainGrid.getData().map(r1 => {
+                    // 같은 필번이 있는지
+                    let boolSame = false;
+
+                    // 비교 대상 필번을 위한 반복
+                    vThis.mainGrid.getData().map(r2 => {
+                        if (r1.rowKey != r2.rowKey && r1.rowKey < r2.rowKey) {
+                            // 현재 비교할 필번의 행은 제외
+                            if (GX._METHODS_.nvl(r1.AddPackNo) == GX._METHODS_.nvl(r2.AddPackNo) && GX._METHODS_.nvl(r1.AddPackNo) != '' && GX._METHODS_.nvl(r2.AddPackNo) != '') {
+                                // 빈값은 비교 제외, 같은 필번 있는지
+                                vThis.mainGrid.setValue(r2.rowKey, 'AddPackNo', '');
+                                arrWarningMsg.push(r2.rowKey + 1 + '행 ')
+
+                                // 중복된 값이 있는 경우 한번만 변경
+                                if (!boolSame) boolSame = true;
+                            }
+                        }
+                    });
+                });
+
+                if (arrWarningMsg.length > 0) {
+                    toastr.warning(arrWarningMsg.join('') + '중복 입력된 필번을 삭제하였습니다.');
                 }
             }
         });
