@@ -736,6 +736,57 @@ let app = new Vue({
             }
         });
 
+        // after grid data changed
+        vThis.mainGrid.on('afterChange', function (e) {
+            if (e.changes.length > 0) {
+                let boolRenew = false;
+                for (let i = 0; i < e.changes.length; i++) {
+                    if (e.changes[i].columnName == 'ProdQty') {
+                        const qty = e.changes[i].value || 0;
+
+                        // 해당 행 금액, 부가세, 금액계, 원화금액, 원화부가세, 원화금액계 계산하여 갱신
+                        const price = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.changes[i].rowKey, 'OSPPrice')) || 0; // 단가
+                        const domPrice = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.changes[i].rowKey, 'OSPDomPrice')) || 0; // 원화단가
+                        const exRate = GX._METHODS_.nvl(vThis.mainGrid.getValue(e.changes[i].rowKey, 'ExRate')) || 0; // 환율
+                        
+                        // 부가세 여부에 따라 계산 변경
+                        let [floatAmt, floatVat, floatTotAmt] = [1.0, 0.1, 1.0];
+                        if (vThis.mainGrid.getValue(e.changes[i].rowKey, 'IsVAT') == '0') floatTotAmt += floatVat; // 부가세 별도
+                        else floatAmt -= floatVat; // 부가세 포함
+
+                        // 금액 계산 = 생산수량 * 단가 * 환율
+                        const cur = parseFloat(qty) * parseFloat(price) * parseFloat(exRate);
+                        // 원화 금액 계산 = 생산수량 * 원화단가
+                        const dom = parseFloat(qty) * parseFloat(domPrice);
+
+                        // 금액 = 생산수량 * 단가 * 환율 * [적용 부가세]
+                        vThis.mainGrid.setValue(e.changes[i].rowKey, 'OSPCurAmt', (cur * floatAmt).toFixed(0));
+                        // 부가세 = 생산수량 * 단가 * 환율 * [적용 부가세]
+                        vThis.mainGrid.setValue(e.changes[i].rowKey, 'OSPCurVAT', (cur * floatVat).toFixed(0));
+                        // 금액계 = 생산수량 * 단가 * 환율 * [적용 부가세]
+                        vThis.mainGrid.setValue(e.changes[i].rowKey, 'OSPTotCurAmt', (cur * floatTotAmt).toFixed(0));
+
+                        // 원화금액 = 생산수량 * 원화단가 * [적용 부가세]
+                        vThis.mainGrid.setValue(e.changes[i].rowKey, 'OSPDomAmt', (dom * floatAmt).toFixed(0));
+                        // 원화부가세 = 생산수량 * 원화단가 * [적용 부가세]
+                        vThis.mainGrid.setValue(e.changes[i].rowKey, 'OSPDomVAT', (dom * floatVat).toFixed(0));
+                        // 원화금액계 = 생산수량 * 원화단가 * [적용 부가세]
+                        vThis.mainGrid.setValue(e.changes[i].rowKey, 'OSPTotDomAmt', (dom * floatTotAmt).toFixed(0));
+
+                        if (!boolRenew) boolRenew = true;
+                    }
+                }
+
+                if (boolRenew) {
+                    // vThis.rows.Query에 수정된 데이터 넣기
+                    vThis.rows.Query = vThis.mainGrid.getData();
+
+                    // 마스터 영역 합계 계산
+                    vThis.calSum();
+                }
+            }
+        });
+
         let jumpData = GX.SessionStorage.get('jumpData') != null ? JSON.parse(GX.SessionStorage.get('jumpData')) : [];
         let jumpSetMethodId = GX.SessionStorage.get('jumpSetMethodId') != null ? GX.SessionStorage.get('jumpSetMethodId') : '';
         if(jumpData.length > 0 && jumpSetMethodId.length > 0){
