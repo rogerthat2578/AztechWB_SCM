@@ -390,6 +390,7 @@ let app = new Vue({
                     // detail 공통 파레메터 세팅
                     for (let i = 0; i < arr.length; i++) {
                         arr[i].WorkingTag = 'D';
+                        arr[i].IDX_NO = parseInt(arr[i].rowKey) + 1;
                     }
                     params2 = arr;
 
@@ -436,6 +437,7 @@ let app = new Vue({
                 // detail 공통 파레메터 세팅
                 for (let i = 0; i < arr.length; i++) {
                     arr[i].WorkingTag = 'D';
+                    arr[i].IDX_NO = parseInt(arr[i].rowKey) + 1;
                 }
                 params2 = arr;
 
