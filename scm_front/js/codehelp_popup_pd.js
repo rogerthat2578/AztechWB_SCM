@@ -52,7 +52,8 @@ let app = new Vue({
             InLocationSeq: 0,
             InLocationName: '',
             OutLocationSeq: 0,
-            OutLocationName: ''
+            OutLocationName: '',
+            KonQty: 0
         }
 	},
     methods: {

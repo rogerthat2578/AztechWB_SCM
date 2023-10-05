@@ -52,7 +52,8 @@ let app = new Vue({
             InLocationSeq: 0,
             InLocationName: '',
             OutLocationSeq: 0,
-            OutLocationName: ''
+            OutLocationName: '',
+            KonQty: 0
         }
 	},
     methods: {
@@ -282,6 +283,7 @@ let app = new Vue({
                 getCreated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
                 getCreated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
                 getCreated[i].InOutDate = vThis.queryRow.DelvDate || '';
+                getCreated[i].KonQty = vThis.queryRow.KonQty || 0;
                 getCreated[i].IDX_NO = getCreated[i].rowKey + 1;
                 params.push(getCreated[i]);
             }
@@ -292,6 +294,7 @@ let app = new Vue({
                 getUpdated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
                 getUpdated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
                 getUpdated[i].InOutDate = vThis.queryRow.DelvDate || '';
+                getCreated[i].KonQty = vThis.queryRow.KonQty || 0;
                 getUpdated[i].IDX_NO = getUpdated[i].rowKey + 1;
                 params.push(getUpdated[i]);
             }
@@ -330,6 +333,8 @@ let app = new Vue({
                         if (arr[i].Serl != 0 && arr[i].Serl) {
                             // 삭제 : WorkingTag = 'D'
                             arr[i].WorkingTag = 'D';
+                            // 구매 포장단위에는 콘수(KonQty)가 존재하지 않지만 같은 SP를 타기에 강제로 넣어줌
+                            arr[i].KonQty = 0;
                             // 실테이블에 존재하는 데이터는 SP로 삭제를 해야하기에 담아두기
                             delRowsServer.push(arr[i]);
                             // 실테이블에 존재하는 데이터는 SP로 삭제를 해야하기에 체크만 해제
@@ -338,7 +343,7 @@ let app = new Vue({
                             delRowsClient.push(arr[i]);
                         }
                     }
-
+                    
                     if (delRowsServer.length > 0) {
                         // SP로 던질거
                         GX._METHODS_
@@ -394,6 +399,8 @@ let app = new Vue({
                     if (arr[i].Serl == 0 || !arr[i].Serl) {
                         chkClient++;
                     }
+                    // 구매 포장단위에는 콘수(KonQty)가 존재하지 않지만 같은 SP를 타기에 강제로 넣어줌
+                    arr[i].KonQty = 0;
                 }
 
                 if (chkClient == vThis.mainGrid.getRowCount()) {
