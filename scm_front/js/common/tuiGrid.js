@@ -262,6 +262,11 @@ ToastUIGrid = {
                                     if (r.row[strColKey] === 'Y' || r.row[strColKey] === 'N') {
                                         return r.row[strColKey] === 'Y' ? `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} />`
                                     } else {
+                                        console.log(r.row, strColKey)
+                                        if (r.row[strColKey] == "" || r.row[strColKey] == null || r.row[strColKey] == undefined) {
+                                            // 20231006 req박태근이사님 0 or 1 만 들어올거라고 약속했는데 공백이 들어오는 경우가 발생하여 조건 추가
+                                            r.row[strColKey] = "0";
+                                        }
                                         // 0 or 1 | true or false -> 문자열로 인식하는 경우가 있기에 조건식에 JSON.parse를 해준다.
                                         return JSON.parse(r.row[strColKey]) ? `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} />`
                                     }
