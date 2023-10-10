@@ -262,7 +262,6 @@ ToastUIGrid = {
                                     if (r.row[strColKey] === 'Y' || r.row[strColKey] === 'N') {
                                         return r.row[strColKey] === 'Y' ? `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} checked />` : `<input type="checkbox" ${attrName} value="${r.row[strColKey]}" ${attrDisabled} />`
                                     } else {
-                                        console.log(r.row, strColKey)
                                         if (r.row[strColKey] == "" || r.row[strColKey] == null || r.row[strColKey] == undefined) {
                                             // 20231006 req박태근이사님 0 or 1 만 들어올거라고 약속했는데 공백이 들어오는 경우가 발생하여 조건 추가
                                             r.row[strColKey] = "0";

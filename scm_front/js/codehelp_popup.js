@@ -490,7 +490,6 @@ let app = new Vue({
 
         // grid editing mode start
         vThis.mainGrid.on('editingStart', function (e) {
-            // console.log('editingStart', e)
             // 수정 이전 데이터 가지고 있기
             if (GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'GrossQty' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
                 vThis.strBeforeEditData = e.value || '0';
@@ -501,7 +500,6 @@ let app = new Vue({
 
         // grid editing mode finish
         vThis.mainGrid.on('editingFinish', function (e) {
-            // console.log('editingFinish', e)
             // 숫자인 컬럼 체크
             if (GX._METHODS_.nvl(e.columnName) === 'OkQty' || GX._METHODS_.nvl(e.columnName) === 'Weight' || GX._METHODS_.nvl(e.columnName) === 'GrossQty' || GX._METHODS_.nvl(e.columnName) === 'Stain') {
                 // 입력한 데이터가 숫자인지 체크
@@ -610,6 +608,15 @@ let app = new Vue({
                             } else if (arrChanges[i].columnName == k && arrChanges[i].columnName == 'InLocationName') {
                                 // 적재위치(입고) 컬럼에 붙여넣기 발생 시 붙여넣을 데이터 그대로 넣기
                                 getRow[k] = arrChanges[i].value;
+                            } else if (arrChanges[i].columnName == k && (arrChanges[i].columnName == 'Weight' || arrChanges[i].columnName == 'OkQty'
+                                || arrChanges[i].columnName == 'GrossQty' || arrChanges[i].columnName == 'Stain' || arrChanges[i].columnName == 'Shade')) {
+                                    // 입력되는 컬럼들이 새로만들어지는 두번째 행부터 값이 정상적으로 안들어감.
+                                    // 그래서 입력될 수 있는 컬럼들에 데이터 넣는 부분 추가
+                                    if (isNaN(arrChanges[i].value)) {
+                                        getRow[k] = arrChanges[i].value || '';
+                                    } else {
+                                        getRow[k] = arrChanges[i].value || 0;
+                                    }
                             } else {
                                 getRow[k] = vThis.newRowData[k];
                             }
@@ -619,6 +626,8 @@ let app = new Vue({
                                 boolPasteLoca = true;
                             }
                         }
+
+                        
                     });
 
                     vThis.mainGrid.setRow(arrChanges[i].rowKey, getRow);

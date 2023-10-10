@@ -612,6 +612,14 @@ let app = new Vue({
                             } else if (arrChanges[i].columnName == k && arrChanges[i].columnName == 'InLocationName') {
                                 // 적재위치(입고) 컬럼에 붙여넣기 발생 시 붙여넣을 데이터 그대로 넣기
                                 getRow[k] = arrChanges[i].value;
+                            } else if (arrChanges[i].columnName == k && (arrChanges[i].columnName == 'Weight' || arrChanges[i].columnName == 'OkQty' || arrChanges[i].columnName == 'KonQty' || arrChanges[i].columnName == 'Remark')) {
+                                // 입력되는 컬럼들이 새로만들어지는 두번째 행부터 값이 정상적으로 안들어감.
+                                // 그래서 입력될 수 있는 컬럼들에 데이터 넣는 부분 추가
+                                if (isNaN(arrChanges[i].value)) {
+                                    getRow[k] = arrChanges[i].value || '';
+                                } else {
+                                    getRow[k] = arrChanges[i].value || 0;
+                                }
                             } else {
                                 getRow[k] = vThis.newRowData[k];
                             }
