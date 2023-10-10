@@ -269,14 +269,14 @@ let app = new Vue({
                 // rowKeyOnly: false, // defualt=false If set to true, only keys of the changed rows will be returned.
                 // ignoredColumns: [], // A list of column name to be excluded.
             }).createdRows;
-
+            
             let getUpdated = vThis.mainGrid.getModifiedRows({
                 // checkedOnly: false, // defualt=false If set to true, only checked rows will be considered.
                 withRawData: false, // defualt=false If set to true, the data will contains the row data for internal use.
                 // rowKeyOnly: false, // defualt=false If set to true, only keys of the changed rows will be returned.
                 // ignoredColumns: [], // A list of column name to be excluded.
             }).updatedRows;
-
+            
             for (let i = 0; i < getCreated.length; i++) {
                 getCreated[i].WorkingTag = 'A';
                 getCreated[i].BizUnit = vThis.queryRow.BizUnit || 1;
@@ -287,14 +287,14 @@ let app = new Vue({
                 getCreated[i].IDX_NO = getCreated[i].rowKey + 1;
                 params.push(getCreated[i]);
             }
-
+            
             for (let i = 0; i < getUpdated.length; i++) {
                 getUpdated[i].WorkingTag = 'U';
                 getUpdated[i].BizUnit = vThis.queryRow.BizUnit || 1;
                 getUpdated[i].EmpSeq = vThis.queryRow.EmpSeq || 0;
                 getUpdated[i].DeptSeq = vThis.queryRow.DeptSeq || 0;
                 getUpdated[i].InOutDate = vThis.queryRow.DelvDate || '';
-                getCreated[i].KonQty = vThis.queryRow.KonQty || 0;
+                getUpdated[i].KonQty = vThis.queryRow.KonQty || 0;
                 getUpdated[i].IDX_NO = getUpdated[i].rowKey + 1;
                 params.push(getUpdated[i]);
             }
