@@ -155,12 +155,12 @@ let app = new Vue({
             if (document.getElementById('transDataSumWeight_pd')) document.getElementById('transDataSumWeight_pd').remove();
             if (document.getElementById('btnTransData_pd')) document.getElementById('btnTransData_pd').remove();
             
-            if (transDataRowKey_pd != null && transDataRowKey_pd != 'null' && transDataSumOkQty_pd > 0 && transDataSumWeight_pd > 0) {
+            if (transDataRowKey_pd != null && transDataRowKey_pd != 'null') {
                 vThis.mainGrid.setValue(transDataRowKey_pd, 'ProdQty', transDataSumOkQty_pd);
                 vThis.mainGrid.setValue(transDataRowKey_pd, 'OKQty', transDataSumOkQty_pd); // 양품수량에도 생산수량 그대로 넣기
                 vThis.mainGrid.setValue(transDataRowKey_pd, 'Weight', transDataSumWeight_pd);
             }
-            if (transDataRowKey_pd != null && transDataRowKey_pd != 'null' && transDataSeq_pd > 0) {
+            if (transDataRowKey_pd != null && transDataRowKey_pd != 'null') {
                 vThis.mainGrid.setValue(transDataRowKey_pd, 'Seq', transDataSeq_pd);
             }
         },

@@ -154,7 +154,7 @@ let app = new Vue({
             if (document.getElementById('transDataSumQty')) document.getElementById('transDataSumQty').remove();
             if (document.getElementById('btnTransData')) document.getElementById('btnTransData').remove();
 
-            if (transDataRowKey != null && transDataRowKey != 'null' && transDataSeq > 0) {
+            if (transDataRowKey != null && transDataRowKey != 'null') {
                 vThis.mainGrid.setValue(transDataRowKey, 'Seq', transDataSeq);
             }
             if (transDataSumQty != undefined && transDataSumQty != null && transDataSumQty != 'null') {

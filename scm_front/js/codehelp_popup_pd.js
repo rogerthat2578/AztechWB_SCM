@@ -150,63 +150,63 @@ let app = new Vue({
         transSeqToParent: function () {
             const vThis = this;
 
-            if (vThis.rows.Query.length > 0) {
-                let transDataRowKey_pd = vThis.queryRow.rowKey;
-                let transDataSeq_pd = vThis.rows.Query[0].Seq || 0;
-                let transDataSumOkQty_pd = vThis.mainGrid.getSummaryValues('OkQty').sum;
-                let transDataSumWeight_pd = vThis.mainGrid.getSummaryValues('Weight').sum;
+            // if (vThis.rows.Query.length > 0) {
+            let transDataRowKey_pd = vThis.queryRow.rowKey || '0';
+            let transDataSeq_pd = vThis.rows.Query[0]?.Seq || 0;
+            let transDataSumOkQty_pd = vThis.mainGrid.getSummaryValues('OkQty').sum || '0';
+            let transDataSumWeight_pd = vThis.mainGrid.getSummaryValues('Weight').sum || '0';
 
-                if (window.opener.name == 'parentPopup_pd') {
-                    if (window.opener.document.getElementById('transDataRowKey_pd')) {
-                        window.opener.document.getElementById('transDataRowKey_pd').value = transDataRowKey_pd;
-                    } else {
-                        let element = window.opener.document.createElement('input');
-                        element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataRowKey_pd');
-                        element.setAttribute('value', transDataRowKey_pd);
-                        window.opener.document.body.appendChild(element);
-                    }
+            if (window.opener.name == 'parentPopup_pd') {
+                if (window.opener.document.getElementById('transDataRowKey_pd')) {
+                    window.opener.document.getElementById('transDataRowKey_pd').value = transDataRowKey_pd;
+                } else {
+                    let element = window.opener.document.createElement('input');
+                    element.setAttribute('type', 'hidden');
+                    element.setAttribute('id', 'transDataRowKey_pd');
+                    element.setAttribute('value', transDataRowKey_pd);
+                    window.opener.document.body.appendChild(element);
+                }
 
-                    if (window.opener.document.getElementById('transDataSeq_pd')) {
-                        window.opener.document.getElementById('transDataSeq_pd').value = transDataSeq_pd;
-                    } else {
-                        let element = window.opener.document.createElement('input');
-                        element = window.opener.document.createElement('input');
-                        element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataSeq_pd');
-                        element.setAttribute('value', transDataSeq_pd);
-                        window.opener.document.body.appendChild(element);
-                    }
+                if (window.opener.document.getElementById('transDataSeq_pd')) {
+                    window.opener.document.getElementById('transDataSeq_pd').value = transDataSeq_pd;
+                } else {
+                    let element = window.opener.document.createElement('input');
+                    element = window.opener.document.createElement('input');
+                    element.setAttribute('type', 'hidden');
+                    element.setAttribute('id', 'transDataSeq_pd');
+                    element.setAttribute('value', transDataSeq_pd);
+                    window.opener.document.body.appendChild(element);
+                }
 
-                    if (window.opener.document.getElementById('transDataSumOkQty_pd')) {
-                        window.opener.document.getElementById('transDataSumOkQty_pd').value = transDataSumOkQty_pd;
-                    } else {
-                        let element = window.opener.document.createElement('input');
-                        element = window.opener.document.createElement('input');
-                        element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataSumOkQty_pd');
-                        element.setAttribute('value', transDataSumOkQty_pd);
-                        window.opener.document.body.appendChild(element);
-                    }
+                if (window.opener.document.getElementById('transDataSumOkQty_pd')) {
+                    window.opener.document.getElementById('transDataSumOkQty_pd').value = transDataSumOkQty_pd;
+                } else {
+                    let element = window.opener.document.createElement('input');
+                    element = window.opener.document.createElement('input');
+                    element.setAttribute('type', 'hidden');
+                    element.setAttribute('id', 'transDataSumOkQty_pd');
+                    element.setAttribute('value', transDataSumOkQty_pd);
+                    window.opener.document.body.appendChild(element);
+                }
 
-                    if (window.opener.document.getElementById('transDataSumWeight_pd')) {
-                        window.opener.document.getElementById('transDataSumWeight_pd').value = transDataSumWeight_pd;
-                    } else {
-                        let element = window.opener.document.createElement('input');
-                        element = window.opener.document.createElement('input');
-                        element.setAttribute('type', 'hidden');
-                        element.setAttribute('id', 'transDataSumWeight_pd');
-                        element.setAttribute('value', transDataSumWeight_pd);
-                        window.opener.document.body.appendChild(element);
-                    }
+                if (window.opener.document.getElementById('transDataSumWeight_pd')) {
+                    window.opener.document.getElementById('transDataSumWeight_pd').value = transDataSumWeight_pd;
+                } else {
+                    let element = window.opener.document.createElement('input');
+                    element = window.opener.document.createElement('input');
+                    element.setAttribute('type', 'hidden');
+                    element.setAttribute('id', 'transDataSumWeight_pd');
+                    element.setAttribute('value', transDataSumWeight_pd);
+                    window.opener.document.body.appendChild(element);
+                }
 
-                    if (!window.opener.document.getElementById('btnTransData_pd')) {
-                        let btnElement = window.opener.document.createElement('button');
-                        btnElement.setAttribute('id', 'btnTransData_pd');
-                        window.opener.document.body.appendChild(btnElement);
-                    }
+                if (!window.opener.document.getElementById('btnTransData_pd')) {
+                    let btnElement = window.opener.document.createElement('button');
+                    btnElement.setAttribute('id', 'btnTransData_pd');
+                    window.opener.document.body.appendChild(btnElement);
                 }
             }
+            // }
         },
 
         search: function (callback) {
@@ -227,9 +227,11 @@ let app = new Vue({
             .ajax([params], [function (data) {
                 if(data.length > 0){
                     vThis.rows.Query = data;
+                    vThis.queryRow.Seq = vThis.rows.Query[0].Seq || 0;
                     // toastr.info('조회 결과: ' + vThis.rows.Query.length + '건');
                 } else{
                     vThis.rows.Query = [];
+                    vThis.queryRow.Seq = 0;
                     // toastr.info('조회 결과가 없습니다.');
                 }
 
