@@ -1,0 +1,19 @@
+* SCM 정보
+
+1. 실서버 URL 
+
+    http://222.96.95.26:8080/AzTechWBWebServer/scm_front/login.html
+
+     *** 실서버 소스 경로 : C:\ksystem\Setup\AzTechWBWebServer\scm_front
+
+
+
+2. 계정 정보 (knic개발자 또는 박태근이사님 또는 아즈텍에서 바꿀 수 있음)
+
+    ID : master / PW : knic2022!
+
+
+
+3. Github
+
+    SCM URL : https://github.com/gaonsoftdev/AztechWB_SCM
